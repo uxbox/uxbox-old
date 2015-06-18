@@ -1,5 +1,9 @@
 # UXBox
 
+[![Travis Badge](https://img.shields.io/travis/uxbox/front.svg?style=flat)](https://travis-ci.org/uxbox/front "Travis Badge")
+
+UXBox front-end application.
+
 ## Development
 
 First of all, make sure you have [leiningen](http://leiningen.org/) installed. Grab the code and run:
