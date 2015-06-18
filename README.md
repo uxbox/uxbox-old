@@ -1,4 +1,4 @@
-# UXBox
+# UXBox client
 
 [![Travis Badge](https://img.shields.io/travis/uxbox/front.svg?style=flat)](https://travis-ci.org/uxbox/front "Travis Badge")
 
@@ -46,11 +46,11 @@ For running the tests from a shell, run the following command:
 $ lein cljsbuild once test
 ```
 
-If you want to run the tests from a ClojureScript REPL, you can do it like so (given that you want to test the `uxbox.core` namespace):
+If you want to run the tests from a ClojureScript REPL, you can do it like so (given that you want to run the tests contained in the `uxbox.core-test` namespace):
 
 ```
 cljs.user> (require '[cljs.test :as t])
-cljs.usre> (t/run-tests 'uxbox.core)
+cljs.user> (t/run-tests 'uxbox.core-test)
 ```
 
 Note that the test output will appear in the browser and in the shell where you launched the `lein fighweel` command.
