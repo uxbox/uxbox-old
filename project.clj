@@ -16,7 +16,7 @@
 
   :cljsbuild {
     :builds [{:id "dev"
-              :source-paths ["src"]
+              :source-paths ["src" "test"]
 
               :figwheel { :on-jsload "uxbox.core/on-js-reload" }
 
@@ -25,6 +25,20 @@
                          :output-to "resources/public/js/compiled/uxbox.js"
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true }}
+
+             {:id "test"
+              :source-paths ["src" "test"]
+              :notify-command ["node" "out/tests.js"]
+              :compiler {:output-to "out/tests.js"
+                          :output-dir "out"
+                          :source-map true
+                          :static-fns true
+                          :cache-analysis false
+                          :main uxbox.runner
+                          :optimizations :none
+                          :target :nodejs
+                          :pretty-print true}}
+
              {:id "min"
               :source-paths ["src"]
               :compiler {:output-to "resources/public/js/compiled/uxbox.js"

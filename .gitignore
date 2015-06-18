@@ -7,6 +7,7 @@ pom.xml
 /out/
 /target/
 .lein-deps-sum
+.lein-failures
 .lein-repl-history
 .lein-plugins/
 .repl
