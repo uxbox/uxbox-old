@@ -1,6 +1,8 @@
 (ns uxbox.core-test
-  (:require [cljs.test :as t]))
+  (:require [cljs.test :as t]
+            [uxbox.core :as u]))
 
-(t/deftest a-failing-test
-  (t/testing "That fails"
-    (t/is (= 42 99))))
+
+(t/deftest a-passing-test
+  (t/testing "That passes"
+    (t/is (= 42 42))))
