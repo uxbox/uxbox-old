@@ -1,17 +1,42 @@
 (ns ^:figwheel-always uxbox.core
-    (:require))
+    (:require [uxbox.db :as db]
+              [uxbox.navigation :refer [start-history!]]
+              [uxbox.dashboard.views :refer [dashboard]]
+              [uxbox.workspace.views :refer [workspace]]
+              [uxbox.user.views :refer [login]]
+              [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
-
-(println "Edits to this text should show up in your developer console.")
-
-;; define your app data so that it doesn't get over-written on reload
-
-(defonce app-state (atom {:text "Hello world!"}))
-
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
+
 )
+
+(defn ui [db]
+  (let [[page params] (:location @db)]
+    (case page
+      :dashboard [dashboard db]
+      :login [login]
+      :workspace [workspace db]
+      :default [:h3 "Not implemented"])))
+
+(defn init-state!
+  []
+  (reset! db/app-state db/initial-state))
+
+(defn render!
+  [app-state element]
+  (reagent/render-component [ui app-state] element))
+
+(def $el (.getElementById js/document "app"))
+
+(defn start!
+  [app-state]
+  (init-state!)
+  (start-history!)
+  (render! app-state $el))
+
+(start! db/app-state)
