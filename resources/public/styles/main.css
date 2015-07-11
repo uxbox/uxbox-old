@@ -3672,7 +3672,7 @@ input:focus, select:focus, textarea:focus, input[type="file"]:focus, input[type=
   height: 45px;
   padding: 5px 15px 5px 70px;
   position: relative;
-  z-index: 10; }
+  z-index: 11; }
   .workspace-bar .main-icon {
     -webkit-box-align: center;
     -webkit-align-items: center;
@@ -3785,6 +3785,103 @@ input:focus, select:focus, textarea:focus, input[type="file"]:focus, input[type=
       border: 2px solid #ebebeb;
       border-radius: 50%;
       width: 40px; }
+
+.workspace-canvas {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  font-size: 0.875rem;
+  height: 100%;
+  padding: 15px 250px 15px 55px; }
+  .workspace-canvas .workspace-canvas-content {
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    box-sizing: border-box;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+    min-height: 60vh;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    margin: 20px;
+    width: 100%; }
+
+.tool-bar {
+  background-color: #7f7f7f;
+  bottom: 0;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  width: 55px;
+  z-index: 10; }
+  .tool-bar .tool-bar-inside {
+    padding-top: 70px; }
+    .tool-bar .tool-bar-inside .main-tools {
+      -webkit-box-align: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
+          -ms-flex-direction: column;
+              flex-direction: column;
+      overflow-y: auto; }
+      .tool-bar .tool-bar-inside .main-tools li {
+        cursor: pointer;
+        margin-bottom: 20px; }
+        .tool-bar .tool-bar-inside .main-tools li svg {
+          fill: #b1b1b1;
+          height: 30px;
+          width: 30px; }
+        .tool-bar .tool-bar-inside .main-tools li:hover svg, .tool-bar .tool-bar-inside .main-tools li.current svg {
+          fill: #78dbbe; }
+
+.settings-bar {
+  background-color: #7f7f7f;
+  bottom: 0;
+  height: 100%;
+  position: fixed;
+  right: 0;
+  width: 250px; }
+  .settings-bar .settings-bar-inside {
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    overflow-y: auto;
+    padding-top: 70px; }
 
 .dashboard-bar {
   -webkit-box-align: center;
