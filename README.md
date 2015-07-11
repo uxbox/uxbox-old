@@ -60,7 +60,7 @@ Note that the test output will appear in the browser and in the shell where you 
 For transforming the generated HTMLs to hiccup form, execute the following command:
 
 ```
-$ lein hicv 2clj resources/public/templates
+$ lein hicv 2clj resources/public/templates/*.html
 ```
 
 The `.clj` files in the `hicv` directory will contain the hiccup versions of the HTML templates.
