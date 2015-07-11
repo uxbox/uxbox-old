@@ -23,10 +23,6 @@
       :workspace [workspace db]
       :default [:h3 "Not implemented"])))
 
-(defn init-state!
-  []
-  (reset! db/app-state db/initial-state))
-
 (defn render!
   [app-state element]
   (reagent/render-component [ui app-state] element))
@@ -35,7 +31,6 @@
 
 (defn start!
   [app-state]
-  (init-state!)
   (start-history!)
   (render! app-state $el))
 

@@ -1,9 +1,8 @@
 (ns uxbox.db
   (:require [reagent.core :as reagent :refer [atom]]))
 
-(def app-state (atom))
-
-(def initial-state {:location [:home]
+(def initial-state {:location [:login]
+                    :lightbox nil
                     :user {:fullname "Michael Buchannon"
                              :avatar "/images/avatar.jpg"}
                       :activity []
@@ -27,3 +26,5 @@
                          :page-count 2
                          :comment-count 4}
                       ]})
+
+(defonce app-state (atom initial-state))
