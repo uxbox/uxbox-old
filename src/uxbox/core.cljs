@@ -4,6 +4,7 @@
               [uxbox.navigation :refer [start-history!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
+              [uxbox.forms :refer [lightbox]]
               [uxbox.user.views :refer [login]]
               [reagent.core :as reagent :refer [atom]]))
 
@@ -13,13 +14,14 @@
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
-
 )
 
 (defn ui [db]
   (let [[page params] (:location @db)]
     (case page
-      :dashboard [dashboard db]
+      :dashboard [:div
+                  [dashboard db]
+                  [lightbox db]]
       :login [login]
       :workspace [workspace db]
       :default [:h3 "Not implemented"])))
