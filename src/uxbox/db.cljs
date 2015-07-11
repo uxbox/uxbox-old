@@ -4,7 +4,7 @@
 (def initial-state {:location [:login]
                     :lightbox nil
                     :user {:fullname "Michael Buchannon"
-                             :avatar "/images/avatar.jpg"}
+                           :avatar "/images/avatar.jpg"}
                       :activity []
                       :project-sort-order :name
                       :project-orderings {
@@ -12,6 +12,7 @@
                         :last-update "date updated"
                         :created "date created"
                       }
+                      :new-project-name ""
                       :projects [
                         {:name "Wireframes Taiga Tribe"
                          :uuid (random-uuid)

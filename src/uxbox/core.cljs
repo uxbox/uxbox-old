@@ -1,6 +1,5 @@
 (ns ^:figwheel-always uxbox.core
     (:require [uxbox.db :as db]
-              [uxbox.pubsub :as pubsub :refer [start-pubsub!]]
               [uxbox.navigation :refer [start-history!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
@@ -34,7 +33,6 @@
 
 (defn start!
   [app-state]
-  (start-pubsub!)
   (start-history!)
   (render! app-state $el))
 

@@ -4,15 +4,8 @@
    [cljs.core.async :as async])
   (:require-macros [cljs.core.async.macros :refer [go-loop]]))
 
-(def publisher (atom nil))
-(def publication (atom nil))
-
-(defn start-pubsub!
-  ([]
-   (start-pubsub! (async/chan)))
-  ([ch]
-   (reset! publisher ch)
-   (reset! publication (async/pub ch first))))
+(def publisher (atom (async/chan)))
+(def publication (atom (async/pub @publisher first)))
 
 (defn publish!
   [msg]
