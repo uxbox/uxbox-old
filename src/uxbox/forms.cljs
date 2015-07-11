@@ -1,7 +1,8 @@
 (ns uxbox.forms
   (:require [uxbox.projects.actions :refer [create-project]]
             [uxbox.pubsub :as pubsub]
-            [goog.events :as events])
+            [goog.events :as events]
+            [cuerdas.core :refer [trim]])
   (:import goog.events.EventType))
 
 (defn close-lightbox
@@ -15,7 +16,7 @@
 
 (defn lightbox*
   [db]
-  (let [tag (if (:lightbox @db)
+  (let [tag (if (:lightbox @db) ;; TODO: select lightbox form depending on this value
               :div.lightbox
               :div.lightbox.hide)
         project-name (:new-project-name @db)]
@@ -27,12 +28,12 @@
         :type "text"
         :value project-name
         :on-change #(swap! db assoc :new-project-name (.-value (.-target %)))}]
-      (when (not (empty? project-name))
+      (when (not (empty? (trim project-name)))
         [:input#project-btn.btn-primary
           {:value "Go go go!"
            :type "button"
            :on-click #(do
-                        (create-project project-name)  ;; TODO: trim name
+                        (create-project (trim project-name))
                         (close-lightbox))}])
       [:a.close
        {:href "#"
