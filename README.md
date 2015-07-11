@@ -55,6 +55,16 @@ cljs.user> (t/run-tests 'uxbox.core-test)
 
 Note that the test output will appear in the browser and in the shell where you launched the `lein fighweel` command.
 
+### Transformation from HTML to hiccup
+
+For transforming the generated HTMLs to hiccup form, execute the following command:
+
+```
+$ lein hicv 2clj resources/public/templates
+```
+
+The `.clj` files in the `hicv` directory will contain the hiccup versions of the HTML templates.
+
 ## License
 
 TODO
