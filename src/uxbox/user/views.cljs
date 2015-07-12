@@ -12,7 +12,7 @@
   []
   [:div.login
     [:div.login-body
-     logo
+     [link "/" logo]
      [:div.login-content
       [:input.input-text
         {:name "name"
@@ -33,7 +33,7 @@
   []
   [:div.login
     [:div.login-body
-     logo
+     [link "/" logo]
      [:div.login-content
       [:input.input-text
         {:name "email"

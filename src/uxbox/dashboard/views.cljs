@@ -4,13 +4,13 @@
             [uxbox.dashboard.icons :as icons]
             [uxbox.icons :refer [chat logo]]
             [uxbox.user.views :refer [user]]
-            [uxbox.navigation :refer [navigate! workspace-route]]
+            [uxbox.navigation :refer [link navigate! workspace-route]]
             [uxbox.time :refer [ago]]))
 
 (defn header [usr]
   [:header#main-bar.main-bar
    [:div.main-logo
-    logo]
+    [link "/" logo]]
    [user usr]])
 
 (defn activity [db]
@@ -25,9 +25,9 @@
       [:span.bold "Michael Buchannon"]
       [:span "created new page"]
       [:div.activity-project
-       [:a {:href "#"} "Contact"]
+       [link "" "Contact"]
        [:span "in"]
-       [:a {:href "#"} "Wireframes Taiga Tribe"]]
+       [link "" "Wireframes Taiga Tribe"]]
       [:span.activity-time "12 min ago"]]]
     [:div.activity-input
      [:img.activity-author
@@ -36,9 +36,9 @@
       [:span.bold "Michael Buchannon"]
       [:span "created new page"]
       [:div.activity-project
-       [:a {:href "#"} "Contact"]
+       [link "" "Contact"]
        [:span "in"]
-       [:a {:href "#"} "Wireframes Taiga Tribe"]]
+       [link "" "Wireframes Taiga Tribe"]]
       [:span.activity-time "12 min ago"]]]
     [:span.date-ribbon "YESTERDAY"]
     [:div.activity-input
@@ -48,9 +48,9 @@
       [:span.bold "Michael Buchannon"]
       [:span "created new page"]
       [:div.activity-project
-       [:a {:href "#"} "Contact"]
+       [link "" "Contact"]
        [:span "in"]
-       [:a {:href "#"} "Wireframes Taiga Tribe"]]
+       [link "" "Wireframes Taiga Tribe"]]
       [:span.activity-time "12 min ago"]]]
     [:div.activity-input
      [:img.activity-author
@@ -59,9 +59,9 @@
       [:span.bold "Michael Buchannon"]
       [:span "created new page"]
       [:div.activity-project
-       [:a {:href "#"} "Contact"]
+       [link "" "Contact"]
        [:span "in"]
-       [:a {:href "#"} "Wireframes Taiga Tribe"]]
+       [link "" "Wireframes Taiga Tribe"]]
       [:span.activity-time "12 min ago"]]]]])
 
 (defn dashboard-info [db]
