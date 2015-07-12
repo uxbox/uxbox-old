@@ -1,6 +1,5 @@
 (ns uxbox.user.views
-  (:require [reagent.core :as reagent]
-            [uxbox.icons :refer [logo]]
+  (:require [uxbox.icons :refer [logo]]
             [uxbox.navigation :refer [link navigate! dashboard-route]]))
 
 
