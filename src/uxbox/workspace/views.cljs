@@ -1,6 +1,6 @@
 (ns uxbox.workspace.views
   (:require [uxbox.user.views :refer [user]]
-            [uxbox.icons :refer [chat]]
+            [uxbox.icons :refer [chat close]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.icons :as icons]))
 
@@ -43,7 +43,7 @@
       icons/window]
      [:span "Tools"]
      [:div.tool-window-close
-      icons/close]]
+      close]]
     [:div.tool-window-content
      [:div.tool-btn.selected
       icons/box]
@@ -66,7 +66,7 @@
       icons/layers]
      [:span "Elements"]
      [:div.tool-window-close
-      icons/close]]
+      close]]
     [:div.tool-window-content
      [:ul.element-list
       [:li.selected
