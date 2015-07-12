@@ -1,5 +1,6 @@
 (ns uxbox.workspace.views
   (:require [uxbox.user.views :refer [user]]
+            [uxbox.icons :refer [chat]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.icons :as icons]))
 
@@ -115,7 +116,7 @@
       [:li
        icons/layers]
       [:li
-       icons/chat]]]])
+       chat]]]])
 
 (defn settings
   [db]
