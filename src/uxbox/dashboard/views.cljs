@@ -13,56 +13,31 @@
     [link "/" logo]]
    [user usr]])
 
+(defn activity-item [item]
+  (let [{:keys [project
+                author
+                event]} item]
+    [:div.activity-input
+     [:img.activity-author
+      {:border "0", :src "../../images/avatar.jpg"}]
+     [:div.activity-content
+      [:span.bold (:name author)]
+      [:span (:type event)]
+      [:div.activity-project
+       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name event)]
+       [:span "in"]
+       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name project)]]
+      [:span.activity-time (ago (:datetime item))]]]))
+
+
 (defn activity [db]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
     [:h4 "ACTIVITY"]
-    [:span.date-ribbon "TODAY"]
-    [:div.activity-input
-     [:img.activity-author
-      {:border "0", :src "../../images/avatar.jpg"}]
-     [:div.activity-content
-      [:span.bold "Michael Buchannon"]
-      [:span "created new page"]
-      [:div.activity-project
-       [link "" "Contact"]
-       [:span "in"]
-       [link "" "Wireframes Taiga Tribe"]]
-      [:span.activity-time "12 min ago"]]]
-    [:div.activity-input
-     [:img.activity-author
-      {:border "0", :src "../../images/avatar.jpg"}]
-     [:div.activity-content
-      [:span.bold "Michael Buchannon"]
-      [:span "created new page"]
-      [:div.activity-project
-       [link "" "Contact"]
-       [:span "in"]
-       [link "" "Wireframes Taiga Tribe"]]
-      [:span.activity-time "12 min ago"]]]
-    [:span.date-ribbon "YESTERDAY"]
-    [:div.activity-input
-     [:img.activity-author
-      {:border "0", :src "../../images/avatar.jpg"}]
-     [:div.activity-content
-      [:span.bold "Michael Buchannon"]
-      [:span "created new page"]
-      [:div.activity-project
-       [link "" "Contact"]
-       [:span "in"]
-       [link "" "Wireframes Taiga Tribe"]]
-      [:span.activity-time "12 min ago"]]]
-    [:div.activity-input
-     [:img.activity-author
-      {:border "0", :src "../../images/avatar.jpg"}]
-     [:div.activity-content
-      [:span.bold "Michael Buchannon"]
-      [:span "created new page"]
-      [:div.activity-project
-       [link "" "Contact"]
-       [:span "in"]
-       [link "" "Wireframes Taiga Tribe"]]
-      [:span.activity-time "12 min ago"]]]]])
+    (for [[day items] (seq (group-by #(.toDateString (:datetime %1)) (:activity @db)))]
+       (concat
+        [[:span.date-ribbon (.calendar (js/moment. day))]]
+        (map activity-item items)))]])
 
 (defn mysvg [db icon-name]
   [:svg {:src (str "/assets/images/" icon-name ".svg") }])
