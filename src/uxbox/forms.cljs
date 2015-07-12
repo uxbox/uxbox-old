@@ -14,7 +14,7 @@
  (fn [state _]
    (assoc state :lightbox nil :new-project-name "")))
 
-(defn lightbox*
+(defn lightbox
   [db]
   (let [tag (if (:lightbox @db) ;; TODO: select lightbox form depending on this value
               :div.lightbox
@@ -69,6 +69,5 @@
   (when (= (.-keyCode e) 27)
     (close-lightbox)))
 
-(def lightbox (with-meta lightbox*
-                {:component-did-mount #(events/listen js/document EventType.KEYUP dismiss-lightbox)
-                 :component-will-unmount #(events/unlisten js/document EventType.KEYUP dismiss-lightbox)}))
+(alter-meta! #'lightbox merge {:component-did-mount #(events/listen js/document EventType.KEYUP dismiss-lightbox)
+                               :component-will-unmount #(events/unlisten js/document EventType.KEYUP dismiss-lightbox)})
