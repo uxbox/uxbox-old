@@ -37,7 +37,7 @@
   (.setEnabled history true)
   (register-handler
    :location
-   (fn [state [_ location]]
+   (fn [state location]
      (assoc state :location location))))
 
 (defn navigate!

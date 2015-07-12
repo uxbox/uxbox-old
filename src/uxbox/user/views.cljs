@@ -2,7 +2,6 @@
   (:require [uxbox.icons :refer [logo]]
             [uxbox.navigation :refer [link navigate! dashboard-route]]))
 
-
 (defn user
   [usr]
   [:div.user-zone

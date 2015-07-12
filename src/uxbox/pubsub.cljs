@@ -18,6 +18,6 @@
     (go-loop [v (async/<! ch)]
       (if (nil? v)
         (async/close! ch)
-        (when-let [new-state (cb @db/app-state v)]
+        (when-let [new-state (cb @db/app-state (second v))]
           (reset! db/app-state new-state)
           (recur (async/<! ch)))))))

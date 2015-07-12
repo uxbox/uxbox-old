@@ -13,5 +13,5 @@
 
 (pubsub/register-handler
  :create-project
- (fn [state [_ project]]
+ (fn [state project]
    (update state :projects conj project)))
