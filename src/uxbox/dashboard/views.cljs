@@ -92,10 +92,12 @@
    [:span "+ New project"]])
 
 (defn project-card [project]
-   [:div.grid-item.project-th
-     [:h3 {:on-click #(navigate! (workspace-route {:uuid (:uuid project)}))}
+  (let [{:keys [uuid last-update]} project]
+    [:div.grid-item.project-th
+     {:key uuid}
+     [:h3 {:on-click #(navigate! (workspace-route {:uuid uuid}))}
       (:name project)]
-     [:span.project-th-update "Updated " (ago (:last-update project))]
+     [:span.project-th-update "Updated " (ago last-update)]
      [:div.project-th-actions
       [:div.project-th-icon.pages
        icons/page
@@ -104,7 +106,7 @@
        chat
        [:span (:comment-count project)]]
       [:div.project-th-icon.delete {:on-click #(delete-project (:uuid project))}
-       icons/trash]]])
+       icons/trash]]]))
 
 (defn dashboard-grid [db]
   (let [projects (sort-by (:project-sort-order @db) (:projects @db))]
