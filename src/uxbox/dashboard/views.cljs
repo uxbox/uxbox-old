@@ -1,7 +1,7 @@
 (ns uxbox.dashboard.views
   (:require [uxbox.dashboard.actions :as actions]
             [uxbox.dashboard.icons :as icons]
-            [uxbox.icons :refer [chat]]
+            [uxbox.icons :refer [chat logo]]
             [uxbox.user.views :refer [user]]
             [uxbox.navigation :refer [navigate! workspace-route]]
             [uxbox.time :refer [ago]]))
@@ -9,7 +9,7 @@
 (defn header [usr]
   [:header#main-bar.main-bar
    [:div.main-logo
-    icons/logo]
+    logo]
    [user usr]])
 
 (defn activity [db]
