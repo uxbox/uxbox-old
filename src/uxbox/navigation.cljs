@@ -15,6 +15,12 @@
 (defroute login-route "/" []
   (set-location! [:login]))
 
+(defroute register-route "/register" []
+  (set-location! [:register]))
+
+(defroute recover-password-route "/recover-password" []
+  (set-location! [:recover-password]))
+
 (defroute dashboard-route "/dashboard" []
   (set-location! [:dashboard]))
 

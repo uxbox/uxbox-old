@@ -8,6 +8,43 @@
    [:span (:fullname usr)]
    [:img {:border "0", :src (:avatar usr)}]])
 
+(defn register
+  []
+  [:div.login
+    [:div.login-body
+     logo
+     [:div.login-content
+      [:input.input-text
+        {:name "name"
+         :placeholder "Name"
+         :type "text"}]
+      [:input.input-text
+        {:name "email"
+         :placeholder "Email"
+         :type "email"}]
+      [:input.input-text
+       {:name "password", :placeholder "Password", :type "password"}]
+      [:input.btn-primary
+       {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
+      [:div.login-links
+       [link "/" "You already have an account?"]]]]])
+
+(defn recover-password
+  []
+  [:div.login
+    [:div.login-body
+     logo
+     [:div.login-content
+      [:input.input-text
+        {:name "email"
+         :placeholder "Email"
+         :type "email"}]
+      [:input.btn-primary
+       {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
+      [:div.login-links
+       [link "/" "Login"]
+       [link "/register" "Don't have an account?"]]]]])
+
 (defn login
   []
   [:div.login
@@ -26,5 +63,5 @@
       [:input.btn-primary
        {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
       [:div.login-links
-       [link "" "Forgot your password?"]
-       [link "" "Don't have an account?"]]]]])
+       [link "/recover-password" "Forgot your password?"]
+       [link "/register" "Don't have an account?"]]]]])
