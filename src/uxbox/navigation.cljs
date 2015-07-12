@@ -43,3 +43,12 @@
 (defn navigate!
   [uri]
   (.setToken history uri))
+
+;; Components
+
+(defn link
+  [href component]
+  [:a
+   {:href href
+    :on-click #(do (.preventDefault %) (navigate! href))}
+   component])

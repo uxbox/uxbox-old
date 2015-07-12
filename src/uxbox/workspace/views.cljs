@@ -1,12 +1,14 @@
 (ns uxbox.workspace.views
   (:require [uxbox.user.views :refer [user]]
+            [uxbox.navigation :refer [link]]
             [uxbox.workspace.icons :as icons]))
-
 
 (defn header
   [db]
   [:header#workspace-bar.workspace-bar
-    [:div.main-icon icons/logo]
+    [:div.main-icon
+     [link "/dashboard"
+      icons/logo]]
     [:div.project-tree-btn
      icons/project-tree
      [:span "Page name"]]

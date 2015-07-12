@@ -121,7 +121,7 @@
 
 (defn new-project []
   [:div.grid-item.add-project
-   {:on-click #(do (actions/new-project) (println "NEW PROJECT"))}
+   {:on-click #(actions/new-project)}
    [:span "+ New project"]])
 
 (defn project-card [project]
