@@ -4,7 +4,7 @@
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
-              [uxbox.user.views :refer [login, register, recover-password]]
+              [uxbox.user.views :refer [login register recover-password]]
               [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
