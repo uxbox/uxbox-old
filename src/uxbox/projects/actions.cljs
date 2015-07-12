@@ -11,7 +11,11 @@
                                        :page-count 0
                                        :comment-count 0}])))
 
+(defn delete-project
+  [uuid]
+  (pubsub/publish! [:delete-project uuid]))
+
 (pubsub/register-handler
- :create-project
- (fn [state project]
-   (update state :projects conj project)))
+ :delete-project
+ (fn [state uuid]
+   (update state :projects (fn [projects] (filter #(not= (:uuid %1) uuid) projects)))))

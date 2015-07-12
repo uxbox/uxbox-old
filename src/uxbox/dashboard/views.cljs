@@ -1,5 +1,6 @@
 (ns uxbox.dashboard.views
   (:require [uxbox.dashboard.actions :as actions]
+            [uxbox.projects.actions :refer [delete-project]]
             [uxbox.dashboard.icons :as icons]
             [uxbox.icons :refer [chat logo]]
             [uxbox.user.views :refer [user]]
@@ -92,9 +93,8 @@
 
 (defn project-card [project]
    [:div.grid-item.project-th
-     {:on-click #(navigate! (workspace-route))
-      :key (:uuid project)}
-     [:h3 (:name project)]
+     [:h3 {:on-click #(navigate! (workspace-route {:uuid (:uuid project)}))}
+      (:name project)]
      [:span.project-th-update "Updated " (ago (:last-update project))]
      [:div.project-th-actions
       [:div.project-th-icon.pages
@@ -103,7 +103,7 @@
       [:div.project-th-icon.comments
        chat
        [:span (:comment-count project)]]
-      [:div.project-th-icon.delete
+      [:div.project-th-icon.delete {:on-click #(delete-project (:uuid project))}
        icons/trash]]])
 
 (defn dashboard-grid [db]

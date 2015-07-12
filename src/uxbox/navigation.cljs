@@ -18,7 +18,7 @@
 (defroute dashboard-route "/dashboard" []
   (set-location! [:dashboard]))
 
-(defroute workspace-route "/workspace" []
+(defroute workspace-route "/workspace/:uuid" [uuid]
   (set-location! [:workspace]))
 
 ;; History
