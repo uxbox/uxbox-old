@@ -14,16 +14,22 @@
                       }
                       :new-project-name ""
                       :projects [
+                        {:name "Design of UXBox"
+                         :uuid (random-uuid)
+                         :last-update (js/Date. 2014 10 1)
+                         :created (js/Date. 2014 9 1)
+                         :page-count 3
+                         :comment-count 6}
                         {:name "Wireframes Taiga Tribe"
                          :uuid (random-uuid)
-                         :last-update (js/Date. 2020 10 1)
-                         :created (js/Date. 2020 9 1)
+                         :last-update (js/Date. 2005 10 1)
+                         :created (js/Date. 2005 9 1)
                          :page-count 3
                          :comment-count 6}
                         {:name "A WYSH Roadmap"
                          :uuid (random-uuid)
-                         :last-update (js/Date. 2014 10 1)
-                         :created (js/Date. 2014 9 1)
+                         :last-update (js/Date. 2010 10 1)
+                         :created (js/Date. 2010 9 1)
                          :page-count 2
                          :comment-count 4}
                       ]})

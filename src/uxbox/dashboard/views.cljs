@@ -73,7 +73,7 @@
      [:span.dashboard-projects (count projects) " projects"]
      [:span "Sort by"]
      [:select.sort-by
-      {:on-change #(swap! db assoc-in [:project-sort-order] (name->order (.-value (.-target %))))
+      {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))
        :value sort-name}
       (for [order (keys orderings)
             :let [name (get orderings order)]]
@@ -107,12 +107,14 @@
        icons/trash]]])
 
 (defn dashboard-grid [db]
-  (let [projects (sort (comp compare (:project-sort-order @db)) (:projects @db))]
+  (let [projects (sort-by (:project-sort-order @db) (:projects @db))]
     [:section.dashboard-grid
      [:h2 "Your projects"]
      [:div.dashboard-grid-content
       [new-project]
-      (map project-card projects)]]))
+      (if (= (:project-sort-order @db) :name)
+        (map project-card projects)
+        (reverse (map project-card projects)))]]))
 
 (defn dashboard-content [db]
   [:main.dashboard-main
