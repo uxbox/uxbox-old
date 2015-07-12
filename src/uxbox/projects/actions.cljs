@@ -19,3 +19,8 @@
  :delete-project
  (fn [state uuid]
    (update state :projects (fn [projects] (filter #(not= (:uuid %1) uuid) projects)))))
+
+(pubsub/register-handler
+ :create-project
+ (fn [state project]
+   (update state :projects conj project)))
