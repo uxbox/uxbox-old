@@ -13,6 +13,10 @@
   [tool]
   (pubsub/publish! [:set-tool tool]))
 
+(defn set-figures-catalog
+  [catalog]
+  (pubsub/publish! [:set-figures-catalog catalog]))
+
 (pubsub/register-transition
  :close-setting-box
  (fn [state setting-box]
@@ -29,3 +33,8 @@
  :set-tool
  (fn [state tool]
    (assoc-in state [:workspace :selected-tool] tool)))
+
+(pubsub/register-transition
+ :set-figures-catalog
+ (fn [state catalog]
+   (assoc state :current-catalog catalog)))

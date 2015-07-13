@@ -73,6 +73,7 @@
                     ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
                     ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement
                     ;; Style properties http://www.w3.org/TR/SVG/propidx.html
+                    :current-catalog :material-design-actions
 
                     :page
 
