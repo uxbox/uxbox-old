@@ -59,7 +59,7 @@
 
 (defn tools
   [db]
-  (let [{:keys [workspace]} db]
+  (let [{:keys [workspace]} @db]
    [:div#form-tools.tool-window
      [:div.tool-window-bar
       [:div.tool-window-icon
@@ -72,9 +72,9 @@
                       :on-click #(actions/set-tool :rect)} icons/box]
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :circle) "selected" "")
                       :on-click #(actions/set-tool :circle)} icons/circle]
-      [:div.tool-btn {:selected (if (= (:selected-tool workspace) :line) "selected" "")
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :line) "selected" "")
                       :on-click #(actions/set-tool :line)} icons/line]
-      [:div.tool-btn {:selected (if (= (:selected-tool workspace) :curve) "selected" "")
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :curve) "selected" "")
                       :on-click #(actions/set-tool :curve)} icons/curve]
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :text) "selected" "")
                       :on-click #(actions/set-tool :text)} icons/text]
