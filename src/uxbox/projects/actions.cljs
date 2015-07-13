@@ -18,9 +18,9 @@
 (pubsub/register-transition
  :delete-project
  (fn [state uuid]
-   (update state :projects (fn [projects] (filter #(not= (:uuid %1) uuid) projects)))))
+   (update state :projects #(dissoc % uuid))))
 
 (pubsub/register-transition
  :create-project
  (fn [state project]
-   (update state :projects conj project)))
+   (update state :projects assoc (:uuid project) project)))

@@ -4,6 +4,25 @@
 (def a-project-id (random-uuid))
 (def another-project-id (random-uuid))
 
+(def sample-projects [{:name "Design of UXBox"
+                       :uuid a-project-id
+                       :last-update (js/Date. 2014 10 1)
+                       :created (js/Date. 2014 9 1)
+                       :page-count 3
+                       :comment-count 6}
+                      {:name "Wireframes Taiga Tribe"
+                       :uuid another-project-id
+                       :last-update (js/Date. 2005 10 1)
+                       :created (js/Date. 2005 9 1)
+                       :page-count 3
+                       :comment-count 6}
+                      {:name "A WYSH Roadmap"
+                       :uuid (random-uuid)
+                       :last-update (js/Date. 2010 10 1)
+                       :created (js/Date. 2010 9 1)
+                       :page-count 2
+                       :comment-count 3}])
+
 (def initial-state {:location [:login]
                     :lightbox nil
                     :open-setting-boxes #{:tools :layers}
@@ -39,25 +58,9 @@
                     :new-project-name ""
                     :workspace {:selected-tool :rect
                                 :selected-element 0}
-                    :projects [
-                      {:name "Design of UXBox"
-                       :uuid (random-uuid)
-                       :last-update (js/Date. 2014 10 1)
-                       :created (js/Date. 2014 9 1)
-                       :page-count 3
-                       :comment-count 6}
-                      {:name "Wireframes Taiga Tribe"
-                       :uuid (random-uuid)
-                       :last-update (js/Date. 2005 10 1)
-                       :created (js/Date. 2005 9 1)
-                       :page-count 3
-                       :comment-count 6}
-                      {:name "A WYSH Roadmap"
-                       :uuid (random-uuid)
-                       :last-update (js/Date. 2010 10 1)
-                       :created (js/Date. 2010 9 1)
-                       :page-count 2
-                       :comment-count 4}]
+                    :projects (into {} (for [p sample-projects
+                                             :let [uuid (:uuid p)]]
+                                         [uuid p]))
 
                     ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
                     ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement
