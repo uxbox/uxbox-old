@@ -170,4 +170,5 @@
     [:section.workspace-content
      [toolbar db]
      [:section.dashboard-grid [:div.dashboard-grid-content]]]
-    [settings db]]])
+    (if (not (empty? (:open-setting-boxes @db)))
+     [settings db])]])
