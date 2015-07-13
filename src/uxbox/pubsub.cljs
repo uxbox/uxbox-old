@@ -11,13 +11,15 @@
   [msg]
   (async/put! @publisher msg))
 
-(defn register-handler
+(defn register-transition
   [key cb]
   (let [ch (async/chan)]
     (async/sub @publication key ch)
     (go-loop [v (async/<! ch)]
       (if (nil? v)
         (async/close! ch)
-        (when-let [new-state (cb @db/app-state (second v))]
-          (reset! db/app-state new-state)
+        (do
+          (if-let [new-state (cb @db/app-state (second v))]
+            (reset! db/app-state new-state)
+            (.error js/console "The" key "handler didn't return a new version of the state but" (pr new-state)))
           (recur (async/<! ch)))))))

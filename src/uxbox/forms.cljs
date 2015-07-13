@@ -10,7 +10,7 @@
   []
   (pubsub/publish! [:close-lightbox]))
 
-(pubsub/register-handler
+(pubsub/register-transition
  :close-lightbox
  (fn [state _]
    (assoc state :lightbox nil :new-project-name "")))

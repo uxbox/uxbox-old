@@ -15,12 +15,12 @@
   [uuid]
   (pubsub/publish! [:delete-project uuid]))
 
-(pubsub/register-handler
+(pubsub/register-transition
  :delete-project
  (fn [state uuid]
    (update state :projects (fn [projects] (filter #(not= (:uuid %1) uuid) projects)))))
 
-(pubsub/register-handler
+(pubsub/register-transition
  :create-project
  (fn [state project]
    (update state :projects conj project)))

@@ -9,12 +9,12 @@
   []
   (pubsub/publish! [:new-project]))
 
-(pubsub/register-handler
+(pubsub/register-transition
  :new-project
  (fn [state _]
    (assoc state :lightbox :new-project)))
 
-(pubsub/register-handler
+(pubsub/register-transition
  :set-projects-order
  (fn [state order]
    (assoc state :project-sort-order order)))
