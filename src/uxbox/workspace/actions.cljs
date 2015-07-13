@@ -21,7 +21,9 @@
 (pubsub/register-handler
  :open-setting-box
  (fn [state setting-box]
-   (update state :open-setting-boxes #(conj %1 setting-box))))
+   (if (= setting-box :layers)
+     (update state :open-setting-boxes #(conj %1 setting-box))
+     (update state :open-setting-boxes #(clojure.set/intersection (conj %1 setting-box) #{:layers setting-box})))))
 
 (pubsub/register-handler
  :set-tool

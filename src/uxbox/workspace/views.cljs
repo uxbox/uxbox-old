@@ -36,6 +36,26 @@
        icons/organize]]]
    [user (:user @db)]])
 
+(defn figures
+  [db]
+  [:div#form-figures.tool-window
+    [:div.tool-window-bar
+     [:div.tool-window-icon
+      icons/window]
+     [:span "Figures"]
+     [:div.tool-window-close {:on-click #(actions/close-setting-box :figures)}
+      close]]])
+
+(defn components
+  [db]
+  [:div#form-components.tool-window
+    [:div.tool-window-bar
+     [:div.tool-window-icon
+      icons/window]
+     [:span "Components"]
+     [:div.tool-window-close {:on-click #(actions/close-setting-box :components)}
+      close]]])
+
 (defn tools
   [db]
   [:div#form-tools.tool-window
@@ -115,14 +135,16 @@
     [:div.tool-bar-inside
      [:ul.main-tools
       (if (:tools (:open-setting-boxes @db))
-        [:li.current {:on-click #(actions/close-setting-box :tools)} icons/shapes]
+        [:li.current icons/shapes]
         [:li {:on-click #(actions/open-setting-box :tools)} icons/shapes])
-      [:li
-       icons/puzzle]
-      [:li
-       icons/icon-set]
+      (if (:figures (:open-setting-boxes @db))
+        [:li.current icons/puzzle]
+        [:li {:on-click #(actions/open-setting-box :figures)} icons/puzzle])
+      (if (:components (:open-setting-boxes @db))
+        [:li.current icons/icon-set]
+        [:li {:on-click #(actions/open-setting-box :components)} icons/icon-set])
       (if (:layers (:open-setting-boxes @db))
-        [:li.current {:on-click #(actions/close-setting-box :layers)} icons/layers]
+        [:li.current icons/layers]
         [:li {:on-click #(actions/open-setting-box :layers)} icons/layers])
       [:li
        chat]]]])
@@ -133,6 +155,10 @@
     [:div.settings-bar-inside
      (if (:tools (:open-setting-boxes @db))
       [tools db])
+     (if (:figures (:open-setting-boxes @db))
+      [figures db])
+     (if (:components (:open-setting-boxes @db))
+      [components db])
      (if (:layers (:open-setting-boxes @db))
       [layers db])]])
 
