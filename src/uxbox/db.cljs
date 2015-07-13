@@ -55,7 +55,15 @@
                       :last-update "date updated"
                       :created "date created"
                     }
-                    :new-project-name ""
+                    :project-layouts {
+                      :mobile {:name "Mobile" :width 320 :height 480}
+                      :tablet {:name "Tablet" :width 1024 :height 768}
+                      :notebook {:name "Notebook" :width 1366 :height 768}
+                      :desktop {:name "Desktop" :width 1920 :height 1080}
+                    }
+                    :new-project-defaults {
+                      :name ""
+                    }
                     :workspace {:selected-tool :rect
                                 :selected-element 0}
                     :projects (into {} (for [p sample-projects
