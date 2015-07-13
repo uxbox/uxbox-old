@@ -162,6 +162,16 @@
      (if (:layers (:open-setting-boxes @db))
       [layers db])]])
 
+(defn canvas [db document-width document-height]
+  (let [viewport-height 3000
+        viewport-width 3000]
+    [:svg {:width viewport-height :height viewport-width}
+     [:svg  {:x 50 :y 50 :width document-width :height document-height};; Document
+      [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
+      [:svg
+       [:line {:x1 0 :y1 0 :x2 200 :y2 200 :stroke "red" :stroke-width 4}]]]
+     ]))
+
 (defn workspace
   [db]
   [:div
@@ -169,6 +179,7 @@
    [:main.main-content
     [:section.workspace-content
      [toolbar db]
-     [:section.workspace-canvas [:div.workspace-canvas-content]]]
+     [:section.workspace-canvas
+      [canvas db (* 320 2) (* 640 2)]]]
     (if (not (empty? (:open-setting-boxes @db)))
      [settings db])]])
