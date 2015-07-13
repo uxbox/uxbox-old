@@ -13,13 +13,13 @@
           [position value padding]
           (cond
              (= (mod value big-ticks-mod) 0)
-                [:g
+                [:g {:key position}
                  [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "black"}]
                  [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position)} value]]
              (= (mod value mid-ticks-mod) 0)
-                [:line {:y1 position :y2 position :x1 10 :x2 padding :stroke "black"}]
+                [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "black"}]
              :else
-                [:line {:y1 position :y2 position :x1 15 :x2 padding :stroke "black"}]))
+                [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "black"}]))
         ]
     [:g.vertical-rule
      [:rect {:x 0 :y padding :height height :width padding :fill "gray"}]
@@ -36,13 +36,13 @@
           [position value padding]
           (cond
              (= (mod value big-ticks-mod) 0)
-                [:g
+                [:g {:key position}
                  [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "black"}]
                  [:text {:x (+ position 2) :y 13} value]]
              (= (mod value mid-ticks-mod) 0)
-                [:line {:x1 position :x2 position :y1 10 :y2 padding :stroke "black"}]
+                [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "black"}]
              :else
-                [:line {:x1 position :x2 position :y1 15 :y2 padding :stroke "black"}]))
+                [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "black"}]))
         ]
     [:g.horizontal-rule
      [:rect {:x padding :y 0 :width width :height padding :fill "gray"}]
