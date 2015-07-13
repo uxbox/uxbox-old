@@ -1,6 +1,6 @@
 (ns uxbox.navigation
   (:require [uxbox.db :as db]
-            [uxbox.pubsub :refer [publish! register-handler]]
+            [uxbox.pubsub :refer [publish! register-transition]]
             [secretary.core :as s :refer-macros [defroute]]
             [goog.events :as events])
   (:import [goog.history Html5History]
@@ -41,7 +41,7 @@
   []
   (events/listen history EventType.NAVIGATE dispatch-uri)
   (.setEnabled history true)
-  (register-handler
+  (register-transition
    :location
    (fn [state location]
      (assoc state :location location))))
