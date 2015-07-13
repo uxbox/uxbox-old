@@ -1,8 +1,8 @@
 (ns uxbox.db
   (:require [reagent.core :as reagent :refer [atom]]))
 
-(def a-project-id (random-uuid))
-(def another-project-id (random-uuid))
+(defonce a-project-id (random-uuid))
+(defonce another-project-id (random-uuid))
 
 (def sample-projects [{:name "Design of UXBox"
                        :uuid a-project-id
