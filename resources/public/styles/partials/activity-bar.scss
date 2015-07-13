@@ -34,9 +34,11 @@
 
   .activity-input {
     border-bottom: 1px solid $color-gray-lighter;
+    box-sizing: border-box;
     display: flex;
     font-size: $fs13;
     padding: $small;
+    width: 100%;
 
     img.activity-author {
       border-radius: 50%;
