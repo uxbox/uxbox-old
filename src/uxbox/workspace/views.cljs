@@ -169,6 +169,6 @@
    [:main.main-content
     [:section.workspace-content
      [toolbar db]
-     [:section.dashboard-grid [:div.dashboard-grid-content]]]
+     [:section.workspace-canvas [:div.workspace-canvas-content]]]
     (if (not (empty? (:open-setting-boxes @db)))
      [settings db])]])

@@ -81,7 +81,7 @@
     [:div.dashboard-info
      [:span.dashboard-projects (count projects) " projects"]
      [:span "Sort by"]
-     [:select.sort-by
+     [:select.input-select
       {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))
        :value sort-name}
       (for [order (keys orderings)
