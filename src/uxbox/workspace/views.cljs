@@ -120,10 +120,12 @@
       [:li
        icons/puzzle]
       [:li
-       icons/cluster]
+       icons/icon-set]
       (if (:layers (:open-setting-boxes @db))
         [:li.current {:on-click #(actions/close-setting-box :layers)} icons/layers]
         [:li {:on-click #(actions/open-setting-box :layers)} icons/layers])
+      [:li
+       icons/layers]
       [:li
        chat]]]])
 

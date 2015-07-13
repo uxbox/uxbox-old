@@ -24,8 +24,7 @@
       :login [login]
       :recover-password [recover-password]
       :register [register]
-      :workspace [workspace db]
-      :default [:h3 "Not implemented"])))
+      :workspace [workspace db])))
 
 (defn render!
   [app-state element]
