@@ -7,8 +7,11 @@
 (def publisher (atom (async/chan)))
 (def publication (atom (async/pub @publisher first)))
 
+(def log (atom []))
+
 (defn publish!
   [msg]
+  (swap! log conj msg)
   (async/put! @publisher msg))
 
 (defn register-transition
