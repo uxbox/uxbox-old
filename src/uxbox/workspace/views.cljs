@@ -1,5 +1,6 @@
 (ns uxbox.workspace.views
-  (:require [uxbox.user.views :refer [user]]
+  (:require [reagent.core :refer [atom]]
+            [uxbox.user.views :refer [user]]
             [uxbox.icons :refer [chat close page folder trash pencil]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
@@ -7,15 +8,22 @@
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]))
 
+(defn project-tree
+  [db]
+  (let [page (:page @db)
+        title (:title page)]
+    [:div.project-tree-btn
+     {:on-click #(swap! db update :visible-project-bar not)}
+     icons/project-tree
+     [:span title]]))
+
 (defn header
   [db]
   [:header#workspace-bar.workspace-bar
     [:div.main-icon
      [link "/dashboard"
       icons/logo]]
-    [:div.project-tree-btn
-     icons/project-tree
-     [:span "Page name"]]
+    [project-tree db]
     [:div.workspace-options
      [:ul.options-btn
       [:li
@@ -161,26 +169,43 @@
       [:li
        chat]]]])
 
+(defn project-page
+  [db a-page]
+  (let [hover? (atom false)]
+    (fn []
+      (let [title (:title a-page)]
+        [:li.single-page.current
+         {:on-click #(when (not= a-page (:page @db))
+                       (actions/view-page a-page))
+          :on-mouse-enter #(reset! hover? true)
+          :on-mouse-leave #(reset! hover? false)}
+         [:div.tree-icon page]
+         [:span title]
+         [:div
+          (if (not @hover?)
+            {:class "options hide"}
+            {:class "options"})
+          [:div pencil]
+          [:div trash]]]))))
+
 (defn projectbar
   [db]
-  [:div#project-bar.project-bar.toggle
-    [:div.project-bar-inside
-      [:span.project-name "Project name"]
+  (let [location (:location @db)
+        [_ uuid] location
+        projects (:projects @db)
+        project (get projects uuid)
+        pages (:pages project)
+        page-components (map (fn [p] [project-page db p]) pages)]
+    [:div#project-bar.project-bar
+     (when (not (:visible-project-bar @db))
+       {:class "toggle"})
+     [:div.project-bar-inside
+      [:span.project-name (:name project)]
       [:ul.tree-view
-        [:li.single-page.current
-          [:div.tree-icon page]
-          [:span "Homepage"]]
-        [:li.single-page
-          [:div.tree-icon page]
-          [:span "Profile"]
-          [:div.options
-            [:div pencil]
-            [:div trash]]]
-        [:li.group-page
-          [:div.tree-icon page]
-          [:span "Contact"]]]
+       (when (seq pages)
+         page-components)]
       [:button.btn-primary.btn-small "+ Add new page"]
-      ]])
+      ]]))
 
 (defn settings
   [db]

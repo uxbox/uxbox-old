@@ -33,6 +33,10 @@
   [group-id]
   (pubsub/publish! [:toggle-group-lock group-id]))
 
+(defn view-page
+  [page]
+  (pubsub/publish! [:view-page page]))
+
 (pubsub/register-transition
  :close-setting-box
  (fn [state setting-box]
@@ -74,3 +78,8 @@
  :toggle-group-lock
  (fn [state group-id]
    (update-in state [:page :groups group-id :locked] #(not %1))))
+
+(pubsub/register-transition
+ :view-page
+ (fn [state page]
+   (assoc state :page page)))

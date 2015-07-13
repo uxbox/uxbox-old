@@ -11,7 +11,7 @@
                                        :uuid (random-uuid)
                                        :last-update now
                                        :created now
-                                       :page-count 0
+                                       :pages []
                                        :comment-count 0}])))
 
 (defn delete-project
