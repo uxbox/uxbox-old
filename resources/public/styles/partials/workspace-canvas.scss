@@ -1,0 +1,21 @@
+.workspace-canvas {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  font-size: $fs14;
+  height: calc(100vh - 55px);
+  padding: 0 250px 0 55px;
+  width: 100%;
+
+  .workspace-canvas-content {
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 100%;
+    justify-content: center;
+    width: 100%;
+  }
+
+}

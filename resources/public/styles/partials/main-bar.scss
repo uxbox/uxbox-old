@@ -1,0 +1,39 @@
+.main-bar {
+  align-items: center;
+  background-color: $color-gray;
+  display: flex;
+  height: 50px;
+  padding: $x-small $medium;
+  position: relative;
+  z-index: 10;
+
+  .main-logo {
+
+    svg {
+      fill: $color-white;
+      height: 40px;
+      width: 120px;
+    }
+
+  }
+
+  .user-zone {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    margin-left: auto;
+
+    span {
+      color: $color-gray-lighter;
+      margin: $small;
+    }
+
+    img {
+      border: 2px solid $color-gray-lighter;
+      border-radius: 50%;
+      width: 40px;
+    }
+
+  }
+
+}

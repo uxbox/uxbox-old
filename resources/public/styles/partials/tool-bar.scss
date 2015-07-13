@@ -1,0 +1,51 @@
+.tool-bar {
+  background-color: $color-gray-dark;
+  bottom: 0;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  width: 55px;
+  z-index: 10;
+
+  .tool-bar-inside {
+    padding-top: 70px;
+
+    .main-tools {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+
+      li {
+        cursor: pointer;
+        margin-bottom: $big;
+
+        svg {
+          fill: $color-gray-light;
+          height: 30px;
+          width: 30px;
+        }
+
+        &:hover {
+
+          svg {
+            fill: $color-white;
+          }
+
+        }
+
+        &.current {
+
+          svg {
+            fill: $color-primary;
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+}

@@ -64,6 +64,14 @@
        [link "" "Wireframes Taiga Tribe"]]
       [:span.activity-time "12 min ago"]]]]])
 
+(defn mysvg [db icon-name]
+  [:svg {:src (str "/assets/images/" icon-name ".svg") }])
+
+(defn canvas [db]
+  [:section.canvas.viewport
+   [mysvg db "trash"]])
+
+
 (defn dashboard-info [db]
   (let [projects (:projects @db)
         sort-order (:project-sort-order @db)
