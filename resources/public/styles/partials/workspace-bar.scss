@@ -107,6 +107,15 @@
 
         }
 
+        &.selected {
+          background-color: $color-primary;
+
+          svg {
+            fill: $color-white;
+          }
+
+        }
+
       }
 
     }
