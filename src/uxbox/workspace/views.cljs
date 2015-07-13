@@ -187,7 +187,7 @@
     [:section.workspace-content
      [toolbar db]
      [projectbar db]
-     [:section.workspace-canvas
+     [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
       [canvas db]]]
     (if (not (empty? (:open-setting-boxes @db)))
      [settings db])]])
