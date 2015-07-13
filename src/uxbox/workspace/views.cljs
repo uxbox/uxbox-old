@@ -125,8 +125,6 @@
         [:li.current {:on-click #(actions/close-setting-box :layers)} icons/layers]
         [:li {:on-click #(actions/open-setting-box :layers)} icons/layers])
       [:li
-       icons/layers]
-      [:li
        chat]]]])
 
 (defn settings
