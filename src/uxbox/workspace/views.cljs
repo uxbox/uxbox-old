@@ -1,6 +1,6 @@
 (ns uxbox.workspace.views
   (:require [uxbox.user.views :refer [user]]
-            [uxbox.icons :refer [chat close]]
+            [uxbox.icons :refer [chat close page folder trash pencil]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]))
@@ -149,6 +149,27 @@
       [:li
        chat]]]])
 
+(defn projectbar
+  [db]
+  [:div#project-bar.project-bar
+    [:div.project-bar-inside
+      [:span.project-name "Project name"]
+      [:ul.tree-view
+        [:li.single-page.current
+          [:div.tree-icon page]
+          [:span "Homepage"]]
+        [:li.single-page
+          [:div.tree-icon page]
+          [:span "Profile"]
+          [:div.options
+            [:div pencil]
+            [:div trash]]]
+        [:li.group-page
+          [:div.tree-icon page]
+          [:span "Contact"]]]
+      [:button.btn-primary.btn-small "+ Add new page"]
+      ]])
+
 (defn settings
   [db]
   [:aside#settings-bar.settings-bar
@@ -179,6 +200,7 @@
    [:main.main-content
     [:section.workspace-content
      [toolbar db]
+     [projectbar db]
      [:section.workspace-canvas
       [canvas db (* 320 2) (* 640 2)]]]
     (if (not (empty? (:open-setting-boxes @db)))
