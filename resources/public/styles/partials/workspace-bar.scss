@@ -38,11 +38,17 @@
 
   .project-tree-btn {
     align-items: center;
+    background-image: url("/images/svg/arrow.svg");
+    background-repeat: no-repeat;
+    background-position: 94% 45%;
+    background-size: 10px 10px;
     background-color: $color-gray-dark;
     border-radius: $br-small;
+    box-sizing: border-box;
     cursor: pointer;
     display: flex;
-    padding: $x-small $medium;
+    min-width: 180px;
+    padding: $x-small $x-big+$x-small $x-small $medium;
 
     svg {
       fill: $color-primary;
