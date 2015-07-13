@@ -95,9 +95,10 @@
 (defn canvas [db]
   (let [viewport-height 3000
         viewport-width 3000
+        page (:page @db)
 
-        page-width (get-in @db [:project :width])
-        page-height (get-in @db [:project :height])
+        page-width (:width page)
+        page-height (:height page)
 
         document-start-x (- 500 (/ page-width 2))
         document-start-y (- 750 (/ page-height 2))
@@ -105,7 +106,7 @@
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
                       (->> shape-ids
-                           (map #(get-in @db [:page :shapes %]))
+                           (map #(get-in page [:shapes %]))
                            (filter #(not (nil? %)))
                            ))
 
@@ -118,8 +119,8 @@
                                   (map shapes/shape->svg)))))
 
         ;; Retrieve the list of shapes grouped if applies
-        shapes-svg (->> @db
-                        :page :groups vals
+        shapes-svg (->> page
+                        :groups vals
                         (sort-by :order)
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))
@@ -143,10 +144,10 @@
       [:svg#page-canvas  {:x 50 :y 50 :width page-width :height page-height};; Document
        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
        (apply vector :svg#page-layout shapes-svg)
-       (when-let [shape (get-in @db [:page :drawing])]
+       (when-let [shape (get page :drawing)]
          [shapes/shape->drawing-svg shape])
-       (when-let [selected-uuid (get-in @db [:page :selected])]
-         [shapes/shape->selected-svg (get-in @db [:page :shapes selected-uuid])])
+       (when-let [selected-uuid (get page :selected)]
+         [shapes/shape->selected-svg (get-in page [:shapes selected-uuid])])
        ]
       (if (:grid (:workspace @db))
         [grid viewport-width viewport-height document-start-x document-start-y 100])

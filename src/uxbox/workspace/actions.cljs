@@ -34,6 +34,10 @@
   [group-id]
   (pubsub/publish! [:toggle-group-lock group-id]))
 
+(defn view-page
+  [project-uuid page-uuid]
+  (pubsub/publish! [:view-page [project-uuid page-uuid]]))
+
 (pubsub/register-transition
  :close-setting-box
  (fn [state setting-box]
@@ -77,11 +81,17 @@
    (update-in state [:page :groups group-id :locked] #(not %1))))
 
 (pubsub/register-transition
+ :view-page
+ (fn [state [project-uuid page-uuid]]
+   (assoc state :page (storage/get-page project-uuid page-uuid))))
+
+(pubsub/register-transition
  :location
  (fn [state data]
    (let [[location project-uuid page-uuid] data]
      (if (= location :workspace)
-       (-> state
-           (assoc :project (storage/get-project project-uuid))
-           (assoc :page (storage/get-page project-uuid page-uuid)))
-       state))))
+       (assoc state :project (storage/get-project project-uuid)
+                    :page (storage/get-page project-uuid page-uuid)
+                    :workspace (:workspace-defaults state)
+                    :open-setting-boxes (:default-open-setting-boxes state)
+                    :visible-project-bar false)))))

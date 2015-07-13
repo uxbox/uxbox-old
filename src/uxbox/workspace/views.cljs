@@ -1,44 +1,51 @@
 (ns uxbox.workspace.views
-  (:require [reagent.core :refer [atom]]
+  (:require [reagent.core :as reagent :refer [atom]]
+            [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
             [uxbox.navigation :refer [link]]
+            [uxbox.projects.actions :refer [create-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
             [uxbox.geometry :as geo]
             [uxbox.shapes.core :as shapes]))
 
+(defn project-tree
+  [db]
+  (let [title (get-in @db [:page :title])]
+    [:div.project-tree-btn
+     {:on-click #(swap! db update :visible-project-bar not)}
+     icons/project-tree
+     [:span title]]))
+
 (defn header
   [db]
-  (let [userdata (:user @db)]
-    [:header#workspace-bar.workspace-bar
-     [:div.main-icon
-      [link "/dashboard"
-       icons/logo-icon]]
-     [:div.project-tree-btn
-      icons/project-tree
-      [:span "Page name"]]
-     [:div.workspace-options
-      [:ul.options-btn
-       [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
-        icons/undo]
-       [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
-        icons/redo]]
-      [:ul.options-btn
-       [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
-        icons/export]
-       [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
-        icons/image]]
-      [:ul.options-btn
-       [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
-        icons/ruler]
-       [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
-       [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
-        icons/alignment]
-       [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
-        icons/organize]]]
-     [user db]]))
+  [:header#workspace-bar.workspace-bar
+    [:div.main-icon
+     [link "/dashboard"
+      icons/logo]]
+    [project-tree db]
+    [:div.workspace-options
+     [:ul.options-btn
+      [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
+       icons/undo]
+      [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
+       icons/redo]]
+     [:ul.options-btn
+      [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
+       icons/export]
+      [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
+       icons/image]]
+     [:ul.options-btn
+      [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
+       icons/ruler]
+      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
+      [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
+       icons/alignment]
+      [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
+       icons/organize]]]
+   [user db]])
 
 (defn figures
   [db]
@@ -336,26 +343,83 @@
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
+(defn project-page
+  [db page]
+  (let [current-page (:page @db)
+        current-project (:project @db)
+        editing-pages (:editing-pages @db)
+        page-uuid (:uuid page)]
+
+    (if (contains? editing-pages page-uuid)
+      [:input.input-text
+       {:title "page-title"
+        :auto-focus true
+        :placeholder "Page title"
+        :type "text"
+        :value (get editing-pages page-uuid)
+        :on-change #(swap! db assoc-in [:editing-pages page-uuid] (.-value (.-target %)))
+        :on-key-up #(cond
+                      (= (.-keyCode %) 13)
+                        (when (not (empty? (str/trim (get editing-pages page-uuid))))
+                          (change-page-title current-project page (get editing-pages page-uuid))
+                          (swap! db update :editing-pages dissoc page-uuid))
+                      (= (.-keyCode %) 27)
+                        (swap! db update :editing-pages dissoc page-uuid))
+        :key page-uuid}]
+
+      [:li.single-page
+       {:class (if (= page-uuid (:uuid current-page)) "current" "")
+        :on-click #(when (not= page-uuid (:uuid current-page))
+                     (actions/view-page (:uuid current-project) page-uuid))
+        :key page-uuid}
+       [:div.tree-icon icons/page]
+       [:span (:title page)]
+       [:div.options
+        [:div
+         {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages page-uuid] (:title page)))}
+         icons/pencil]
+        [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]])))
+
+(defn clean-new-page!
+  [db]
+  (swap! db assoc :adding-new-page false
+                  :new-page-title ""))
+
+(defn new-page
+  [db project]
+  (if (:adding-new-page @db)
+    [:input.input-text
+     {:title "page-title"
+      :auto-focus true
+      :placeholder "Page title"
+      :type "text"
+      :value (:new-page-title @db)
+      :on-change #(swap! db assoc :new-page-title (.-value (.-target %)))
+      :on-key-up #(cond
+                    (= (.-keyCode %) 13)
+                    (when (not (empty? (str/trim (:new-page-title @db))))
+                      (create-page project (:new-page-title @db))
+                      (clean-new-page! db))
+                    (= (.-keyCode %) 27)
+                    (clean-new-page! db))}]
+    [:button.btn-primary.btn-small
+     {:on-click #(swap! db assoc :adding-new-page true)}
+     "+ Add new page"]))
+
 (defn projectbar
   [db]
-  [:div#project-bar.project-bar.toggle
-    [:div.project-bar-inside
-      [:span.project-name "Project name"]
+  (let [project (:project @db)
+        project-name (:name project)
+        pages (:pages project)
+        page-components (map (fn [p] [project-page db p]) (vals pages))]
+    [:div#project-bar.project-bar
+     (when (not (:visible-project-bar @db))
+       {:class "toggle"})
+     [:div.project-bar-inside
+      [:span.project-name project-name]
       [:ul.tree-view
-        [:li.single-page.current
-          [:div.tree-icon icons/page]
-          [:span "Homepage"]]
-        [:li.single-page
-          [:div.tree-icon icons/page]
-          [:span "Profile"]
-          [:div.options
-            [:div icons/pencil]
-            [:div icons/trash]]]
-        [:li.group-page
-          [:div.tree-icon icons/page]
-          [:span "Contact"]]]
-      [:button.btn-primary.btn-small "+ Add new page"]
-      ]])
+       page-components]
+      [new-page db project]]]))
 
 (defn settings
   [db]
