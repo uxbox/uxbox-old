@@ -1,8 +1,10 @@
 (ns uxbox.workspace.views
-  (:require [reagent.core :refer [atom]]
+  (:require [reagent.core :as reagent :refer [atom]]
+            [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :refer [chat close page folder trash pencil]]
             [uxbox.navigation :refer [link]]
+            [uxbox.projects.actions :refer [create-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
@@ -188,6 +190,32 @@
           [:div pencil]
           [:div trash]]]))))
 
+(defn clean-new-page!
+  [db]
+  (swap! db assoc :adding-new-page false
+                  :new-page-name ""))
+
+(defn new-page
+  [db project]
+  (if (:adding-new-page @db)
+    [:input.input-text
+     {:name "page-name"
+      :auto-focus true
+      :placeholder "Page name"
+      :type "text"
+      :value (:new-page-name @db)
+      :on-change #(swap! db assoc :new-page-name (.-value (.-target %)))
+      :on-key-up #(cond
+                    (= (.-keyCode %) 13)
+                    (when (not (empty? (str/trim (:new-page-name @db))))
+                      (create-page project (:new-page-name @db))
+                      (clean-new-page! db))
+                    (= (.-keyCode %) 27)
+                    (clean-new-page! db))}]
+    [:button.btn-primary.btn-small
+     {:on-click #(swap! db assoc :adding-new-page true)}
+     "+ Add new page"]))
+
 (defn projectbar
   [db]
   (let [location (:location @db)
@@ -204,8 +232,7 @@
       [:ul.tree-view
        (when (seq pages)
          page-components)]
-      [:button.btn-primary.btn-small "+ Add new page"]
-      ]]))
+      [new-page db project]]]))
 
 (defn settings
   [db]

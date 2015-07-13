@@ -103,6 +103,8 @@
                     }
                     :visible-project-bar false
                     :new-project-name ""
+                    :new-page-name ""
+                    :adding-new-page false
                     :workspace {:selected-tool :rect
                                 :selected-groups #{}}
                     :projects (into {} (for [p sample-projects
