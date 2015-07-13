@@ -14,6 +14,8 @@
                       :created "date created"
                     }
                     :new-project-name ""
+                    :workspace {:selected-tool :rect
+                                :selected-element 0}
                     :projects [
                       {:name "Design of UXBox"
                        :uuid (random-uuid)
