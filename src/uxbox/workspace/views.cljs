@@ -2,6 +2,7 @@
   (:require [uxbox.user.views :refer [user]]
             [uxbox.icons :refer [chat close]]
             [uxbox.navigation :refer [link]]
+            [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]))
 
 (defn header
@@ -42,7 +43,7 @@
      [:div.tool-window-icon
       icons/window]
      [:span "Tools"]
-     [:div.tool-window-close
+     [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
       close]]
     [:div.tool-window-content
      [:div.tool-btn.selected
@@ -65,7 +66,7 @@
      [:div.tool-window-icon
       icons/layers]
      [:span "Elements"]
-     [:div.tool-window-close
+     [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
       close]]
     [:div.tool-window-content
      [:ul.element-list
@@ -122,8 +123,10 @@
   [db]
   [:aside#settings-bar.settings-bar
     [:div.settings-bar-inside
-     [tools db]
-     [layers db]]])
+     (if (some #{:tools} (:open-setting-boxes @db))
+      [tools db])
+     (if (some #{:layers} (:open-setting-boxes @db))
+      [layers db])]])
 
 (defn workspace
   [db]
