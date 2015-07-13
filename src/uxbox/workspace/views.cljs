@@ -109,47 +109,37 @@
 
 (defn layers
   [db]
-  [:div#layers.tool-window
-    [:div.tool-window-bar
-     [:div.tool-window-icon
-      icons/layers]
-     [:span "Elements"]
-     [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
-      close]]
-    [:div.tool-window-content
-     [:ul.element-list
-      [:li.selected
-       [:div.toggle-element
-        icons/eye]
-       [:div.block-element
-        icons/lock]
-       [:div.element-icon
-        icons/box]
-       [:span "Box 1"]]
-      [:li
-       [:div.toggle-element.selected
-        icons/eye]
-       [:div.block-element.selected
-        icons/lock]
-       [:div.element-icon
-        icons/circle]
-       [:span "Circle 1"]]
-      [:li
-       [:div.toggle-element
-        icons/eye]
-       [:div.block-element.selected
-        icons/lock]
-       [:div.element-icon
-        icons/line]
-       [:span "Line 1"]]
-      [:li
-       [:div.toggle-element
-        icons/eye]
-       [:div.block-element
-        icons/lock]
-       [:div.element-icon
-        icons/box]
-       [:span "Box 2"]]]]])
+  (let [{:keys [page workspace]} @db
+        {:keys [groups]} page
+
+        group (fn [[group-id group] item]
+           [:li {:key group-id
+                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")
+                 }
+            [:div.toggle-element {:class (if (:visible group) "selected" "")
+                                  :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
+            [:div.block-element {:class (if (:locked group) "selected" "")
+                                 :on-click #(actions/toggle-group-lock group-id)} icons/lock]
+            [:div.element-icon
+             (cond
+              (= (:icon group) :square) icons/box
+              (= (:icon group) :circle) icons/circle
+              (= (:icon group) :line) icons/line
+              (= (:icon group) :text) icons/text
+              (= (:icon group) :arrow) icons/arrow
+              (= (:icon group) :curve) icons/curve)]
+            [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])
+        ]
+   [:div#layers.tool-window
+     [:div.tool-window-bar
+      [:div.tool-window-icon
+       icons/layers]
+      [:span "Elements"]
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
+       close]]
+     [:div.tool-window-content
+      [:ul.element-list
+       (map group (seq groups))]]]))
 
 (defn toolbar
   [db]
