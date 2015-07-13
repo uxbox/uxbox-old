@@ -110,18 +110,20 @@
        [:span "Box 2"]]]]])
 
 (defn toolbar
-  []
+  [db]
   [:div#tool-bar.tool-bar
     [:div.tool-bar-inside
      [:ul.main-tools
-      [:li.current
-       icons/shapes]
+      (if (:tools (:open-setting-boxes @db))
+        [:li.current {:on-click #(actions/close-setting-box :tools)} icons/shapes]
+        [:li {:on-click #(actions/open-setting-box :tools)} icons/shapes])
       [:li
        icons/puzzle]
       [:li
        icons/cluster]
-      [:li
-       icons/layers]
+      (if (:layers (:open-setting-boxes @db))
+        [:li.current {:on-click #(actions/close-setting-box :layers)} icons/layers]
+        [:li {:on-click #(actions/open-setting-box :layers)} icons/layers])
       [:li
        chat]]]])
 
@@ -129,9 +131,9 @@
   [db]
   [:aside#settings-bar.settings-bar
     [:div.settings-bar-inside
-     (if (some #{:tools} (:open-setting-boxes @db))
+     (if (:tools (:open-setting-boxes @db))
       [tools db])
-     (if (some #{:layers} (:open-setting-boxes @db))
+     (if (:layers (:open-setting-boxes @db))
       [layers db])]])
 
 (defn workspace

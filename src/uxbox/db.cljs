@@ -3,7 +3,7 @@
 
 (def initial-state {:location [:login]
                     :lightbox nil
-                    :open-setting-boxes [:tools :layers]
+                    :open-setting-boxes #{:tools :layers}
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
                     :activity []
