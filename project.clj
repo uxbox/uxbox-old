@@ -27,7 +27,7 @@
               :figwheel { :on-jsload "uxbox.core/on-js-reload" }
 
               :compiler {:main uxbox.core
-                         :asset-path "js/compiled/out"
+                         :asset-path "/js/compiled/out"
                          :output-to "resources/public/js/compiled/uxbox.js"
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true }}
