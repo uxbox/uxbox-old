@@ -3,6 +3,31 @@
              [reagent.core :refer [atom]]
              [cuerdas.core :as str]))
 
+(defn grid
+  [width height start-width start-height zoom]
+  (let [padding 20
+        ticks-mod 100
+        step-size 10
+
+        vertical-ticks (range (- padding start-height) (- height start-height padding) step-size)
+        horizontal-ticks (range (- padding start-width) (- width start-width padding) step-size)
+
+        vertical-lines (fn
+          [position value padding]
+          (if (= (mod value ticks-mod) 0)
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "black" :opacity 0.75}]
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "black" :opacity 0.25}]))
+
+        horizontal-lines (fn
+          [position value padding]
+          (if (= (mod value ticks-mod) 0)
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "black" :opacity 0.75}]
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "black" :opacity 0.25}]))
+        ]
+    [:g.grid
+     (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
+     (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
+
 (defn vertical-rule
   [height start-height zoom]
   (let [padding 20
@@ -113,9 +138,11 @@
     [:div {:on-mouse-move on-move}
      [debug-coordinates db]
      [:svg {:width viewport-height :height viewport-width}
-     [horizontal-rule viewport-width document-start-x 100]
-     [vertical-rule viewport-height document-start-y 100]
-      [:svg  {:x 50 :y 50 :width page-width :height page-height};; Document
-       [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
-       (apply vector :svg shapes-svg)]
-      ]]))
+       [horizontal-rule viewport-width document-start-x 100]
+       [vertical-rule viewport-height document-start-y 100]
+       [:svg  {:x 50 :y 50 :width page-width :height page-height};; Document
+        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
+        (apply vector :svg shapes-svg)]
+       (if (:grid (:workspace @db))
+         [grid viewport-width viewport-height document-start-x document-start-y 100])
+       ]]))
