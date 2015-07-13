@@ -36,3 +36,13 @@
         (async/close! ch)
         (do (cb @db/app-state (second v))
             (recur (async/<! ch)))))))
+
+(defn register-event
+  [key cb]
+  (let [ch (async/chan)]
+    (async/sub @publication key ch)
+    (go-loop [v (async/<! ch)]
+      (if (nil? v)
+        (async/close! ch)
+        (do (cb (second v))
+            (recur (async/<! ch)))))))
