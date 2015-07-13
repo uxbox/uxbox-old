@@ -59,32 +59,27 @@
 
 (defn tools
   [db]
-  [:div#form-tools.tool-window
-    [:div.tool-window-bar
-     [:div.tool-window-icon
-      icons/window]
-     [:span "Tools"]
-     [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
-      close]]
-    [:div.tool-window-content
-     (if (= (:selected-tool (:workspace @db)) :rect)
-       [:div.tool-btn.selected icons/box]
-       [:div.tool-btn {:on-click #(actions/set-tool :rect)} icons/box])
-     (if (= (:selected-tool (:workspace @db)) :circle)
-       [:div.tool-btn.selected icons/circle]
-       [:div.tool-btn {:on-click #(actions/set-tool :circle)} icons/circle])
-     (if (= (:selected-tool (:workspace @db)) :line)
-       [:div.tool-btn.selected icons/line]
-       [:div.tool-btn {:on-click #(actions/set-tool :line)} icons/line])
-     (if (= (:selected-tool (:workspace @db)) :curve)
-       [:div.tool-btn.selected icons/curve]
-       [:div.tool-btn {:on-click #(actions/set-tool :curve)} icons/curve])
-     (if (= (:selected-tool (:workspace @db)) :text)
-       [:div.tool-btn.selected icons/text]
-       [:div.tool-btn {:on-click #(actions/set-tool :text)} icons/text])
-     (if (= (:selected-tool (:workspace @db)) :arrow)
-       [:div.tool-btn.selected icons/arrow]
-       [:div.tool-btn {:on-click #(actions/set-tool :arrow)} icons/arrow])]])
+  (let [{:keys [workspace]} db]
+   [:div#form-tools.tool-window
+     [:div.tool-window-bar
+      [:div.tool-window-icon
+       icons/window]
+      [:span "Tools"]
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
+       close]]
+     [:div.tool-window-content
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :rect) "selected" "")
+                      :on-click #(actions/set-tool :rect)} icons/box]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :circle) "selected" "")
+                      :on-click #(actions/set-tool :circle)} icons/circle]
+      [:div.tool-btn {:selected (if (= (:selected-tool workspace) :line) "selected" "")
+                      :on-click #(actions/set-tool :line)} icons/line]
+      [:div.tool-btn {:selected (if (= (:selected-tool workspace) :curve) "selected" "")
+                      :on-click #(actions/set-tool :curve)} icons/curve]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :text) "selected" "")
+                      :on-click #(actions/set-tool :text)} icons/text]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
+                      :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
 (defn layers
   [db]
