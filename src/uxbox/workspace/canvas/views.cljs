@@ -1,5 +1,7 @@
 (ns uxbox.workspace.canvas.views
-  (:require [cuerdas.core :as str]))
+  (:require  [uxbox.pubsub :as pubsub]
+             [reagent.core :refer [atom]]
+             [cuerdas.core :as str]))
 
 (defn vertical-rule
   [height start-height zoom]
@@ -58,6 +60,18 @@
 (defmethod shape->svg :line [{:keys [x1 y1 x2 y2 color width]}]
   [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style #js {:stroke color :strokeWidth width}}])
 
+(defn debug-coordinates [db]
+  (let [coordinates (atom [])
+        viewport-move (fn [coord]
+                        (reset! coordinates coord))]
+    (pubsub/register-event :viewport-mouse-move viewport-move)
+    (fn []
+      (let [[mouseX mouseY] @coordinates]
+        [:div {:style #js {:position "absolute" :left "80px" :top "20px"}}
+         [:table
+          [:tr [:td "X:"] [:td mouseX]]
+          [:tr [:td "Y:"] [:td mouseY]]]]))))
+
 (defn canvas [db]
   (let [viewport-height 3000
         viewport-width 3000
@@ -87,12 +101,21 @@
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))
                         (map :shapes)
-                        (map group-svg))]
-
-    [:svg {:width viewport-height :height viewport-width}
+                        (map group-svg))
+        on-move (fn [e]
+                  (let [bounding-rect (.getBoundingClientRect (.-currentTarget e))
+                        offsetX (.-left bounding-rect)
+                        offsetY (.-top bounding-rect)
+                        mouseX (- (.-clientX e) offsetX)
+                        mouseY (- (.-clientY e) offsetY)]
+                    (pubsub/publish! [:viewport-mouse-move [mouseX mouseY]])
+                    (.preventDefault e)))]
+    [:div {:on-mouse-move on-move}
+     [debug-coordinates db]
+     [:svg {:width viewport-height :height viewport-width}
      [horizontal-rule viewport-width document-start-x 100]
      [vertical-rule viewport-height document-start-y 100]
-     [:svg  {:x 50 :y 50 :width page-width :height page-height};; Document
-      [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
-      (apply vector :svg shapes-svg)]
-     ]))
+      [:svg  {:x 50 :y 50 :width page-width :height page-height};; Document
+       [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
+       (apply vector :svg shapes-svg)]
+      ]]))
