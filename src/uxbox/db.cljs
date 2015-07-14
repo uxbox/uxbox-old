@@ -83,6 +83,8 @@
                      :width 640
                      :height 1080
 
+                     ;:drawing {:shape :rectangle :x 100 :y 100}
+
                      :shapes {"id1" {:shape :rectangle
                                      :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
                               "id2" {:shape :rectangle
