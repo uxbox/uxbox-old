@@ -1,5 +1,6 @@
 (ns uxbox.dashboard.actions
-  (:require [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.pubsub :as pubsub]
+            [uxbox.storage :as storage]))
 
 (defn set-projects-order
   [order]
@@ -19,3 +20,9 @@
  :set-projects-order
  (fn [state order]
    (assoc state :project-sort-order order)))
+
+(pubsub/register-transition
+ :location
+ (fn [state location]
+   (if (= (last location) :dashboard)
+     (assoc state :projects-list (storage/get-projects "user-1")))))

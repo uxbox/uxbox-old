@@ -24,9 +24,9 @@
       [:span.bold (:name author)]
       [:span (:type event)]
       [:div.activity-project
-       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name event)]
+       [:a {:on-click #(navigate! (workspace-route (:uuid project) (:first-page-uuid project)))} (:name event)]
        [:span "in"]
-       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name project)]]
+       [:a {:on-click #(navigate! (workspace-route (:uuid project) (:first-page-uuid project)))} (:name project)]]
       [:span.activity-time (ago (:datetime item))]]]))
 
 
@@ -48,7 +48,7 @@
 
 
 (defn dashboard-info [db]
-  (let [projects (vals (:projects @db))
+  (let [projects (:projects-list @db)
         sort-order (:project-sort-order @db)
         orderings (:project-orderings @db)
         name->order (into {} (for [[k v] orderings] [v k]))
@@ -75,10 +75,10 @@
    [:span "+ New project"]])
 
 (defn project-card [project]
-  (let [{:keys [uuid last-update]} project]
+  (let [{:keys [uuid last-update first-page-uuid]} project]
     [:div.grid-item.project-th
      {:key uuid}
-     [:h3 {:on-click #(navigate! (workspace-route {:uuid uuid}))}
+     [:h3 {:on-click #(navigate! (workspace-route {:project-uuid uuid :page-uuid first-page-uuid}))}
       (:name project)]
      [:span.project-th-update "Updated " (ago last-update)]
      [:div.project-th-actions
@@ -92,7 +92,7 @@
        icons/trash]]]))
 
 (defn dashboard-grid [db]
-  (let [projects (vals (:projects @db))
+  (let [projects (:projects-list @db)
         projects (sort-by (:project-sort-order @db) projects)]
     [:section.dashboard-grid
      [:h2 "Your projects"]
