@@ -4,6 +4,7 @@
             [uxbox.dashboard.icons :as icons]
             [uxbox.icons :refer [chat logo]]
             [uxbox.user.views :refer [user]]
+            [uxbox.workspace.actions :refer [view-project]]
             [uxbox.navigation :refer [link navigate! workspace-route]]
             [uxbox.time :refer [ago]]))
 
@@ -25,9 +26,9 @@
       [:span.bold (:name author)]
       [:span (:type event)]
       [:div.activity-project
-       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name event)]
+       [:a {:on-click #(view-project project)} (:name event)]
        [:span "in"]
-       [:a {:on-click #(navigate! (workspace-route (:uuid project)))} (:name project)]]
+       [:a {:on-click #(view-project project)} (:name project)]]
       [:span.activity-time (ago (:datetime item))]]]))
 
 

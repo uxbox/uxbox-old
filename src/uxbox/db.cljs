@@ -4,18 +4,21 @@
 (defonce a-project-id (random-uuid))
 (defonce another-project-id (random-uuid))
 (defonce yet-another-project-id (random-uuid))
+(defonce a-page-id (random-uuid))
+(defonce another-page-id (random-uuid))
+(defonce yet-another-page-id (random-uuid))
 
 (def sample-projects [{:name "Design of UXBox"
                        :uuid a-project-id
                        :last-update (js/Date. 2014 10 1)
                        :created (js/Date. 2014 9 1)
                        :pages [
-                               {:title "My awesome page"
+                               {:name "My awesome page"
                                 :author "Bobby Tables"
-
+                                :project a-project-id
                                 :width 640
                                 :height 1080
-
+                                :uuid a-page-id
                                 :shapes {"id1" {:shape :rectangle
                                                 :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
                                          "id2" {:shape :rectangle
@@ -29,12 +32,12 @@
                                 :groups {"gid1" {:name "Box 1" :order 1 :visible true  :locked false :icon :square :shapes ["id1"]}
                                          "gid2" {:name "Box 2" :order 2 :visible true  :locked false :icon :circle :shapes ["id2"]}
                                          "gid3" {:name "Cross" :order 3 :visible true  :locked false :icon :line   :shapes ["id3" "id4"]}}}
-                               {:title "Another awesome page"
+                               {:name "Another awesome page"
                                 :author "Bobby Tables"
-
+                                :project a-project-id
                                 :width 640
                                 :height 1080
-
+                                :uuid another-page-id
                                 :shapes {"id1" {:shape :rectangle
                                                 :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
                                          "id2" {:shape :rectangle
@@ -62,6 +65,7 @@
 
 (def initial-state {:location [:login]
                     :lightbox nil
+                    :default-open-setting-boxes #{:tools :layers}
                     :open-setting-boxes #{:tools :layers}
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
@@ -105,8 +109,13 @@
                     :new-project-name ""
                     :new-page-name ""
                     :adding-new-page false
+                    :workspace-defaults {:selected-tool :rect
+                                         :selected-element 0
+                                         :grid false}
                     :workspace {:selected-tool :rect
-                                :selected-groups #{}}
+                                :selected-groups #{}
+                                :selected-element 0
+                                :grid false}
                     :projects (into {} (for [p sample-projects
                                              :let [uuid (:uuid p)]]
                                          [uuid p]))
@@ -116,25 +125,10 @@
                     ;; Style properties http://www.w3.org/TR/SVG/propidx.html
                     :current-catalog :material-design-actions
 
+                    :project
+                    a-project-id
                     :page
-
-                    {:title "My awesome page"
-                     :author "Bobby Tables"
-
-                     :width 640
-                     :height 1080
-
-                     :shapes {"id1" {:shape :rectangle
-                                     :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
-                              "id2" {:shape :rectangle
-                                     :x 20 :y 20 :width 160 :height 160 :rx 5 :ry 5 :fill "white" :stroke "#cacaca"} ;; Rounded rectangle
-                              "id3" {:shape :line
-                                     :x1 20 :y1 20 :x2 180 :y2 180 :color "blue" :width 4}
-                              "id4" {:shape :line
-                                     :x1 180 :y1 20 :x2 20 :y2 180 :color "blue" :width 4}}
-
-                     :groups {"gid1" {:name "Box 1" :order 1 :visible true  :locked false :icon :square :shapes ["id1"]}
-                              "gid2" {:name "Box 2" :order 2 :visible true  :locked false :icon :circle :shapes ["id2"]}
-                              "gid3" {:name "Cross" :order 3 :visible true  :locked false :icon :line   :shapes ["id3" "id4"]}}}})
+                    a-page-id
+                    })
 
 (defonce app-state (atom initial-state))
