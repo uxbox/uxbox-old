@@ -15,7 +15,7 @@
             [uxbox.workspace.figures.material-design-social :refer [material-design-social]]
             [uxbox.workspace.figures.material-design-toggle :refer [material-design-toggle]]))
 
-(def catalogs {
+(def catalogs (sorted-map
   :material-design-actions material-design-actions
   :material-design-alert material-design-alert
   :material-design-av material-design-av
@@ -31,4 +31,4 @@
   :material-design-notification material-design-notification
   :material-design-social material-design-social
   :material-design-toggle material-design-toggle
-})
+))
