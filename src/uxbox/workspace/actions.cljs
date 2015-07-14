@@ -21,6 +21,18 @@
   []
   (pubsub/publish! [:toggle-grid]))
 
+(defn toggle-select-group
+  [group-id]
+  (pubsub/publish! [:toggle-select-group group-id]))
+
+(defn toggle-group-visibility
+  [group-id]
+  (pubsub/publish! [:toggle-group-visiblity group-id]))
+
+(defn toggle-group-lock
+  [group-id]
+  (pubsub/publish! [:toggle-group-lock group-id]))
+
 (pubsub/register-transition
  :close-setting-box
  (fn [state setting-box]
@@ -47,3 +59,18 @@
  :toggle-grid
  (fn [state _]
    (update-in state [:workspace :grid] not)))
+
+(pubsub/register-transition
+ :toggle-select-group
+ (fn [state group-id]
+   (assoc-in state [:workspace :selected-groups] #{group-id})))
+
+(pubsub/register-transition
+ :toggle-group-visiblity
+ (fn [state group-id]
+   (update-in state [:page :groups group-id :visible] #(not %1))))
+
+(pubsub/register-transition
+ :toggle-group-lock
+ (fn [state group-id]
+   (update-in state [:page :groups group-id :locked] #(not %1))))

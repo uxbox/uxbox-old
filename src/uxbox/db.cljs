@@ -65,7 +65,7 @@
                       :name ""
                     }
                     :workspace {:selected-tool :rect
-                                :selected-element 0}
+                                :selected-groups #{}}
                     :projects (into {} (for [p sample-projects
                                              :let [uuid (:uuid p)]]
                                          [uuid p]))
