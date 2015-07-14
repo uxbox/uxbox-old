@@ -217,18 +217,14 @@
   [:div#tool-bar.tool-bar
     [:div.tool-bar-inside
      [:ul.main-tools
-      (if (:tools (:open-setting-boxes @db))
-        [:li.current icons/shapes]
-        [:li {:on-click #(actions/open-setting-box :tools)} icons/shapes])
-      (if (:figures (:open-setting-boxes @db))
-        [:li.current icons/puzzle]
-        [:li {:on-click #(actions/open-setting-box :figures)} icons/puzzle])
-      (if (:components (:open-setting-boxes @db))
-        [:li.current icons/icon-set]
-        [:li {:on-click #(actions/open-setting-box :components)} icons/icon-set])
-      (if (:layers (:open-setting-boxes @db))
-        [:li.current icons/layers]
-        [:li {:on-click #(actions/open-setting-box :layers)} icons/layers])
+      [:li {:class (if (:tools (:open-setting-boxes @db)) "current" "")
+            :on-click #(actions/open-setting-box :tools)} icons/shapes]
+      [:li {:class (if (:components (:open-setting-boxes @db)) "current" "")
+            :on-click #(actions/open-setting-box :components)} icons/puzzle]
+      [:li {:class (if (:figures (:open-setting-boxes @db)) "current" "")
+            :on-click #(actions/open-setting-box :figures)} icons/icon-set]
+      [:li {:class (if (:layers (:open-setting-boxes @db)) "current" "")
+            :on-click #(actions/open-setting-box :layers)} icons/layers]
       [:li
        chat]]]])
 
