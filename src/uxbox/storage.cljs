@@ -1,5 +1,6 @@
 (ns uxbox.storage
-  (:require [alandipert.storage-atom :refer [local-storage]]))
+  (:require [alandipert.storage-atom :refer [local-storage]]
+            [uxbox.shapes.core :refer [Rectangle Line]]))
 
 (def users [{:username "user-1"
              :password "user-1"}
@@ -24,18 +25,8 @@
 
                                                            ;:drawing {:shape :rectangle :x 100 :y 100}
 
-                                                           :shapes {"id1" {:shape :rectangle
-                                                                           :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
-                                                                    "id2" {:shape :rectangle
-                                                                           :x 20 :y 20 :width 160 :height 160 :rx 5 :ry 5 :fill "white" :stroke "#cacaca"} ;; Rounded rectangle
-                                                                    "id3" {:shape :line
-                                                                           :x1 20 :y1 20 :x2 180 :y2 180 :stroke "blue" :stroke-width 4}
-                                                                    "id4" {:shape :line
-                                                                           :x1 180 :y1 20 :x2 20 :y2 180 :stroke "blue" :stroke-width 4}}
-
-                                                           :groups {"gid1" {:name "Box 1" :order 1 :visible true  :locked false :icon :square :shapes ["id1"]}
-                                                                    "gid2" {:name "Box 2" :order 2 :visible true  :locked false :icon :circle :shapes ["id2"]}
-                                                                    "gid3" {:name "Cross" :order 3 :visible true  :locked false :icon :line   :shapes ["id3" "id4"]}}})}
+                                                           :shapes {}
+                                                           :groups {}})}
                "7b16847f-9298-4397-b093-a5364fdd1e97" {:name "Wireframes Taiga Tribe"
                                                        :uuid "7b16847f-9298-4397-b093-a5364fdd1e97"
                                                        :last-update (js/Date. 2005 10 1)
@@ -55,18 +46,9 @@
 
                                                            ;:drawing {:shape :rectangle :x 100 :y 100}
 
-                                                           :shapes {"id1" {:shape :rectangle
-                                                                           :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
-                                                                    "id2" {:shape :rectangle
-                                                                           :x 20 :y 20 :width 160 :height 160 :rx 5 :ry 5 :fill "white" :stroke "#cacaca"} ;; Rounded rectangle
-                                                                    "id3" {:shape :line
-                                                                           :x1 20 :y1 20 :x2 180 :y2 180 :stroke "blue" :stroke-width 4}
-                                                                    "id4" {:shape :line
-                                                                           :x1 180 :y1 20 :x2 20 :y2 180 :stroke "blue" :stroke-width 4}}
+                                                           :shapes {}
 
-                                                           :groups {"gid1" {:name "Box 1" :order 1 :visible true  :locked false :icon :square :shapes ["id1"]}
-                                                                    "gid2" {:name "Box 2" :order 2 :visible true  :locked false :icon :circle :shapes ["id2"]}
-                                                                    "gid3" {:name "Cross" :order 3 :visible true  :locked false :icon :line   :shapes ["id3" "id4"]}}})}
+                                                           :groups {}})}
                "01764df1-a6d6-407c-96c4-29110deeb641" {:name "A WYSH Roadmap"
                                                        :uuid "01764df1-a6d6-407c-96c4-29110deeb641"
                                                        :last-update (js/Date. 2010 10 1)
@@ -83,18 +65,9 @@
 
                                                            ;:drawing {:shape :rectangle :x 100 :y 100}
 
-                                                           :shapes {"id1" {:shape :rectangle
-                                                                           :x 0 :y 0 :width 200 :height 200 :fill "#cacaca" :stroke "black"} ;; Rectangle
-                                                                    "id2" {:shape :rectangle
-                                                                           :x 20 :y 20 :width 160 :height 160 :rx 5 :ry 5 :fill "white" :stroke "#cacaca"} ;; Rounded rectangle
-                                                                    "id3" {:shape :line
-                                                                           :x1 20 :y1 20 :x2 180 :y2 180 :stroke "blue" :stroke-width 4}
-                                                                    "id4" {:shape :line
-                                                                           :x1 180 :y1 20 :x2 20 :y2 180 :stroke "blue" :stroke-width 4}}
+                                                           :shapes {}
 
-                                                           :groups {"gid1" {:name "Box 1" :order 1 :visible true  :locked false :icon :square :shapes ["id1"]}
-                                                                    "gid2" {:name "Box 2" :order 2 :visible true  :locked false :icon :circle :shapes ["id2"]}
-                                                                    "gid3" {:name "Cross" :order 3 :visible true  :locked false :icon :line   :shapes ["id3" "id4"]}}})}})
+                                                           :groups {}})}})
 
 (defonce data (local-storage (atom {:users users :projects projects}) :data))
 
