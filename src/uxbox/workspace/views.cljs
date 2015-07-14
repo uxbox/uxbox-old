@@ -1,6 +1,6 @@
 (ns uxbox.workspace.views
   (:require [uxbox.user.views :refer [user]]
-            [uxbox.icons :refer [chat close page folder trash pencil]]
+            [uxbox.icons :refer [chat close page folder trash pencil action fill stroke infocard]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]
@@ -83,8 +83,79 @@
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
                       :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
-(defn tools
+(defn elementoptions
   [db]
+  [:div#element-options.element-options
+    [:ul.element-icons
+      [:li#e-info.selected
+        infocard]
+      [:li#e-fill
+        fill]
+      [:li#e-stroke
+        stroke]
+      [:li#e-text
+        icons/text]
+      [:li#e-actions
+        action]]
+    ;;ELEMENT BASIC INFO
+    [:div#element-basics.element-set
+      [:div.element-set-title "Element name"]
+      [:div.element-set-content
+        [:span "Size"]
+        [:div.row-flex
+          [:input#element-width.input-text {:placeholder "Width" :type "text"}]
+          [:div.lock-size
+            icons/lock]
+          [:input#element-height.input-text {:placeholder "Height" :type "text"}]]
+        [:span "Position"]
+        [:div.row-flex
+          [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
+          [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]
+        [:span "Padding"]
+        [:div.row-flex
+          [:input#element-padding-top.input-text {:placeholder "Top" :type "text"}]
+          [:input#element-padding-rigth-.input-text {:placeholder "Right" :type "text"}]]
+        [:div.row-flex
+          [:input#element-padding-bottom.input-text {:placeholder "Bottom" :type "text"}]
+          [:input#element-padding-left-.input-text {:placeholder "Left" :type "text"}]]
+        [:div.row-flex
+          [:span.half "Border radius"]
+          [:span.half "Opacity"]]
+        [:div.row-flex
+          [:input#element-border-radius.input-text {:placeholder "px" :type "text"}]
+          [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]]
+    ;;ELEMENT FILL
+    [:div#element-fill.element-set.hide
+      [:div.element-set-title "Fill color"]
+      [:div.element-set-content
+        [:span "Choose a color"]
+        [:p "COLOR PICKER"]]]
+    ;;ELEMENT STROKE
+    [:div#element-stroke.element-set.hide
+      [:div.element-set-title "Stroke"]
+      [:div.element-set-content
+        [:span "Border color"]
+        [:p "COLOR PICKER"]
+        [:div.row-flex
+          [:span.half "Border width"]
+          [:span.half "Border style"]]
+        [:div.row-flex
+          [:input#element-border-width.input-text      {:placeholder "px" :type "text"}]
+          [:select#element-border-style.input-select
+            [:option "Solid"]
+            [:option "Dotted"]
+            [:option "Dashed"]
+            [:option "Double"]]]]]
+    ;;ELEMENT TEXT
+    [:div#element-text.element-set.hide
+      [:div.element-set-title "Text"]
+      [:div.element-set-content]]
+    ;;ELEMENT ACTIONS
+    [:div#element-actions.element-set.hide
+      [:div.element-set-title "Actions"]
+      [:div.element-set-content]]])
+
+(defn tools [db]
   (let [{:keys [workspace]} @db]
    [:div#form-tools.tool-window
      [:div.tool-window-bar
@@ -204,6 +275,7 @@
      [toolbar db]
      [projectbar db]
      [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
+      [elementoptions db]
       [canvas db]]]
     (if (not (empty? (:open-setting-boxes @db)))
      [settings db])]])

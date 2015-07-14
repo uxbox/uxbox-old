@@ -19,6 +19,21 @@ $br-big: 8px;
     text-align: right;
 }
 
+.row-flex {
+  align-items: center;
+  display: flex;
+  margin-bottom: $x-small;
+
+  &.column {
+    flex-direction: column;
+  }
+
+}
+
+&.half {
+  width: 50%;
+}
+
 // Display
 .hidden {
     display: none;
