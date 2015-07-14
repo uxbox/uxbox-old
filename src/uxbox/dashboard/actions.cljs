@@ -12,7 +12,8 @@
 (pubsub/register-transition
  :new-project
  (fn [state _]
-   (assoc state :lightbox :new-project)))
+   (assoc state :lightbox :new-project
+                :new-project (:new-project-defaults state))))
 
 (pubsub/register-transition
  :set-projects-order
