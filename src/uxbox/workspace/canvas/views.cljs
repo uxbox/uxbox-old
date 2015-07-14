@@ -3,7 +3,8 @@
              [uxbox.workspace.canvas.actions :as actions]
              [uxbox.geometry :as geo]
              [reagent.core :refer [atom]]
-             [cuerdas.core :as str]))
+             [cuerdas.core :as str]
+             [uxbox.shapes.core :as shapes]))
 
 (defn grid
   [width height start-width start-height zoom]
@@ -78,58 +79,6 @@
      [:rect {:x 0 :y 0 :width padding :height padding :fill "gray"}]
      (map #(lines (+ %1 start-width) %1 padding) ticks)]))
 
-;; Transform from the "shape" internal datastructure to SVG tags
-(defmulti shape->svg :shape)
-
-(defmethod shape->svg :rectangle [{:keys [x y width height rx ry fill stroke]}]
-  [:rect {:x x :y y :width width :height height :fill fill :rx rx :ry ry :stroke stroke}])
-
-(defmethod shape->svg :line [{:keys [x1 y1 x2 y2 rx ry stroke stroke-width]}]
-  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :rx rx :ry ry
-          :style #js {:stroke stroke :strokeWidth stroke-width}}])
-
-(defmulti shape->selected-svg :shape)
-
-(defmethod shape->selected-svg :rectangle [{:keys [x y width height rx ry fill stroke]}]
-  [:rect {:x (- x 4)
-          :y (- y 4)
-          :width (+ width 8)
-          :height (+ height 8)
-          :fill "transparent"
-          :rx rx :ry ry
-          :stroke "red"
-          :strokeWidth 4
-          :strokeDasharray "5,5"
-          :fill-opacity "0.5"}])
-
-(defmethod shape->selected-svg :line [{:keys [x1 y1 x2 y2 color width]}]
-  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style #js {:stroke "red" :strokeWidth (+ width 4)}}])
-
-;; Get the SVG elements for a "drawing" element
-(defmulti shape->drawing-svg :shape)
-
-(defmethod shape->drawing-svg :rectangle [{:keys [x y]}]
-  (let [coordinates (atom [[x y]])
-        viewport-move (fn [state coord]
-                        (reset! coordinates coord))]
-    (pubsub/register-event :viewport-mouse-move viewport-move)
-    (fn []
-      (let [[mouseX mouseY] @coordinates
-            [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouseX mouseY)]
-        (if (and (> rect-width 0) (> rect-height 0))
-          [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
-                  :style #js {:fill "transparent" :stroke "black" :strokeDasharray "5,5"}}])))))
-
-(defmethod shape->drawing-svg :line [{:keys [x1 y1 x2 y2]}]
-  (let [coordinates1 (atom [x1 y1])
-        coordinates2 (atom [x2 y2])
-        viewport-move (fn [state coords]
-                        (reset! coordinates2 coords))]
-    (pubsub/register-event :viewport-mouse-move viewport-move)
-    (fn []
-      (let [[mouseX mouseY] @coordinates2]
-          [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
-           :style #js {:fill "transparent" :stroke "pink" :stroke-width 2 :strokeDasharray "5,5"}}]))))
 
 (defn debug-coordinates [db]
   (let [coordinates (atom [])
@@ -160,10 +109,10 @@
         ;; Retrieve the <g> element grouped if applied
         group-svg (fn [shapes]
                     (if (= (count shapes) 1)
-                      (->> shapes first shape->svg)
+                      (->> shapes first shapes/shape->svg)
                       (apply vector :g
                              (->> shapes
-                                  (map shape->svg)))))
+                                  (map shapes/shape->svg)))))
 
         ;; Retrieve the list of shapes grouped if applies
         shapes-svg (->> @db
@@ -191,9 +140,9 @@
        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
        (apply vector :svg#page-layout shapes-svg)
        (when-let [shape (get-in @db [:page :drawing])]
-         [shape->drawing-svg shape])
+         [shapes/shape->drawing-svg shape])
        (when-let [selected-uuid (get-in @db [:page :selected])]
-         [shape->selected-svg (get-in @db [:page :shapes selected-uuid])])
+         [shapes/shape->selected-svg (get-in @db [:page :shapes selected-uuid])])
        ]
       (if (:grid (:workspace @db))
         [grid viewport-width viewport-height document-start-x document-start-y 100])

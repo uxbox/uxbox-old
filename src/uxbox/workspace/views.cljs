@@ -7,7 +7,8 @@
             [uxbox.workspace.icons :as icons]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
-            [uxbox.geometry :as geo]))
+            [uxbox.geometry :as geo]
+            [uxbox.shapes.core :as shapes]))
 
 (defn header
   [db]
@@ -85,30 +86,13 @@
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
                       :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
-
-(defmulti toolbar-coords (fn [shape _] (:shape shape)))
-
-(defmethod toolbar-coords :rectangle [{:keys [x y width height]} px py]
-  (let [vx (+ x width 50)
-        vy y]
-    (geo/viewportcord->clientcoord vx vy)))
-
-(defmethod toolbar-coords :line [{:keys [x1 y1 x2 y2]} px py]
-  (let [max-x (if (> x1 x2) x1 x2)
-        min-y (if (< y1 y2) y1 y2)
-        vx (+ max-x 50)
-        vy min-y]
-    (geo/viewportcord->clientcoord vx vy)))
-
-(defmethod toolbar-coords :default [_ x y] [x y])
-
 (defn elementoptions
   [db]
   (let [show-element (atom :options)]
     (fn []
       (let [selected-uuid (get-in @db [:page :selected])
             selected-shape (get-in @db [:page :shapes selected-uuid])
-            [popup-x popup-y] (toolbar-coords selected-shape)]
+            [popup-x popup-y] (shapes/toolbar-coords selected-shape)]
         [:div#element-options.element-options
          {:style #js {:left popup-x :top popup-y}}
          [:ul.element-icons
