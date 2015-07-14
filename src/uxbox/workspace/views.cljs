@@ -1,21 +1,30 @@
 (ns uxbox.workspace.views
-  (:require [uxbox.user.views :refer [user]]
+  (:require [reagent.core :as reagent :refer [atom]]
+            [cuerdas.core :as str]
+            [uxbox.user.views :refer [user]]
             [uxbox.icons :refer [chat close page folder trash pencil]]
             [uxbox.navigation :refer [link]]
+            [uxbox.projects.actions :refer [create-page change-page-name delete-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]))
 
+(defn project-tree
+  [db page]
+  (let [name (:name page)]
+    [:div.project-tree-btn
+     {:on-click #(swap! db update :visible-project-bar not)}
+     icons/project-tree
+     [:span name]]))
+
 (defn header
-  [db]
+  [db page]
   [:header#workspace-bar.workspace-bar
     [:div.main-icon
      [link "/dashboard"
       icons/logo]]
-    [:div.project-tree-btn
-     icons/project-tree
-     [:span "Page name"]]
+    [project-tree db page]
     [:div.workspace-options
      [:ul.options-btn
       [:li
@@ -161,26 +170,97 @@
       [:li
        chat]]]])
 
+(defn edit-page
+  [a-page edit?]
+  (let [name (atom (:name a-page))]
+    (fn []
+      [:input.input-text
+       {:name "page-name"
+        :auto-focus true
+        :placeholder "Page name"
+        :type "text"
+        :value @name
+        :on-change #(reset! name (.-value (.-target %)))
+        :on-key-up #(cond
+                      (= (.-keyCode %) 13)
+                      (when (not (empty? (str/trim @name)))
+                        (change-page-name a-page @name)
+                        (reset! edit? false))
+                      (= (.-keyCode %) 27)
+                      (reset! edit? false))
+        :key (:uuid a-page)}])))
+
+(defn project-page
+  [db page-uuid]
+  (let [hover? (atom false)
+        edit? (atom false)]
+    (fn []
+      (let [current-page-uuid (:page @db)
+            project-uuid (:project @db)
+            project (get-in @db [:projects project-uuid])
+            pages (get-in @db [:projects project-uuid :pages])
+            a-page (first (filter #(= (:uuid %) page-uuid) pages))]
+        (if @edit?
+          [edit-page a-page edit?]
+          [:li.single-page.current
+           {:on-click #(when (not= (:uuid a-page) current-page-uuid)
+                         (actions/view-page a-page))
+            :on-mouse-enter #(reset! hover? true)
+            :on-mouse-leave #(reset! hover? false)
+            :key (:uuid a-page)}
+           [:div.tree-icon page]
+           [:span (:name a-page)]
+           [:div
+            (if (not @hover?)
+              {:class "options hide"}
+              {:class "options"})
+            [:div
+             {:on-click #(do (.stopPropagation %) (reset! edit? true))}
+             pencil]
+            ;; TODO: delete pages
+            ]])))))
+
+(defn clean-new-page!
+  [db]
+  (swap! db assoc :adding-new-page false
+                  :new-page-name ""))
+
+(defn new-page
+  [db project]
+  (if (:adding-new-page @db)
+    [:input.input-text
+     {:name "page-name"
+      :auto-focus true
+      :placeholder "Page name"
+      :type "text"
+      :value (:new-page-name @db)
+      :on-change #(swap! db assoc :new-page-name (.-value (.-target %)))
+      :on-key-up #(cond
+                    (= (.-keyCode %) 13)
+                    (when (not (empty? (str/trim (:new-page-name @db))))
+                      (create-page project (:new-page-name @db))
+                      (clean-new-page! db))
+                    (= (.-keyCode %) 27)
+                    (clean-new-page! db))}]
+    [:button.btn-primary.btn-small
+     {:on-click #(swap! db assoc :adding-new-page true)}
+     "+ Add new page"]))
+
 (defn projectbar
   [db]
-  [:div#project-bar.project-bar.toggle
-    [:div.project-bar-inside
-      [:span.project-name "Project name"]
+  (let [project-uuid (:project @db)
+        project (get-in @db [:projects project-uuid])
+        project-name (get-in @db [:projects project-uuid :name])
+        pages (get-in @db [:projects project-uuid :pages])
+        page-components (map (fn [p] [project-page db (:uuid p)]) pages)]
+    [:div#project-bar.project-bar
+     (when (not (:visible-project-bar @db))
+       {:class "toggle"})
+     [:div.project-bar-inside
+      [:span.project-name project-name]
       [:ul.tree-view
-        [:li.single-page.current
-          [:div.tree-icon page]
-          [:span "Homepage"]]
-        [:li.single-page
-          [:div.tree-icon page]
-          [:span "Profile"]
-          [:div.options
-            [:div pencil]
-            [:div trash]]]
-        [:li.group-page
-          [:div.tree-icon page]
-          [:span "Contact"]]]
-      [:button.btn-primary.btn-small "+ Add new page"]
-      ]])
+       page-components]
+      [new-page db project]]]))
 
 (defn settings
   [db]
@@ -195,15 +275,25 @@
      (if (:layers (:open-setting-boxes @db))
       [layers db])]])
 
-(defn workspace
+(defn workspace*
   [db]
-  [:div
-   [header db]
-   [:main.main-content
-    [:section.workspace-content
-     [toolbar db]
-     [projectbar db]
-     [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
-      [canvas db]]]
-    (if (not (empty? (:open-setting-boxes @db)))
-     [settings db])]])
+  (let [project-uuid (:project @db)
+        project (get (:projects @db) project-uuid)
+        page-uuid (:page @db)
+        pages (:pages project)
+        page (first (filter #(= (:uuid %) page-uuid) pages))]
+    [:div
+     [header db page]
+     [:main.main-content
+      [:section.workspace-content
+       [toolbar db]
+       [projectbar db]
+       [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
+        [canvas db page]]]
+      (if (not (empty? (:open-setting-boxes @db)))
+        [settings db])]]))
+
+(def workspace
+  (with-meta workspace*
+    {:component-will-mount #(actions/enter-workspace)
+     :component-will-unmount #(actions/leave-workspace)}))

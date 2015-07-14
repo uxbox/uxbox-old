@@ -25,7 +25,7 @@
   (set-location! [:dashboard]))
 
 (defroute workspace-route "/workspace/:uuid" [uuid]
-  (set-location! [:workspace uuid]))
+  (set-location! [:workspace (cljs.core/uuid uuid)]))
 
 ;; History
 

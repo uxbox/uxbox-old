@@ -97,19 +97,19 @@
           [:tr [:td "X:"] [:td mouseX]]
           [:tr [:td "Y:"] [:td mouseY]]]]))))
 
-(defn canvas [db]
+(defn canvas [db page]
   (let [viewport-height 3000
         viewport-width 3000
 
-        page-width (get-in @db [:page :width])
-        page-height (get-in @db [:page :height])
+        page-width (:width page)
+        page-height (:height page)
 
         document-start-x (- 500 (/ page-width 2))
         document-start-y (- 750 (/ page-height 2))
 
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
-                    (map #(get-in @db [:page :shapes %]) shape-ids))
+                    (map #(get-in page [:shapes %]) shape-ids))
 
         ;; Retrieve the <g> element grouped if applied
         group-svg (fn [shapes]
@@ -120,8 +120,8 @@
                                   (map shape->svg)))))
 
         ;; Retrieve the list of shapes grouped if applies
-        shapes-svg (->> @db
-                        :page :groups vals
+        shapes-svg (->> page
+                        :groups vals
                         (sort-by :order)
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))

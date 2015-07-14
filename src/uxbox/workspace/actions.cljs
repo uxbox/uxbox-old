@@ -17,6 +17,14 @@
   [catalog]
   (pubsub/publish! [:set-figures-catalog catalog]))
 
+(defn enter-workspace
+  []
+  (pubsub/publish! [:enter-workspace]))
+
+(defn leave-workspace
+  []
+  (pubsub/publish! [:leave-workspace]))
+
 (defn toggle-grid
   []
   (pubsub/publish! [:toggle-grid]))
@@ -32,6 +40,14 @@
 (defn toggle-group-lock
   [group-id]
   (pubsub/publish! [:toggle-group-lock group-id]))
+
+(defn view-project
+  [project]
+  (pubsub/publish! [:view-project project]))
+
+(defn view-page
+  [page]
+  (pubsub/publish! [:view-page page]))
 
 (pubsub/register-transition
  :close-setting-box
@@ -56,6 +72,18 @@
    (assoc state :current-catalog catalog)))
 
 (pubsub/register-transition
+ :enter-workspace
+ (fn [state _]
+   (-> state
+    (assoc :workspace (:workspace-defaults state))
+    (assoc :open-setting-boxes (:default-open-setting-boxes state)))))
+
+(pubsub/register-transition
+ :leave-workspace
+ (fn [state _]
+   (assoc state :visible-project-bar false)))
+
+(pubsub/register-transition
  :toggle-grid
  (fn [state _]
    (update-in state [:workspace :grid] not)))
@@ -74,3 +102,14 @@
  :toggle-group-lock
  (fn [state group-id]
    (update-in state [:page :groups group-id :locked] #(not %1))))
+
+(pubsub/register-transition
+ :view-project
+ (fn [state project]
+   (assoc state :project (:uuid project)
+                :page (get (first (:pages project)) :uuid))))
+
+(pubsub/register-transition
+ :view-page
+ (fn [state page]
+   (assoc state :page (:uuid page))))
