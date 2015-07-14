@@ -1,11 +1,13 @@
 (ns uxbox.workspace.views
-  (:require [uxbox.user.views :refer [user]]
+  (:require [reagent.core :refer [atom]]
+            [uxbox.user.views :refer [user]]
             [uxbox.icons :refer [chat close page folder trash pencil action fill stroke infocard]]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
-            [uxbox.workspace.canvas.views :refer [canvas]]))
+            [uxbox.workspace.canvas.views :refer [canvas]]
+            [uxbox.geometry :as geo]))
 
 (defn header
   [db]
@@ -83,77 +85,126 @@
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
                       :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
+
+(defmulti toolbar-coords (fn [shape _] (:shape shape)))
+
+(defmethod toolbar-coords :rectangle [{:keys [x y width height]} px py]
+  (let [vx (+ x width 50)
+        vy y]
+    (geo/viewportcord->clientcoord vx vy)))
+
+(defmethod toolbar-coords :line [{:keys [x1 y1 x2 y2]} px py]
+  (let [max-x (if (> x1 x2) x1 x2)
+        min-y (if (< y1 y2) y1 y2)
+        vx (+ max-x 50)
+        vy min-y]
+    (geo/viewportcord->clientcoord vx vy)))
+
+(defmethod toolbar-coords :default [_ x y] [x y])
+
 (defn elementoptions
   [db]
-  [:div#element-options.element-options
-    [:ul.element-icons
-      [:li#e-info.selected
-        infocard]
-      [:li#e-fill
-        fill]
-      [:li#e-stroke
-        stroke]
-      [:li#e-text
-        icons/text]
-      [:li#e-actions
-        action]]
-    ;;ELEMENT BASIC INFO
-    [:div#element-basics.element-set
-      [:div.element-set-title "Element name"]
-      [:div.element-set-content
-        [:span "Size"]
-        [:div.row-flex
-          [:input#element-width.input-text {:placeholder "Width" :type "text"}]
-          [:div.lock-size
-            icons/lock]
-          [:input#element-height.input-text {:placeholder "Height" :type "text"}]]
-        [:span "Position"]
-        [:div.row-flex
-          [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
-          [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]
-        [:span "Padding"]
-        [:div.row-flex
-          [:input#element-padding-top.input-text {:placeholder "Top" :type "text"}]
-          [:input#element-padding-rigth-.input-text {:placeholder "Right" :type "text"}]]
-        [:div.row-flex
-          [:input#element-padding-bottom.input-text {:placeholder "Bottom" :type "text"}]
-          [:input#element-padding-left-.input-text {:placeholder "Left" :type "text"}]]
-        [:div.row-flex
-          [:span.half "Border radius"]
-          [:span.half "Opacity"]]
-        [:div.row-flex
-          [:input#element-border-radius.input-text {:placeholder "px" :type "text"}]
-          [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]]
-    ;;ELEMENT FILL
-    [:div#element-fill.element-set.hide
-      [:div.element-set-title "Fill color"]
-      [:div.element-set-content
-        [:span "Choose a color"]
-        [:p "COLOR PICKER"]]]
-    ;;ELEMENT STROKE
-    [:div#element-stroke.element-set.hide
-      [:div.element-set-title "Stroke"]
-      [:div.element-set-content
-        [:span "Border color"]
-        [:p "COLOR PICKER"]
-        [:div.row-flex
-          [:span.half "Border width"]
-          [:span.half "Border style"]]
-        [:div.row-flex
-          [:input#element-border-width.input-text      {:placeholder "px" :type "text"}]
-          [:select#element-border-style.input-select
-            [:option "Solid"]
-            [:option "Dotted"]
-            [:option "Dashed"]
-            [:option "Double"]]]]]
-    ;;ELEMENT TEXT
-    [:div#element-text.element-set.hide
-      [:div.element-set-title "Text"]
-      [:div.element-set-content]]
-    ;;ELEMENT ACTIONS
-    [:div#element-actions.element-set.hide
-      [:div.element-set-title "Actions"]
-      [:div.element-set-content]]])
+  (let [show-element (atom :options)]
+    (fn []
+      (let [selected-uuid (get-in @db [:page :selected])
+            selected-shape (get-in @db [:page :shapes selected-uuid])
+            [popup-x popup-y] (toolbar-coords selected-shape)]
+        [:div#element-options.element-options
+         {:style #js {:left popup-x :top popup-y}}
+         [:ul.element-icons
+          [:li#e-info {:on-click (fn [e] (reset! show-element :options))
+                       :class (when (= @show-element :options) "selected")} infocard]
+          [:li#e-fill {:on-click (fn [e] (reset! show-element :fill))
+                       :class (when (= @show-element :fill) "selected")} fill]
+          [:li#e-stroke {:on-click (fn [e] (reset! show-element :stroke))
+                         :class (when (= @show-element :stroke) "selected")} stroke]
+          [:li#e-text {:on-click (fn [e] (reset! show-element :text))
+                       :class (when (= @show-element :text) "selected")} icons/text]
+          [:li#e-actions {:on-click (fn [e] (reset! show-element :actions))
+                          :class (when (= @show-element :actions) "selected")} action]]
+         ;;ELEMENT BASIC INFO
+         [:div#element-basics.element-set
+          {:class (when (not (= @show-element :options)) "hide")}
+          [:div.element-set-title "Element name"]
+          [:div.element-set-content
+           (when (and (:width selected-shape) (:height selected-shape))
+             [:div
+              [:span "Size"]
+              [:div.row-flex
+               [:input#element-width.input-text {:placeholder "Width"
+                                                 :type "text"
+                                                 :value (:width selected-shape)}]
+               [:div.lock-size icons/lock]
+               [:input#element-height.input-text {:placeholder "Height"
+                                                  :type "text"
+                                                  :value (:height selected-shape)}]]])
+           (when (and (:x selected-shape) (:y selected-shape))
+             [:div
+              [:span "Position"]
+              [:div.row-flex
+               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
+               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]])
+
+           (when (and (:x1 selected-shape) (:y1 selected-shape) (:x2 selected-shape) (:y2 selected-shape))
+             [:div
+              [:span "Initial position"]
+              [:div.row-flex
+               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
+               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]
+              [:span "End position"]
+              [:div.row-flex
+               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
+               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]])
+
+           (if (and (:rx selected-shape) (:ry selected-shape))
+             [:div
+              [:div.row-flex
+               [:span.half "Border radius"]
+               [:span.half "Opacity"]]
+              [:div.row-flex
+               [:input#element-border-radius.input-text {:placeholder "px" :type "text"}]
+               [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]
+
+             [:div
+              [:div.row-flex
+               [:span.half "Opacity"]]
+              [:div.row-flex
+               [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]
+             )]]
+         ;;ELEMENT FILL
+         [:div#element-fill.element-set
+          {:class (when (not (= @show-element :fill)) "hide")}
+          [:div.element-set-title "Fill color"]
+          [:div.element-set-content
+           [:span "Choose a color"]
+           [:p "COLOR PICKER"]]]
+         ;;ELEMENT STROKE
+         [:div#element-stroke.element-set
+          {:class (when (not (= @show-element :stroke)) "hide")}
+          [:div.element-set-title "Stroke"]
+          [:div.element-set-content
+           [:span "Border color"]
+           [:p "COLOR PICKER"]
+           [:div.row-flex
+            [:span.half "Border width"]
+            [:span.half "Border style"]]
+           [:div.row-flex
+            [:input#element-border-width.input-text      {:placeholder "px" :type "text"}]
+            [:select#element-border-style.input-select
+             [:option "Solid"]
+             [:option "Dotted"]
+             [:option "Dashed"]
+             [:option "Double"]]]]]
+         ;;ELEMENT TEXT
+         [:div#element-text.element-set
+          {:class (when (not (= @show-element :text)) "hide")}
+          [:div.element-set-title "Text"]
+          [:div.element-set-content]]
+         ;;ELEMENT ACTIONS
+         [:div#element-actions.element-set
+          {:class (when (not (= @show-element :actions)) "hide")}
+          [:div.element-set-title "Actions"]
+          [:div.element-set-content]]]))))
 
 (defn tools [db]
   (let [{:keys [workspace]} @db]
@@ -271,7 +322,8 @@
      [toolbar db]
      [projectbar db]
      [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
-      [elementoptions db]
+      (when (get-in @db [:page :selected])
+        [elementoptions db])
       [canvas db]]]
     (if (not (empty? (:open-setting-boxes @db)))
      [settings db])]])

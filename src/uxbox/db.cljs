@@ -51,7 +51,7 @@
                     :new-project-defaults {
                       :name ""
                     }
-                    :workspace {:selected-tool :rect
+                    :workspace {:selected-tool nil
                                 :selected-groups #{}}
 
                     ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
@@ -60,5 +60,7 @@
                     :current-catalog :material-design-actions
 
                     :page nil})
+
+                     :selected nil ;; UUID of the current selected shape
 
 (defonce app-state (atom initial-state))
