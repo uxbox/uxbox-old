@@ -4,6 +4,7 @@
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.icons :as icons]
+            [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]))
 
 (defn header
@@ -39,23 +40,49 @@
 
 (defn figures
   [db]
-  [:div#form-figures.tool-window
-    [:div.tool-window-bar
-     [:div.tool-window-icon
-      icons/window]
-     [:span "Figures"]
-     [:div.tool-window-close {:on-click #(actions/close-setting-box :figures)}
-      close]]])
+  (let [{:keys [workspace]} @db]
+   [:div#form-figures.tool-window
+     [:div.tool-window-bar
+      [:div.tool-window-icon
+       icons/window]
+      [:span "Figures"]
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :figures)}
+       close]]
+     [:div.tool-window-content
+      [:div.figures-catalog
+       [:select {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
+        (for [[catalog-id catalog] (seq figures-catalogs/catalogs)]
+          [:option {:key catalog-id :value catalog-id} (:name catalog)])]]
+      (.log js/console (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols])))
+      (for [[figure-id figure] (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols]))]
+        [:div.figure-btn {:key figure-id
+                          :class (if (= (:selected-tool workspace) [:figure (:current-catalog @db) figure-id]) "selected" "")
+                          :on-click #(actions/set-tool [:figure (:current-catalog @db) figure-id])}
+          [:svg (:svg figure)]])]]))
 
 (defn components
   [db]
-  [:div#form-components.tool-window
-    [:div.tool-window-bar
-     [:div.tool-window-icon
-      icons/window]
-     [:span "Components"]
-     [:div.tool-window-close {:on-click #(actions/close-setting-box :components)}
-      close]]])
+  (let [{:keys [workspace]} @db]
+    [:div#form-components.tool-window
+      [:div.tool-window-bar
+       [:div.tool-window-icon
+        icons/window]
+       [:span "Components"]
+       [:div.tool-window-close {:on-click #(actions/close-setting-box :components)}
+        close]]
+     [:div.tool-window-content
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :rect) "selected" "")
+                      :on-click #(actions/set-tool :rect)} icons/box]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :circle) "selected" "")
+                      :on-click #(actions/set-tool :circle)} icons/circle]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :line) "selected" "")
+                      :on-click #(actions/set-tool :line)} icons/line]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :curve) "selected" "")
+                      :on-click #(actions/set-tool :curve)} icons/curve]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :text) "selected" "")
+                      :on-click #(actions/set-tool :text)} icons/text]
+      [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
+                      :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
 (defn tools
   [db]
