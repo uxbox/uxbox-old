@@ -84,8 +84,8 @@
 (defmethod shape->svg :rectangle [{:keys [x y width height rx ry fill stroke]}]
   [:rect {:x x :y y :width width :height height :fill fill :rx rx :ry ry :stroke stroke}])
 
-(defmethod shape->svg :line [{:keys [x1 y1 x2 y2 color width]}]
-  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style #js {:stroke color :strokeWidth width}}])
+(defmethod shape->svg :line [{:keys [x1 y1 x2 y2 rx ry stroke stroke-width]}]
+  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :fill fill :rx rx :ry ry :stroke stroke :stroke-width stroke-width}])
 
 ;; Get the SVG elements for a "drawing" element
 (defmulti shape->drawing-svg :shape)
@@ -102,6 +102,17 @@
           [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
                   :style #js {:fill "transparent" :stroke "black" :strokeDasharray "5,5"}}])))))
 
+(defmethod shape->drawing-svg :line [{:keys [x1 y1 x2 y2]}]
+  (let [coordinates1 (atom [x1 y1])
+        coordinates2 (atom [x2 y2])
+        viewport-move (fn [coords]
+                        (reset! coordinates2 coords))]
+    (pubsub/register-event :viewport-mouse-move viewport-move)
+    (fn []
+      (let [[mouseX mouseY] @coordinates2]
+          [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
+           :style #js {:fill "transparent" :stroke "pink" :stroke-width 2 :strokeDasharray "5,5"}}]))))
+
 (defn debug-coordinates [db]
   (let [coordinates (atom [])
         viewport-move (fn [coord]
@@ -113,6 +124,11 @@
          [:table
           [:tr [:td "X:"] [:td mouseX]]
           [:tr [:td "Y:"] [:td mouseY]]]]))))
+
+(pubsub/register-event
+  :viewport-mouse-click
+  (fn [coords]
+    (actions/drawing-shape coords)))
 
 (defn canvas [db]
   (let [viewport-height 3000
@@ -150,8 +166,8 @@
                     (.preventDefault e)))
 
         on-click (fn [e]
-                   (let [coord (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
-                     (actions/drawing-rect coord)
+                   (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
+                     (pubsub/publish! [:viewport-mouse-click coords])
                      (.preventDefault e)))]
     [:div {:on-mouse-move on-move :on-click on-click}
      [debug-coordinates db]
