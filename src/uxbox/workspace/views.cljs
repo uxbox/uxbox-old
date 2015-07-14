@@ -163,7 +163,7 @@
 
 (defn projectbar
   [db]
-  [:div#project-bar.project-bar
+  [:div#project-bar.project-bar.toggle
     [:div.project-bar-inside
       [:span.project-name "Project name"]
       [:ul.tree-view
