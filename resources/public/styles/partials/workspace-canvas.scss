@@ -1,14 +1,15 @@
 .workspace-canvas {
   box-sizing: border-box;
   height: calc(100vh - 55px);
-  margin: 0 250px 0 55px;
+  margin: 0 240px 0 55px;
   overflow: scroll;
   width: 100%;
+  transition: none;
 
   &.no-tool-bar {
     margin-right: 0;
   }
-  
+
   #viewport, #page-canvas, #page-layout {
     overflow: visible;
   }

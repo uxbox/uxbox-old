@@ -18,22 +18,22 @@
      [:span "Page name"]]
     [:div.workspace-options
      [:ul.options-btn
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
        icons/undo]
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
        icons/redo]]
      [:ul.options-btn
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
        icons/export]
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
        icons/image]]
      [:ul.options-btn
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
        icons/ruler]
-      [:li {:class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
+      [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
        icons/alignment]
-      [:li
+      [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
        icons/organize]]]
    [user (:user @db)]])
 
@@ -165,17 +165,17 @@
       [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
        close]]
      [:div.tool-window-content
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :rect) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Box (Ctrl + B)" :class (if (= (:selected-tool workspace) :rect) "selected" "")
                       :on-click #(actions/set-tool :rect)} icons/box]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :circle) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Circle (Ctrl + E)" :class (if (= (:selected-tool workspace) :circle) "selected" "")
                       :on-click #(actions/set-tool :circle)} icons/circle]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :line) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Line (Ctrl + L)" :class (if (= (:selected-tool workspace) :line) "selected" "")
                       :on-click #(actions/set-tool :line)} icons/line]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :curve) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Bezier (Ctrl + U)" :class (if (= (:selected-tool workspace) :curve) "selected" "")
                       :on-click #(actions/set-tool :curve)} icons/curve]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :text) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Text (Ctrl + T)" :class (if (= (:selected-tool workspace) :text) "selected" "")
                       :on-click #(actions/set-tool :text)} icons/text]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
+      [:div.tool-btn.tooltip.tooltip-hover {:alt "Arrow (Ctrl + A)" :class (if (= (:selected-tool workspace) :arrow) "selected" "")
                       :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
 
 (defn layers
