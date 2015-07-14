@@ -100,15 +100,15 @@
 
 (defn get-projects
       [username]
-      (let [projects (filter #(= (:owner %1) username) (vals (:projects @data)))]
-        (map (fn [project]
-               {:name (:name project)
-                :uuid (:uuid project)
-                :last-update (:last-update project)
-                :created (:created project)
-                :comment-count (count (:comments project))
-                :first-page-uuid (first (keys (:pages project)))
-                :pages (count (:pages project))}) projects)))
+      (into {} (map (fn [project]
+        [(:uuid project)
+         {:name (:name project)
+          :uuid (:uuid project)
+          :last-update (:last-update project)
+          :created (:created project)
+          :comment-count (count (:comments project))
+          :first-page-uuid (first (keys (:pages project)))
+          :pages (count (:pages project))}]) (vals (:projects @data)))))
 
 (defn get-project
       [uuid]
@@ -120,6 +120,14 @@
          :owner (:owner project)
          :comment-count (count (:comments project))
          :pages-count (count (:pages project))}))
+
+(defn create-project
+      [project]
+      (swap! data (fn [current] (assoc-in current [:projects (:uuid project)] project))))
+
+(defn delete-project
+      [uuid]
+      (swap! data (fn [current] (update current :projects dissoc uuid))))
 
 (defn get-page
       [project-uuid page-uuid]

@@ -48,7 +48,7 @@
 
 
 (defn dashboard-info [db]
-  (let [projects (:projects-list @db)
+  (let [projects (vals (:projects-list @db))
         sort-order (:project-sort-order @db)
         orderings (:project-orderings @db)
         name->order (into {} (for [[k v] orderings] [v k]))
@@ -92,7 +92,7 @@
        icons/trash]]]))
 
 (defn dashboard-grid [db]
-  (let [projects (:projects-list @db)
+  (let [projects (vals (:projects-list @db))
         projects (sort-by (:project-sort-order @db) projects)]
     [:section.dashboard-grid
      [:h2 "Your projects"]

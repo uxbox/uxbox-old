@@ -1,5 +1,6 @@
 (ns uxbox.projects.actions
-  (:require [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.pubsub :as pubsub]
+            [uxbox.storage :as storage]))
 
 (defn create-project
   [{:keys [name width height layout]}]
@@ -21,9 +22,21 @@
 (pubsub/register-transition
  :delete-project
  (fn [state uuid]
-   (update state :projects #(dissoc % uuid))))
+   (update state :projects-list #(dissoc % uuid))))
 
 (pubsub/register-transition
  :create-project
  (fn [state project]
-   (update state :projects assoc (:uuid project) project)))
+   (update state :projects-list assoc (:uuid project) project)))
+
+(pubsub/register-transition
+ :create-project
+ (fn [state project]
+   (storage/create-project project)
+   nil))
+
+(pubsub/register-transition
+ :delete-project
+ (fn [state uuid]
+   (storage/delete-project uuid)
+   nil))
