@@ -252,7 +252,6 @@
         project (get-in @db [:projects project-uuid])
         project-name (get-in @db [:projects project-uuid :name])
         pages (get-in @db [:projects project-uuid :pages])
-        _ (println "PAGES" (map :uuid pages))
         page-components (map (fn [p] [project-page db (:uuid p)]) pages)]
     [:div#project-bar.project-bar
      (when (not (:visible-project-bar @db))
