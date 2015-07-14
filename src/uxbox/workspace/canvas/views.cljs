@@ -85,14 +85,32 @@
   [:rect {:x x :y y :width width :height height :fill fill :rx rx :ry ry :stroke stroke}])
 
 (defmethod shape->svg :line [{:keys [x1 y1 x2 y2 rx ry stroke stroke-width]}]
-  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :fill fill :rx rx :ry ry :stroke stroke :stroke-width stroke-width}])
+  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :rx rx :ry ry
+          :style #js {:stroke stroke :strokeWidth stroke-width}}])
+
+(defmulti shape->selected-svg :shape)
+
+(defmethod shape->selected-svg :rectangle [{:keys [x y width height rx ry fill stroke]}]
+  [:rect {:x (- x 4)
+          :y (- y 4)
+          :width (+ width 8)
+          :height (+ height 8)
+          :fill "transparent"
+          :rx rx :ry ry
+          :stroke "red"
+          :strokeWidth 4
+          :strokeDasharray "5,5"
+          :fill-opacity "0.5"}])
+
+(defmethod shape->selected-svg :line [{:keys [x1 y1 x2 y2 color width]}]
+  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style #js {:stroke "red" :strokeWidth (+ width 4)}}])
 
 ;; Get the SVG elements for a "drawing" element
 (defmulti shape->drawing-svg :shape)
 
 (defmethod shape->drawing-svg :rectangle [{:keys [x y]}]
   (let [coordinates (atom [[x y]])
-        viewport-move (fn [coord]
+        viewport-move (fn [state coord]
                         (reset! coordinates coord))]
     (pubsub/register-event :viewport-mouse-move viewport-move)
     (fn []
@@ -105,7 +123,7 @@
 (defmethod shape->drawing-svg :line [{:keys [x1 y1 x2 y2]}]
   (let [coordinates1 (atom [x1 y1])
         coordinates2 (atom [x2 y2])
-        viewport-move (fn [coords]
+        viewport-move (fn [state coords]
                         (reset! coordinates2 coords))]
     (pubsub/register-event :viewport-mouse-move viewport-move)
     (fn []
@@ -115,7 +133,7 @@
 
 (defn debug-coordinates [db]
   (let [coordinates (atom [])
-        viewport-move (fn [coord]
+        viewport-move (fn [state coord]
                         (reset! coordinates coord))]
     (pubsub/register-event :viewport-mouse-move viewport-move)
     (fn []
@@ -124,11 +142,6 @@
          [:table
           [:tr [:td "X:"] [:td mouseX]]
           [:tr [:td "Y:"] [:td mouseY]]]]))))
-
-(pubsub/register-event
-  :viewport-mouse-click
-  (fn [coords]
-    (actions/drawing-shape coords)))
 
 (defn canvas [db]
   (let [viewport-height 3000
@@ -178,7 +191,10 @@
        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
        (apply vector :svg#page-layout shapes-svg)
        (when-let [shape (get-in @db [:page :drawing])]
-         [shape->drawing-svg shape])]
+         [shape->drawing-svg shape])
+       (when-let [selected-uuid (get-in @db [:page :selected])]
+         [shape->selected-svg (get-in @db [:page :shapes selected-uuid])])
+       ]
       (if (:grid (:workspace @db))
         [grid viewport-width viewport-height document-start-x document-start-y 100])
       ]]))

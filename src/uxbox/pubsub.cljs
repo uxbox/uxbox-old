@@ -44,5 +44,5 @@
     (go-loop [v (async/<! ch)]
       (if (nil? v)
         (async/close! ch)
-        (do (cb (second v))
+        (do (cb @db/app-state (second v))
             (recur (async/<! ch)))))))
