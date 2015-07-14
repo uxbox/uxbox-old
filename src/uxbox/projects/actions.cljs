@@ -3,6 +3,7 @@
 
 (defn create-project
   [{:keys [name width height layout]}]
+  (println "C" "N" name "W" width "H" height "l" layout)
   (let [now (js/Date.)]
     (pubsub/publish! [:create-project {:name name
                                        :width width
@@ -27,3 +28,18 @@
  :create-project
  (fn [state project]
    (update state :projects assoc (:uuid project) project)))
+
+(defn select-project
+  [uuid]
+  (println "kk2")
+  (pubsub/publish! [:select-project uuid]))
+
+(pubsub/register-transition
+ :select-project
+ (fn [state project-uuid]
+   (println "KK" project-uuid (get-in state [:projects]))
+   (let [project-uuid (uuid project-uuid)
+     project (get-in state [:projects project-uuid])]
+     (println project)
+     (assoc-in state [:workspace :current-project] project)
+   )))

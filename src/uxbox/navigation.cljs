@@ -2,7 +2,8 @@
   (:require [uxbox.db :as db]
             [uxbox.pubsub :refer [publish! register-transition]]
             [secretary.core :as s :refer-macros [defroute]]
-            [goog.events :as events])
+            [goog.events :as events]
+            [uxbox.projects.actions :as pr-actions])
   (:import [goog.history Html5History]
            goog.history.EventType))
 
@@ -25,7 +26,9 @@
   (set-location! [:dashboard]))
 
 (defroute workspace-route "/workspace/:uuid" [uuid]
-  (set-location! [:workspace uuid]))
+  (println "******WR" uuid)
+  (set-location! [:workspace uuid])
+  (pr-actions/select-project uuid))
 
 ;; History
 
@@ -48,6 +51,7 @@
 
 (defn navigate!
   [uri]
+  (s/dispatch! uri)
   (.setToken history uri))
 
 ;; Components

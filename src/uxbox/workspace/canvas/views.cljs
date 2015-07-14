@@ -76,8 +76,10 @@
   (let [viewport-height 3000
         viewport-width 3000
 
-        page-width (get-in @db [:page :width])
-        page-height (get-in @db [:page :height])
+        page-width (get-in @db [:workspace :current-project :width])
+        page-height (get-in @db [:workspace :current-project :height])
+
+        a (println (get-in @db [:workspace]))
 
         document-start-x (- 500 (/ page-width 2))
         document-start-y (- 750 (/ page-height 2))
@@ -110,6 +112,7 @@
                         mouseY (- (.-clientY e) offsetY)]
                     (pubsub/publish! [:viewport-mouse-move [mouseX mouseY]])
                     (.preventDefault e)))]
+
     [:div {:on-mouse-move on-move}
      [debug-coordinates db]
      [:svg {:width viewport-height :height viewport-width}
