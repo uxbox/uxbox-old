@@ -24,6 +24,7 @@
         align-items: center;
         background-color: $color-gray-darker;
         display: flex;
+        flex-shrink: 0;
         padding: 2px $x-small;
 
         svg {

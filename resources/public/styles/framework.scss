@@ -376,6 +376,11 @@ input[type="checkbox"]:focus {
   background-position: 92% 48%;
   background-size: 10px;
   cursor: pointer;
+
+  &.small {
+    padding: $x-small $small
+  }
+
 }
 
 // Input radio

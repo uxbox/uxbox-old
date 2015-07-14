@@ -49,7 +49,7 @@
        close]]
      [:div.tool-window-content
       [:div.figures-catalog
-       [:select {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
+       [:select.input-select.small {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
         (for [[catalog-id catalog] (seq figures-catalogs/catalogs)]
           [:option {:key catalog-id :value catalog-id} (:name catalog)])]]
       (.log js/console (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols])))
