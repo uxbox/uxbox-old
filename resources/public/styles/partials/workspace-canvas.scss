@@ -8,4 +8,8 @@
   &.no-tool-bar {
     margin-right: 0;
   }
+  
+  #viewport, #page-canvas, #page-layout {
+    overflow: visible;
+  }
 }

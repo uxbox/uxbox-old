@@ -1,6 +1,7 @@
 (ns uxbox.workspace.canvas.views
   (:require  [uxbox.pubsub :as pubsub]
              [uxbox.workspace.canvas.actions :as actions]
+             [uxbox.geometry :as geo]
              [reagent.core :refer [atom]]
              [cuerdas.core :as str]))
 
@@ -90,18 +91,16 @@
 (defmulti shape->drawing-svg :shape)
 
 (defmethod shape->drawing-svg :rectangle [{:keys [x y]}]
-  (let [coordinates (atom [])
+  (let [coordinates (atom [[x y]])
         viewport-move (fn [coord]
                         (reset! coordinates coord))]
     (pubsub/register-event :viewport-mouse-move viewport-move)
     (fn []
       (let [[mouseX mouseY] @coordinates
-            rect-x (if (> mouseX x) x mouseX)
-            rect-y (if (> mouseY y) y mouseY)
-            rect-width (if (> mouseX x) (- mouseX x) (- x mouseX))
-            rect-height (if (> mouseY y) (- mouseY y) (- y mouseY))]
-        [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
-                :style #js {:fill "transparent" :stroke "black" :strokeDasharray "5,5"}}]))))
+            [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouseX mouseY)]
+        (if (and (> rect-width 0) (> rect-height 0))
+          [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
+                  :style #js {:fill "transparent" :stroke "black" :strokeDasharray "5,5"}}])))))
 
 (defn debug-coordinates [db]
   (let [coordinates (atom [])
@@ -137,14 +136,6 @@
                              (->> shapes
                                   (map shape->svg)))))
 
-        get-coords (fn [e]
-                     (let [bounding-rect (.getBoundingClientRect (.-currentTarget e))
-                           offsetX (.-left bounding-rect)
-                           offsetY (.-top bounding-rect)
-                           mouseX (- (.-clientX e) offsetX 50)
-                           mouseY (- (.-clientY e) offsetY 50)]
-                       [mouseX mouseY]))
-
         ;; Retrieve the list of shapes grouped if applies
         shapes-svg (->> @db
                         :page :groups vals
@@ -154,29 +145,24 @@
                         (map :shapes)
                         (map group-svg))
         on-move (fn [e]
-                  (let [coord (get-coords e)]
-                    (pubsub/publish! [:viewport-mouse-move coord])
+                  (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
+                    (pubsub/publish! [:viewport-mouse-move coords])
                     (.preventDefault e)))
 
         on-click (fn [e]
-                   (let [coord (get-coords e)]
+                   (let [coord (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
                      (actions/drawing-rect coord)
                      (.preventDefault e)))]
-
     [:div {:on-mouse-move on-move :on-click on-click}
      [debug-coordinates db]
-     [:svg {:width viewport-height :height viewport-width}
-       [horizontal-rule viewport-width document-start-x 100]
-       [vertical-rule viewport-height document-start-y 100]
-
-       [:svg  {:x 50 :y 50 :width page-width :height page-height};; Document
-        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
-        (apply vector :svg shapes-svg)
-        (when-let [shape (get-in @db [:page :drawing])]
+     [:svg#viewport {:width viewport-height :height viewport-width}
+      [horizontal-rule viewport-width document-start-x 100]
+      [vertical-rule viewport-height document-start-y 100]
+      [:svg#page-canvas  {:x 50 :y 50 :width page-width :height page-height};; Document
+       [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
+       (apply vector :svg#page-layout shapes-svg)
+       (when-let [shape (get-in @db [:page :drawing])]
          [shape->drawing-svg shape])]
-       (if (:grid (:workspace @db))
-         [grid viewport-width viewport-height document-start-x document-start-y 100])
-       ]]))
-      ]
-
-     ]))
+      (if (:grid (:workspace @db))
+        [grid viewport-width viewport-height document-start-x document-start-y 100])
+      ]]))
