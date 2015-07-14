@@ -10,6 +10,7 @@
                  [cljsjs/moment "2.9.0-0"]
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [alandipert/storage-atom "1.2.4"]
                  [funcool/cuerdas "0.5.0"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]

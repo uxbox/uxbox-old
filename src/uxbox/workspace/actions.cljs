@@ -1,5 +1,6 @@
 (ns uxbox.workspace.actions
-  (:require [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.pubsub :as pubsub]
+            [uxbox.storage :as storage]))
 
 (defn close-setting-box
   [setting-box]
@@ -74,3 +75,11 @@
  :toggle-group-lock
  (fn [state group-id]
    (update-in state [:page :groups group-id :locked] #(not %1))))
+
+(pubsub/register-transition
+ :location
+ (fn [state data]
+   (let [[location project-uuid page-uuid] data]
+     (if (= location :workspace)
+       (assoc state :project (storage/get-project project-uuid)
+                    :page (storage/get-page project-uuid page-uuid))))))
