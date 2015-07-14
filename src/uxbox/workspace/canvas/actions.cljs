@@ -46,13 +46,8 @@
        (<= py (+ y height))))
 
 (defmethod intersect :line [{:keys [x1 y1 x2 y2]} px py]
-  (let [slope1 (geo/slope x1 y1 px py)
-        slope2 (geo/slope x1 y1 x2 y2)
-        distance1 (geo/distance x1 y1 px py)
-        distance2 (geo/distance x1 y1 x2 y2)
-        result (and (>= 0.3 (.abs js/Math (- slope1 slope2)))
-                    (<= distance1 distance2))]
-    result))
+  (let [distance (geo/distance-line-point x1 y1 x2 y2 px py)]
+    (<= distance 15)))
 
 (defmethod intersect :default [_] false)
 
