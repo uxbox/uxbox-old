@@ -17,6 +17,10 @@
   [catalog]
   (pubsub/publish! [:set-figures-catalog catalog]))
 
+(defn toggle-grid
+  []
+  (pubsub/publish! [:toggle-grid]))
+
 (pubsub/register-transition
  :close-setting-box
  (fn [state setting-box]
@@ -38,3 +42,8 @@
  :set-figures-catalog
  (fn [state catalog]
    (assoc state :current-catalog catalog)))
+
+(pubsub/register-transition
+ :toggle-grid
+ (fn [state _]
+   (update-in state [:workspace :grid] not)))

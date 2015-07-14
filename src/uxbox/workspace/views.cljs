@@ -30,8 +30,7 @@
      [:ul.options-btn
       [:li
        icons/ruler]
-      [:li
-       icons/grid]
+      [:li {:class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
       [:li
        icons/alignment]
       [:li
