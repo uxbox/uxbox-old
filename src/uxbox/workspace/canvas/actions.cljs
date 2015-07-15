@@ -84,6 +84,23 @@
 
    (assoc-in state [:page :drawing] (shapes/map->Path {:x x :y y}))))
 
+(defn drawing-circle [state [x y]]
+  (if-let [drawing-val (get-in state [:page :drawing])]
+    (let [shape-uuid (random-uuid)
+          group-uuid (random-uuid)
+          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+          r (geo/distance x y (:cx drawing-val) (:cy drawing-val))
+          shape-val (shapes/new-circle (:cx drawing-val) (:cy drawing-val) r)
+          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+
+      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+          (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+    (assoc-in state [:page :drawing] (shapes/map->Circle {:cx x :cy y}))))
+
 (pubsub/register-transition
   :drawing-shape
   (fn [state coords]
@@ -91,9 +108,10 @@
      (cond
        (= selected-tool :rect) (drawing-rect state coords)
        (= selected-tool :line) (drawing-line state coords)
+       (= selected-tool :circle) (drawing-circle state coords)
        (= (first selected-tool) :figure)
          (let [[_ catalog symbol] selected-tool]
-           (drawing-path state coords (get-in catalogs [catalog :symbols symbol])))
+           (drawing-path state coords (get-in catalogs [catalog :symbols symbol])))       
        :else state
        ))))
 
