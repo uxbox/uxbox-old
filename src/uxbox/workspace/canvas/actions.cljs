@@ -23,13 +23,13 @@
 (pubsub/register-transition
  :select-shape
  (fn [state [x y]]
-   ;(js* "debugger;")
    (let [selected-uuid
          (->> state
               :page :groups vals
               (sort-by #(- (:order %)))
               (filter :visible)
               (mapcat :shapes)
+              (filter #(not (nil? (get-in state [:page :shapes %]))))
               (filter #(shapes/intersect (get-in state [:page :shapes %]) x y))
               first)]
      (assoc-in state [:page :selected] selected-uuid)) ))
@@ -132,3 +132,28 @@
     (if (get-in state [:workspace :selected-tool])
       (drawing-shape coords)
       (select-shape coords))))
+
+
+(defn tap [t] (println t))
+
+(defn remove-element [groups-entry element-uuid]
+  (let [in? (fn [seq elm] (some #(= elm %) seq))
+        has-element? (fn [[_ val]] (in? (:shapes val) element-uuid)  )
+        owner-uuid (->> groups-entry (filter has-element?) first first)
+        remove-vector-element (fn [v el] (vector (filter #(not (= % el)) v)))]
+    (cond
+      (nil? owner-uuid) groups-entry
+      (= 1 (-> groups-entry (get owner-uuid) :shapes count)) (dissoc groups-entry owner-uuid)
+      :else (update-in groups-entry [:shapes] remove-vector-element element-uuid)
+      )))
+
+(pubsub/register-transition
+  :delete-key-pressed
+  (fn [state]
+    (if-let [selected-uuid (get-in state [:page :selected])]
+      (-> state
+          (update-in [:page :groups] remove-element selected-uuid)
+          (update-in [:page :shapes] dissoc selected-uuid)
+          (update-in [:page] dissoc :selected))
+      state)
+    ))

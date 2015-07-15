@@ -375,7 +375,7 @@
   [:div
    [header db]
    [:main.main-content
-    [:section.workspace-content
+    [:section.workspace-content {:on-key-pressed (fn [e] (.log js/console "KEY => " e))}
      [toolbar db]
      [projectbar db]
      [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
