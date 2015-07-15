@@ -1,6 +1,7 @@
 (ns ^:figwheel-always uxbox.core
     (:require [uxbox.db :as db]
               [uxbox.navigation :refer [start-history!]]
+              [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
@@ -35,6 +36,7 @@
 (defn start!
   [app-state]
   (start-history!)
+  (start-keyboard!)
   (render! app-state $el))
 
 (start! db/app-state)

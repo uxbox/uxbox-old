@@ -104,7 +104,10 @@
 
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
-                      (map #(get-in @db [:page :shapes %]) shape-ids))
+                      (->> shape-ids
+                           (map #(get-in @db [:page :shapes %]))
+                           (filter #(not (nil? %)))
+                           ))
 
         ;; Retrieve the <g> element grouped if applied
         group-svg (fn [shapes]
