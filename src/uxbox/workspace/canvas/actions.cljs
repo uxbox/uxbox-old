@@ -1,6 +1,7 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
+            [uxbox.storage :as storage]
             [uxbox.shapes.core :as shapes]
             [uxbox.workspace.figures.catalogs :refer [catalogs]]))
 
@@ -126,6 +127,22 @@
  (fn [state [shape-uuid shape-val]]
    (assoc-in state [:page :shapes shape-uuid] shape-val)))
 
+(pubsub/register-transition
+ :insert-group
+ (fn [state [group-uuid group-val]]
+   (let [project-uuid (get-in state [:project :uuid])
+         page-uuid (get-in state [:page :uuid])]
+     (storage/create-group project-uuid page-uuid group-uuid group-val)
+     nil)))
+
+(pubsub/register-transition
+ :insert-shape
+ (fn [state [shape-uuid shape-val]]
+   (let [project-uuid (get-in state [:project :uuid])
+         page-uuid (get-in state [:page :uuid])]
+     (storage/create-shape project-uuid page-uuid shape-uuid shape-val)
+     nil)))
+
 (pubsub/register-event
   :viewport-mouse-click
   (fn [state coords]
@@ -150,10 +167,17 @@
 (pubsub/register-transition
   :delete-key-pressed
   (fn [state]
-    (if-let [selected-uuid (get-in state [:page :selected])]
-      (-> state
-          (update-in [:page :groups] remove-element selected-uuid)
-          (update-in [:page :shapes] dissoc selected-uuid)
-          (update-in [:page] dissoc :selected))
-      state)
-    ))
+    (let [selected-uuid (get-in state [:page :selected])
+          project-uuid (get-in state [:project :uuid])
+          page-uuid (get-in state [:page :uuid])]
+
+      (if selected-uuid
+         (storage/remove-shape project-uuid page-uuid selected-uuid)
+         nil)
+
+      (if selected-uuid
+         (-> state
+            (update-in [:page :groups] remove-element selected-uuid)
+            (update-in [:page :shapes] dissoc selected-uuid)
+            (update-in [:page] dissoc :selected))
+         nil))))

@@ -1,5 +1,5 @@
 (ns uxbox.storage
-  (:require [alandipert.storage-atom :refer [local-storage]]
+  (:require [hodgepodge.core :refer [local-storage set-item get-item]]
             [uxbox.shapes.core :refer [Rectangle Line]]))
 
 (def users [{:username "user-1"
@@ -19,6 +19,7 @@
                                                          "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88" {
                                                            :title "My awesome page"
                                                            :author "Bobby Tables"
+                                                           :uuid "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88"
 
                                                            :width 640
                                                            :height 1080
@@ -40,6 +41,7 @@
                                                          "082e1921-908d-4af6-897c-0a8a24d00b9b" {
                                                            :title "My awesome page"
                                                            :author "Bobby Tables"
+                                                           :uuid "082e1921-908d-4af6-897c-0a8a24d00b9b"
 
                                                            :width 640
                                                            :height 1080
@@ -59,6 +61,7 @@
                                                          "e654dff7-ef99-465d-949e-abb907dc69ce" {
                                                            :title "My awesome page"
                                                            :author "Bobby Tables"
+                                                           :uuid "e654dff7-ef99-465d-949e-abb907dc69ce"
 
                                                            :width 640
                                                            :height 1080
@@ -69,7 +72,12 @@
 
                                                            :groups {}})}})
 
-(defonce data (local-storage (atom {:users users :projects projects}) :data))
+(defonce data
+  (if (:data local-storage)
+    (atom (:data local-storage))
+    (atom {:users users :projects projects})))
+
+(add-watch data :local-storage (fn [_ _ _ new-value] (assoc! local-storage :data new-value)))
 
 (defn get-projects
       [username]
@@ -106,3 +114,27 @@
       [project-uuid page-uuid]
       (get-in @data [:projects project-uuid :pages page-uuid]))
 
+(defn create-shape
+      [project-uuid page-uuid shape-uuid shape]
+      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages page-uuid :shapes shape-uuid] shape))))
+
+(defn remove-element [groups-entry element-uuid]
+  (let [in? (fn [seq elm] (some #(= elm %) seq))
+        has-element? (fn [[_ val]] (in? (:shapes val) element-uuid)  )
+        owner-uuid (->> groups-entry (filter has-element?) first first)
+        remove-vector-element (fn [v el] (vector (filter #(not (= % el)) v)))]
+    (cond
+      (nil? owner-uuid) groups-entry
+      (= 1 (-> groups-entry (get owner-uuid) :shapes count)) (dissoc groups-entry owner-uuid)
+      :else (update-in groups-entry [:shapes] remove-vector-element element-uuid)
+      )))
+
+(defn remove-shape
+      [project-uuid page-uuid shape-uuid]
+      (swap! data (fn [current] (-> current
+                                    (update-in [:projects project-uuid :pages page-uuid :groups] remove-element shape-uuid)
+                                    (update-in [:projects project-uuid :pages page-uuid :shapes] dissoc shape-uuid)))))
+
+(defn create-group
+      [project-uuid page-uuid group-uuid group]
+      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages page-uuid :groups group-uuid] group))))
