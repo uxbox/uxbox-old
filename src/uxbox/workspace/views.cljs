@@ -98,87 +98,139 @@
          [:ul.element-icons
           [:li#e-info {:on-click (fn [e] (reset! show-element :options))
                        :class (when (= @show-element :options) "selected")} infocard]
-          [:li#e-fill {:on-click (fn [e] (reset! show-element :fill))
-                       :class (when (= @show-element :fill) "selected")} fill]
+          (if (and (:rx selected-shape) (:ry selected-shape))
+            [:li#e-fill {:on-click (fn [e] (reset! show-element :fill))
+                         :class (when (= @show-element :fill) "selected")} fill])
           [:li#e-stroke {:on-click (fn [e] (reset! show-element :stroke))
                          :class (when (= @show-element :stroke) "selected")} stroke]
           [:li#e-text {:on-click (fn [e] (reset! show-element :text))
                        :class (when (= @show-element :text) "selected")} icons/text]
           [:li#e-actions {:on-click (fn [e] (reset! show-element :actions))
                           :class (when (= @show-element :actions) "selected")} action]]
-         ;;ELEMENT BASIC INFO
+
+         ;;ELEMENT SIZE AND POSITION
          [:div#element-basics.element-set
           {:class (when (not (= @show-element :options)) "hide")}
-          [:div.element-set-title "Element name"]
+          [:div.element-set-title "Size and position"]
           [:div.element-set-content
            (when (and (:width selected-shape) (:height selected-shape))
              [:div
               [:span "Size"]
               [:div.row-flex
-               [:input#element-width.input-text {:placeholder "Width"
-                                                 :type "text"
-                                                 :value (:width selected-shape)}]
+               [:input#width.input-text
+                {:placeholder "Width"
+                 :type "number"
+                 :value (:width selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :width] (->> % .-target .-value int))}]
                [:div.lock-size icons/lock]
-               [:input#element-height.input-text {:placeholder "Height"
-                                                  :type "text"
-                                                  :value (:height selected-shape)}]]])
+               [:input#height.input-text
+                {:placeholder "Height"
+                 :type "number"
+                 :value (:height selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :height] (->> % .-target .-value int))}]]])
            (when (and (:x selected-shape) (:y selected-shape))
              [:div
               [:span "Position"]
               [:div.row-flex
-               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
-               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]])
+               [:input#x.input-text
+                {:placeholder "X"
+                 :type "number"
+                 :value (:x selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :x] (->> % .-target .-value int))}]
+               [:input#y.input-text
+                {:placeholder "Y"
+                 :type "number"
+                 :value (:y selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :y] (->> % .-target .-value int))}]]])
 
            (when (and (:x1 selected-shape) (:y1 selected-shape) (:x2 selected-shape) (:y2 selected-shape))
              [:div
               [:span "Initial position"]
               [:div.row-flex
-               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
-               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]
+               [:input#x1.input-text
+                {:placeholder "Initial X"
+                 :type "number"
+                 :value (:x1 selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :x1] (->> % .-target .-value int))}]
+               [:input#y1.input-text
+                {:placeholder "Initial Y"
+                 :type "number"
+                 :value (:y1 selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :y1] (->> % .-target .-value int))}]]
               [:span "End position"]
               [:div.row-flex
-               [:input#element-positionx.input-text {:placeholder "X" :type "text"}]
-               [:input#element-positiony.input-text {:placeholder "Y" :type "text"}]]])
-
-           (if (and (:rx selected-shape) (:ry selected-shape))
-             [:div
-              [:div.row-flex
-               [:span.half "Border radius"]
-               [:span.half "Opacity"]]
-              [:div.row-flex
-               [:input#element-border-radius.input-text {:placeholder "px" :type "text"}]
-               [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]
-
-             [:div
-              [:div.row-flex
-               [:span.half "Opacity"]]
-              [:div.row-flex
-               [:input#element-opacity.input-text      {:placeholder "%" :type "text"}]]]
-             )]]
+               [:input#x2.input-text
+                {:placeholder "End X"
+                 :type "number"
+                 :value (:x2 selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :x2] (->> % .-target .-value int))}]
+               [:input#y2.input-text
+                {:placeholder "End Y"
+                 :type "number"
+                 :value (:y2 selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :y2] (->> % .-target .-value int))}]]])]]
          ;;ELEMENT FILL
-         [:div#element-fill.element-set
-          {:class (when (not (= @show-element :fill)) "hide")}
-          [:div.element-set-title "Fill color"]
-          [:div.element-set-content
-           [:span "Choose a color"]
-           [:p "COLOR PICKER"]]]
+         (if (and (:rx selected-shape) (:ry selected-shape))
+           [:div#element-fill.element-set
+            {:class (when (not (= @show-element :fill)) "hide")}
+            [:div.element-set-title "Fill color"]
+            [:div.element-set-content
+             [:span "Choose a color"]
+             [:input#fill.input-text
+              {:placeholder "Color"
+               :type "text"
+               :value (:fill selected-shape)
+               :on-change #(swap! db assoc-in [:page :shapes selected-uuid :fill] (->> % .-target .-value))}]
+             [:span "Opacity"]
+             [:input#element-opacity.input-text
+              {:placeholder "%"
+               :type "number"
+               :value (:fill-opacity selected-shape)
+               :on-change #(swap! db assoc-in [:page :shapes selected-uuid :fill-opacity] (->> % .-target .-value))}]]])
          ;;ELEMENT STROKE
          [:div#element-stroke.element-set
           {:class (when (not (= @show-element :stroke)) "hide")}
           [:div.element-set-title "Stroke"]
           [:div.element-set-content
-           [:span "Border color"]
-           [:p "COLOR PICKER"]
            [:div.row-flex
-            [:span.half "Border width"]
-            [:span.half "Border style"]]
+            [:span.half "Color"]
+            [:span.half "Opacity"]]
            [:div.row-flex
-            [:input#element-border-width.input-text      {:placeholder "px" :type "text"}]
-            [:select#element-border-style.input-select
-             [:option "Solid"]
-             [:option "Dotted"]
-             [:option "Dashed"]
-             [:option "Double"]]]]]
+            [:input#stroke.input-text
+             {:placeholder "Color"
+              :type "text"
+              :value (:stroke selected-shape)
+              :on-change #(swap! db assoc-in [:page :shapes selected-uuid :stroke] (->> % .-target .-value))}]
+            [:input#stroke-opacity.input-text
+             {:placeholder "Opacity"
+              :type "number"
+              :value (:stroke-opacity selected-shape)
+              :on-change #(swap! db assoc-in [:page :shapes selected-uuid :stroke-opacity] (->> % .-target .-value))}]]
+           [:div.row-flex
+            [:span.half "Width"]]
+           [:div.row-flex
+            [:input#stroke-width.input-text
+             {:placeholder "Width"
+              :type "number"
+              :value (:stroke-width selected-shape)
+              :on-change #(swap! db assoc-in [:page :shapes selected-uuid :stroke-width] (->> % .-target .-value int))}]]
+
+           (if (and (:rx selected-shape) (:ry selected-shape))
+             [:div
+              [:span "Radius"]
+              [:div.row-flex
+               [:input#rx.input-text
+                {:placeholder "rx"
+                 :type "number"
+                 :value (:rx selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :rx] (->> % .-target .-value))}]
+               [:input#ry.input-text
+                {:placeholder "ry"
+                 :type "number"
+                 :value (:ry selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :ry] (->> % .-target .-value))
+                 }]]
+            ])]]
          ;;ELEMENT TEXT
          [:div#element-text.element-set
           {:class (when (not (= @show-element :text)) "hide")}
