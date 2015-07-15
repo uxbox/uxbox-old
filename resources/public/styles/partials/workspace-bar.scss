@@ -2,8 +2,8 @@
   align-items: center;
   background-color: $color-gray;
   display: flex;
-  height: 45px;
-  padding: $x-small $medium $x-small 70px;
+  height: 40px;
+  padding: $x-small $medium $x-small 65px;
   position: relative;
   z-index: 11;
 
@@ -17,19 +17,24 @@
     left: 0;
     position: absolute;
     top: 0;
-    width: 55px;
+    width: 50px;
 
-    svg {
-      fill: $color-gray;
+    a {
       height: 35px;
-      width: 35px;
-
-      }
-
-    &:hover {
 
       svg {
-        fill: $color-primary;
+        fill: $color-gray;
+        height: 35px;
+        width: 35px;
+
+        }
+
+      &:hover {
+
+        svg {
+          fill: $color-primary;
+        }
+
       }
 
     }
