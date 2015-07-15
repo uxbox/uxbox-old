@@ -1,6 +1,7 @@
 (ns uxbox.shapes.core
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
+            [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
 
 ;;=============================
@@ -242,3 +243,8 @@
   "Retrieves a circle with the default parameters"
   [cx cy r]
   (Circle. cx cy r "#cacaca" 1 "gray" 5 1))
+
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Rectangle) "/" ".") uxbox.shapes.core/map->Rectangle)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Line) "/" ".") uxbox.shapes.core/map->Line)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Path) "/" ".") uxbox.shapes.core/map->Path)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Circle) "/" ".") uxbox.shapes.core/map->Circle)
