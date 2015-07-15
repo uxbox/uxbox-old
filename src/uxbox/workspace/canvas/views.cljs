@@ -18,14 +18,14 @@
         vertical-lines (fn
           [position value padding]
           (if (= (mod value ticks-mod) 0)
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "black" :opacity 0.75}]
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "black" :opacity 0.25}]))
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :opacity 0.75}]
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :opacity 0.25}]))
 
         horizontal-lines (fn
           [position value padding]
           (if (= (mod value ticks-mod) 0)
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "black" :opacity 0.75}]
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "black" :opacity 0.25}]))
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :opacity 0.75}]
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :opacity 0.25}]))
         ]
     [:g.grid
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
@@ -44,15 +44,15 @@
                 (cond
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
-                   [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "black"}]
-                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position)} value]]
+                   [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
+                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "black"}]
+                  [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
                   :else
-                  [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "black"}]))
+                  [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "#7f7f7f"}]))
         ]
     [:g.vertical-rule
-     [:rect {:x 0 :y padding :height height :width padding :fill "gray"}]
+     [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
      (map #(lines (+ %1 start-height) %1 padding) ticks)]))
 
 (defn horizontal-rule
@@ -67,16 +67,16 @@
                 (cond
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
-                   [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "black"}]
-                   [:text {:x (+ position 2) :y 13} value]]
+                   [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
+                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "black"}]
+                  [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
                   :else
-                  [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "black"}]))
+                  [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "#7f7f7f"}]))
         ]
     [:g.horizontal-rule
-     [:rect {:x padding :y 0 :width width :height padding :fill "gray"}]
-     [:rect {:x 0 :y 0 :width padding :height padding :fill "gray"}]
+     [:rect {:x padding :y 0 :width width :height padding :fill "#bab7b7"}]
+     [:rect {:x 0 :y 0 :width padding :height padding :fill "#bab7b7"}]
      (map #(lines (+ %1 start-width) %1 padding) ticks)]))
 
 

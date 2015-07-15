@@ -48,7 +48,7 @@
 
   (shape->selected-svg
     [{:keys [x1 y1 x2 y2 stroke stroke-width]}]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke "red" :strokeWidth (+ stroke-width 2)}])
+    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke "#4af7c3" :strokeWidth (+ stroke-width 2)}])
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
@@ -60,13 +60,13 @@
       (fn []
         (let [[mouseX mouseY] @coordinates2]
           [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
-                  :style #js {:fill "transparent" :stroke "pink" :stroke-width 2 :strokeDasharray "5,5"}}]))))
+                  :style #js {:fill "transparent" :stroke "gray" :stroke-width 2 :strokeDasharray "5,5"}}]))))
   )
 
 (defn new-line
   "Retrieves a line with the default parameters"
   [x1 y1 x2 y2]
-  (Line. x1 y1 x2 y2 "pink" 2))
+  (Line. x1 y1 x2 y2 "gray" 2))
 
 ;;=============================
 ;; RECTANGLES
@@ -95,8 +95,8 @@
             :height (+ height 8)
             :fill "transparent"
             :rx rx :ry ry
-            :stroke "red"
-            :strokeWidth 4
+            :stroke "#4af7c3"
+            :strokeWidth 2
             :strokeDasharray "5,5"
             :fill-opacity "0.5"}])
 
@@ -110,13 +110,10 @@
               [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouseX mouseY)]
           (if (and (> rect-width 0) (> rect-height 0))
             [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
-                    :style #js {:fill "transparent" :stroke "black" :strokeDasharray "5,5"}}])))))
+                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
   )
 
 (defn new-rectangle
   "Retrieves a line with the default parameters"
   [x y width height]
-  (Rectangle. x y width height 0 0 "#cacaca" "black"))
-
-
-
+  (Rectangle. x y width height 0 0 "#cacaca" "gray"))
