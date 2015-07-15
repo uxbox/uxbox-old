@@ -7,11 +7,11 @@
             [uxbox.navigation :refer [link navigate! workspace-route]]
             [uxbox.time :refer [ago]]))
 
-(defn header [usr]
+(defn header [db]
   [:header#main-bar.main-bar
    [:div.main-logo
     [link "/" logo]]
-   [user usr]])
+   [user db]])
 
 (defn activity-item [item]
   (let [{:keys [project
@@ -111,5 +111,5 @@
 
 (defn dashboard [db]
   [:div
-   [header (:user @db)]
+   [header db]
    [dashboard-content db]])

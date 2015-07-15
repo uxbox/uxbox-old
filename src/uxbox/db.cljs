@@ -7,6 +7,7 @@
 (def initial-state {:location [:login]
                     :lightbox nil
                     :open-setting-boxes #{:tools :layers}
+                    :open-user-menu false
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
                     :activity [
@@ -60,7 +61,5 @@
                     :current-catalog :material-design-actions
 
                     :page nil})
-
-                     :selected nil ;; UUID of the current selected shape
 
 (defonce app-state (atom initial-state))

@@ -127,23 +127,4 @@
 
   }
 
-  .user-zone {
-    align-items: center;
-    cursor: pointer;
-    display: flex;
-    margin-left: auto;
-
-    span {
-      color: $color-gray-lighter;
-      margin: $small;
-    }
-
-    img {
-      border: 2px solid $color-gray-lighter;
-      border-radius: 50%;
-      width: 32px;
-    }
-
-  }
-
 }

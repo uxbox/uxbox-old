@@ -1,10 +1,9 @@
 (ns uxbox.workspace.views
   (:require [reagent.core :refer [atom]]
             [uxbox.user.views :refer [user]]
-            [uxbox.icons :refer [chat close page folder trash pencil action fill stroke infocard]]
+            [uxbox.icons :as icons]
             [uxbox.navigation :refer [link]]
             [uxbox.workspace.actions :as actions]
-            [uxbox.workspace.icons :as icons]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
             [uxbox.geometry :as geo]
@@ -12,33 +11,34 @@
 
 (defn header
   [db]
-  [:header#workspace-bar.workspace-bar
-    [:div.main-icon
-     [link "/dashboard"
-      icons/logo]]
-    [:div.project-tree-btn
-     icons/project-tree
-     [:span "Page name"]]
-    [:div.workspace-options
-     [:ul.options-btn
-      [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
-       icons/undo]
-      [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
-       icons/redo]]
-     [:ul.options-btn
-      [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
-       icons/export]
-      [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
-       icons/image]]
-     [:ul.options-btn
-      [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
-       icons/ruler]
-      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
-      [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
-       icons/alignment]
-      [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
-       icons/organize]]]
-   [user (:user @db)]])
+  (let [userdata (:user @db)]
+    [:header#workspace-bar.workspace-bar
+     [:div.main-icon
+      [link "/dashboard"
+       icons/logo-icon]]
+     [:div.project-tree-btn
+      icons/project-tree
+      [:span "Page name"]]
+     [:div.workspace-options
+      [:ul.options-btn
+       [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
+        icons/undo]
+       [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
+        icons/redo]]
+      [:ul.options-btn
+       [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
+        icons/export]
+       [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
+        icons/image]]
+      [:ul.options-btn
+       [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
+        icons/ruler]
+       [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
+       [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
+        icons/alignment]
+       [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
+        icons/organize]]]
+     [user db]]))
 
 (defn figures
   [db]
@@ -49,7 +49,7 @@
        icons/window]
       [:span "Figures"]
       [:div.tool-window-close {:on-click #(actions/close-setting-box :figures)}
-       close]]
+       icons/close]]
      [:div.tool-window-content
       [:div.figures-catalog
        [:select.input-select.small {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
@@ -71,7 +71,7 @@
         icons/window]
        [:span "Components"]
        [:div.tool-window-close {:on-click #(actions/close-setting-box :components)}
-        close]]
+        icons/close]]
      [:div.tool-window-content
       [:div.tool-btn {:class (if (= (:selected-tool workspace) :rect) "selected" "")
                       :on-click #(actions/set-tool :rect)} icons/box]
@@ -97,18 +97,18 @@
          {:style #js {:left popup-x :top popup-y}}
          [:ul.element-icons
           [:li#e-info {:on-click (fn [e] (reset! show-element :options))
-                       :class (when (= @show-element :options) "selected")} infocard]
+                       :class (when (= @show-element :options) "selected")} icons/infocard]
           (if (or (and (:rx selected-shape) (:ry selected-shape)) (and (:cx selected-shape) (:cy selected-shape)) (:path selected-shape))
             [:li#e-fill {:on-click (fn [e] (reset! show-element :fill))
-                         :class (when (= @show-element :fill) "selected")} fill])
+                         :class (when (= @show-element :fill) "selected")} icons/fill])
           [:li#e-stroke {:on-click (fn [e] (reset! show-element :stroke))
-                         :class (when (= @show-element :stroke) "selected")} stroke]
+                         :class (when (= @show-element :stroke) "selected")} icons/stroke]
           [:li#e-text {:on-click (fn [e] (reset! show-element :text))
                        :class (when (= @show-element :text) "selected")} icons/text]
           [:li#e-actions {:on-click (fn [e] (reset! show-element :actions))
-                          :class (when (= @show-element :actions) "selected")} action]]
-
          ;;ELEMENT SIZE AND POSITION
+                          :class (when (= @show-element :actions) "selected")} icons/action]]
+         ;;ELEMENT BASIC INFO
          [:div#element-basics.element-set
           {:class (when (not (= @show-element :options)) "hide")}
           [:div.element-set-title "Size and position"]
@@ -271,7 +271,7 @@
        icons/window]
       [:span "Tools"]
       [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
-       close]]
+       icons/close]]
      [:div.tool-window-content
       [:div.tool-btn.tooltip.tooltip-hover {:alt "Box (Ctrl + B)" :class (if (= (:selected-tool workspace) :rect) "selected" "")
                       :on-click #(actions/set-tool :rect)} icons/box]
@@ -315,7 +315,7 @@
        icons/layers]
       [:span "Elements"]
       [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
-       close]]
+       icons/close]]
      [:div.tool-window-content
       [:ul.element-list
        (map group (seq groups))]]]))
@@ -334,7 +334,7 @@
       [:li.tooltip {:alt "Elements (Ctrl + Shift + L)" :class (if (:layers (:open-setting-boxes @db)) "current" "")
             :on-click #(actions/open-setting-box :layers)} icons/layers]
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
-       chat]]]])
+       icons/chat]]]])
 
 (defn projectbar
   [db]
@@ -343,16 +343,16 @@
       [:span.project-name "Project name"]
       [:ul.tree-view
         [:li.single-page.current
-          [:div.tree-icon page]
+          [:div.tree-icon icons/page]
           [:span "Homepage"]]
         [:li.single-page
-          [:div.tree-icon page]
+          [:div.tree-icon icons/page]
           [:span "Profile"]
           [:div.options
-            [:div pencil]
-            [:div trash]]]
+            [:div icons/pencil]
+            [:div icons/trash]]]
         [:li.group-page
-          [:div.tree-icon page]
+          [:div.tree-icon icons/page]
           [:span "Contact"]]]
       [:button.btn-primary.btn-small "+ Add new page"]
       ]])
