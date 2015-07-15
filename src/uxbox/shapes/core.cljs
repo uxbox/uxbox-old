@@ -47,7 +47,19 @@
 
   (shape->selected-svg
     [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity]}]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke stroke :strokeWidth (+ stroke-width 2) :stroke-opacity stroke-opacity}])
+    [:g
+      [:rect {:x (- x1 4)
+               :y (- y1 4)
+               :width 8
+               :height 8
+               :fill "#4af7c3"
+               :fill-opacity "0.75"}]
+       [:rect {:x (- x2 4)
+               :y (- y2 4)
+               :width 8
+               :height 8
+               :fill "#4af7c3"
+               :fill-opacity "0.75"}]])
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
@@ -98,17 +110,15 @@
      :stroke-opacity stroke-opacity}])
 
   (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
-    [:rect {:x x
-            :y y
-            :width width
-            :height height
-            :fill fill
-            :fillOpacity fill-opacity
-            :rx rx
-            :ry ry
-            :stroke stroke
-            :strokeWidth (+ stroke-width 2)
-            :stroke-opacity stroke-opacity}])
+    [:rect {:x (- x 4)
+            :y (- y 4)
+            :width (+ width 8)
+            :height (+ height 8)
+            :fill "transparent"
+            :stroke "#4af7c3"
+            :strokeWidth 2
+            :strokeDasharray "5,5"
+            :fill-opacity "0.5"}])
 
   (shape->drawing-svg [{:keys [x y]}]
     (let [coordinates (atom [[x y]])
@@ -128,11 +138,10 @@
   [x y width height]
   (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1))
 
-
 ;;=============================
 ;; PATH
 ;;=============================
-(defrecord Path [path icowidth icoheight x y width height fill]
+(defrecord Path [path icowidth icoheight x y width height fill fill-opacity]
   Shape
 
   (intersect [{:keys [x y width height]} px py]
@@ -146,10 +155,10 @@
           vy y]
       (geo/viewportcord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [path icowidth icoheight x y width height fill]}]
+  (shape->svg [{:keys [path icowidth icoheight x y width height fill fill-opacity]}]
     [:svg {:viewBox (str "0 0 " icowidth " " icoheight) :width width :height height :x x :y y
            :preserveAspectRatio "none"}
-     [:path {:d path}]])
+     [:path {:d path :fill fill :fill-opacity fill-opacity}]])
 
   (shape->selected-svg [{:keys [x y width height]}]
     [:rect {:x x
@@ -178,4 +187,58 @@
 (defn new-path
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
-  (Path. path icowidth icoheight x y width height "black"))
+  (Path. path icowidth icoheight x y width height "black" 1))
+
+;;=============================
+;; CIRCLE
+;;=============================
+(defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]
+  Shape
+
+  (intersect
+    [{:keys [cx cy r]} px py]
+    (let [distance (geo/distance-line-circle cx cy r px py)]
+      (<= distance 15)))
+
+  (toolbar-coords
+    [{:keys [cx cy r]}]
+    (let [vx (+ cx r)]
+      (geo/viewportcord->clientcoord vx cy)))
+
+  (shape->svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]}]
+    [:circle {:cx cx
+              :cy cy
+              :r r
+              :fill fill
+              :fillOpacity fill-opacity
+              :stroke stroke
+              :strokeWidth stroke-width
+              :stroke-opacity stroke-opacity}])
+
+  (shape->selected-svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]}]
+    [:rect {:x (- cx r 4)
+            :y (- cy r 4)
+            :width (+ 8 (* r 2))
+            :height (+ 8 (* r 2))
+            :fill "transparent"
+            :stroke "#4af7c3"
+            :strokeWidth 2
+            :strokeDasharray "5,5"
+            :fill-opacity "0.5"}])
+
+
+  (shape->drawing-svg [{:keys [cx cy r]}]
+    (let [coordinates (atom [[cx cy]])
+          viewport-move (fn [state coord]
+                          (reset! coordinates coord))]
+      (pubsub/register-event :viewport-mouse-move viewport-move)
+      (fn []
+        (let [[mouseX mouseY] @coordinates
+              r (geo/distance cx cy mouseX mouseY)]
+          [:circle {:cx cx :cy cy :r r
+                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
+
+(defn new-circle
+  "Retrieves a circle with the default parameters"
+  [cx cy r]
+  (Circle. cx cy r "#cacaca" 1 "gray" 5 1))

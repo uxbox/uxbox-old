@@ -62,3 +62,7 @@
 
 (defn distance-line-point [vx vy wx wy px py]
   (.sqrt js/Math (distance-line-point2 vx vy wx wy px py)))
+
+(defn distance-line-circle [cx cy r px py]
+  (let [d (distance cx cy px py)]
+    (- d r)))

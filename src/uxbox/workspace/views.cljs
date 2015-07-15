@@ -98,7 +98,7 @@
          [:ul.element-icons
           [:li#e-info {:on-click (fn [e] (reset! show-element :options))
                        :class (when (= @show-element :options) "selected")} infocard]
-          (if (and (:rx selected-shape) (:ry selected-shape))
+          (if (or (and (:rx selected-shape) (:ry selected-shape)) (and (:cx selected-shape) (:cy selected-shape)) (:path selected-shape))
             [:li#e-fill {:on-click (fn [e] (reset! show-element :fill))
                          :class (when (= @show-element :fill) "selected")} fill])
           [:li#e-stroke {:on-click (fn [e] (reset! show-element :stroke))
@@ -143,6 +143,27 @@
                  :value (:y selected-shape)
                  :on-change #(swap! db assoc-in [:page :shapes selected-uuid :y] (->> % .-target .-value int))}]]])
 
+           (when (and (:cx selected-shape) (:cy selected-shape))
+             [:div
+              [:span "Position"]
+              [:div.row-flex
+               [:input#x.input-text
+                {:placeholder "X"
+                 :type "number"
+                 :value (:cx selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :cx] (->> % .-target .-value int))}]
+               [:input#y.input-text
+                {:placeholder "Y"
+                 :type "number"
+                 :value (:cy selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :cy] (->> % .-target .-value int))}]]
+               [:span "Width"]
+               [:input#r.input-text
+                {:placeholder "Width"
+                 :type "number"
+                 :value (:r selected-shape)
+                 :on-change #(swap! db assoc-in [:page :shapes selected-uuid :r] (->> % .-target .-value int))}]])
+
            (when (and (:x1 selected-shape) (:y1 selected-shape) (:x2 selected-shape) (:y2 selected-shape))
              [:div
               [:span "Initial position"]
@@ -170,8 +191,8 @@
                  :value (:y2 selected-shape)
                  :on-change #(swap! db assoc-in [:page :shapes selected-uuid :y2] (->> % .-target .-value int))}]]])]]
          ;;ELEMENT FILL
-         (if (and (:rx selected-shape) (:ry selected-shape))
-           [:div#element-fill.element-set
+         (if (or (and (:rx selected-shape) (:ry selected-shape)) (and (:cx selected-shape) (:cy selected-shape)) (:path selected-shape))
+           [:div#fill.element-set
             {:class (when (not (= @show-element :fill)) "hide")}
             [:div.element-set-title "Fill color"]
             [:div.element-set-content
