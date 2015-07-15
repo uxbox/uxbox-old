@@ -22,11 +22,10 @@
   (shape->drawing-svg [shape]
     "Returns the markup for the SVG of the shape while is bein drawed"))
 
-
 ;;=============================
 ;; LINES
 ;;=============================
-(defrecord Line [x1 y1 x2 y2 stroke stroke-width]
+(defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity]
   Shape
 
   (intersect
@@ -43,12 +42,12 @@
       (geo/viewportcord->clientcoord vx vy)))
 
   (shape->svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width]}]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke stroke :strokeWidth stroke-width}])
+    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity]}]
+    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke stroke :strokeWidth stroke-width :stroke-opacity stroke-opacity}])
 
   (shape->selected-svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width]}]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke "#4af7c3" :strokeWidth (+ stroke-width 2)}])
+    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity]}]
+    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke stroke :strokeWidth (+ stroke-width 2) :stroke-opacity stroke-opacity}])
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
@@ -66,12 +65,12 @@
 (defn new-line
   "Retrieves a line with the default parameters"
   [x1 y1 x2 y2]
-  (Line. x1 y1 x2 y2 "gray" 2))
+  (Line. x1 y1 x2 y2 "gray" 4 1))
 
 ;;=============================
 ;; RECTANGLES
 ;;=============================
-(defrecord Rectangle [x y width height rx ry fill stroke]
+(defrecord Rectangle [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]
   Shape
 
   (intersect [{:keys [x y width height]} px py]
@@ -85,20 +84,31 @@
           vy y]
       (geo/viewportcord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [x y width height rx ry fill stroke]}]
-    [:rect {:x x :y y :width width :height height :fill fill :rx rx :ry ry :stroke stroke}])
+  (shape->svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
+    [:rect {:x x
+     :y y
+     :width width
+     :height height
+     :fill fill
+     :fillOpacity fill-opacity
+     :rx rx
+     :ry ry
+     :stroke stroke
+     :strokeWidth stroke-width
+     :stroke-opacity stroke-opacity}])
 
-  (shape->selected-svg [{:keys [x y width height rx ry]}]
-    [:rect {:x (- x 4)
-            :y (- y 4)
-            :width (+ width 8)
-            :height (+ height 8)
-            :fill "transparent"
-            :rx rx :ry ry
-            :stroke "#4af7c3"
-            :strokeWidth 2
-            :strokeDasharray "5,5"
-            :fill-opacity "0.5"}])
+  (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
+    [:rect {:x x
+            :y y
+            :width width
+            :height height
+            :fill fill
+            :fillOpacity fill-opacity
+            :rx rx
+            :ry ry
+            :stroke stroke
+            :strokeWidth (+ stroke-width 2)
+            :stroke-opacity stroke-opacity}])
 
   (shape->drawing-svg [{:keys [x y width height]}]
     (let [coordinates (atom [[x y]])
@@ -116,4 +126,4 @@
 (defn new-rectangle
   "Retrieves a line with the default parameters"
   [x y width height]
-  (Rectangle. x y width height 0 0 "#cacaca" "gray"))
+  (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1))
