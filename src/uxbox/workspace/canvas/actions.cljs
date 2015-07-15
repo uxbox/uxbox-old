@@ -1,7 +1,8 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
-            [uxbox.shapes.core :as shapes]))
+            [uxbox.shapes.core :as shapes]
+            [uxbox.workspace.figures.catalogs :refer [catalogs]]))
 
 (defn drawing-shape
   [coordinates]
@@ -66,6 +67,23 @@
 
     (assoc-in state [:page :drawing] (shapes/map->Line {:x1 x :y1 y :x2 x :y2 y}))))
 
+(defn drawing-path [state [x y] symbol]
+ (if-let [drawing-val (get-in state [:page :drawing])]
+   (let [shape-uuid (random-uuid)
+         group-uuid (random-uuid)
+         [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
+         new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+         shape-val (shapes/new-path rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
+         group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
+
+     (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+         (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+         (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+   (assoc-in state [:page :drawing] (shapes/map->Path {:x x :y y}))))
+
 (pubsub/register-transition
   :drawing-shape
   (fn [state coords]
@@ -73,6 +91,9 @@
      (cond
        (= selected-tool :rect) (drawing-rect state coords)
        (= selected-tool :line) (drawing-line state coords)
+       (= (first selected-tool) :figure)
+         (let [[_ catalog symbol] selected-tool]
+           (drawing-path state coords (get-in catalogs [catalog :symbols symbol])))
        :else state
        ))))
 
