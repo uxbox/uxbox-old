@@ -125,16 +125,17 @@
                         (map #(update-in % [:shapes] ids->shapes))
                         (map :shapes)
                         (map group-svg))
-        on-move (fn [e]
-                  (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
-                    (pubsub/publish! [:viewport-mouse-move coords])
-                    (.preventDefault e)))
 
-        on-click (fn [e]
-                   (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
-                     (pubsub/publish! [:viewport-mouse-click coords])
-                     (.preventDefault e)))]
-    [:div {:on-mouse-move on-move :on-click on-click}
+        on-event (fn [event-type]
+                   (fn [e]
+                     (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
+                       (pubsub/publish! [event-type coords])
+                       (.preventDefault e))))]
+
+    [:div {:on-mouse-move (on-event :viewport-mouse-move)
+           :on-click (on-event :viewport-mouse-click)
+           :on-mouse-down (on-event :viewport-mouse-down)
+           :on-mouse-up (on-event :viewport-mouse-up)}
      [debug-coordinates db]
      [:svg#viewport {:width viewport-height :height viewport-width}
       [horizontal-rule viewport-width document-start-x 100]

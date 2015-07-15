@@ -150,8 +150,12 @@
       (drawing-shape coords)
       (select-shape coords))))
 
-
-(defn tap [t] (println t))
+(pubsub/register-transition
+ :viewport-mouse-drag
+ (fn [state [state coords]]
+   (if (get-in state [:page :selected])
+     state
+     state)))
 
 (defn remove-element [groups-entry element-uuid]
   (let [in? (fn [seq elm] (some #(= elm %) seq))
@@ -181,3 +185,35 @@
             (update-in [:page :shapes] dissoc selected-uuid)
             (update-in [:page] dissoc :selected))
          nil))))
+
+(pubsub/register-transition
+ :viewport-mouse-down
+ (fn [state]
+   (if-let [selected-uuid (get-in state [:page :selected])]
+     (-> state
+         (update-in [:page :shapes selected-uuid] assoc :dragging true))
+     state)))
+
+(pubsub/register-transition
+ :viewport-mouse-up
+ (fn [state]
+   (if-let [selected-uuid (get-in state [:page :selected])]
+     (-> state
+         (update-in [:page :shapes selected-uuid] dissoc :dragging))
+     state)))
+
+(pubsub/register-transition
+ :viewport-mouse-move
+ (let [last-event (atom [0 0])]
+   (fn [state [x y]]
+     (let [[old-x old-y] @last-event
+           selected-uuid (get-in state [:page :selected])]
+       (reset! last-event [x y])
+       (if (and selected-uuid (get-in state [:page :shapes selected-uuid :dragging]))
+         (let [deltax (- x old-x)
+               deltay (- y old-y)
+               shape-x (get-in state [:page :shapes selected-uuid :x])
+               shape-y (get-in state [:page :shapes selected-uuid :y])]
+           (-> state
+               (update-in [:page :shapes selected-uuid] shapes/move-delta deltax deltay)))
+         state)))))

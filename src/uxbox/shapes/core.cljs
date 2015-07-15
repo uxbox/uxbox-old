@@ -21,7 +21,11 @@
     "Returns the markup for the SVG of the elements selecting the shape")
 
   (shape->drawing-svg [shape]
-    "Returns the markup for the SVG of the shape while is bein drawed"))
+    "Returns the markup for the SVG of the shape while is bein drawed")
+
+  (move-delta [shape delta-x delta-y]
+    "Moves the shape to an increment given by the delta-x and delta-y coordinates")
+  )
 
 ;;=============================
 ;; LINES
@@ -73,6 +77,14 @@
         (let [[mouseX mouseY] @coordinates2]
           [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
                   :style #js {:fill "transparent" :stroke "gray" :stroke-width 2 :strokeDasharray "5,5"}}]))))
+
+  (move-delta
+    [{:keys [x1 y1 x2 y2] :as shape} delta-x delta-y]
+    (-> shape
+        (assoc :x1 (+ x1 delta-x))
+        (assoc :y1 (+ y1 delta-y))
+        (assoc :x2 (+ x2 delta-x))
+        (assoc :y2 (+ y2 delta-y))))
   )
 
 (defn new-line
@@ -94,21 +106,23 @@
 
   (toolbar-coords [{:keys [x y width height]}]
     (let [vx (+ x width 50)
-          vy y]
+          vy (- y 50)]
       (geo/viewportcord->clientcoord vx vy)))
 
   (shape->svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
-    [:rect {:x x
-     :y y
-     :width width
-     :height height
-     :fill fill
-     :fillOpacity fill-opacity
-     :rx rx
-     :ry ry
-     :stroke stroke
-     :strokeWidth stroke-width
-     :stroke-opacity stroke-opacity}])
+    [:rect
+     {:x x
+      :y y
+      :width width
+      :height height
+      :fill fill
+      :fillOpacity fill-opacity
+      :rx rx
+      :ry ry
+      :stroke stroke
+      :strokeWidth stroke-width
+      :stroke-opacity stroke-opacity
+      }])
 
   (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
     [:rect {:x (- x 4)
@@ -132,6 +146,12 @@
           (if (and (> rect-width 0) (> rect-height 0))
             [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
                     :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
+
+  (move-delta
+    [{:keys [x y] :as shape} delta-x delta-y]
+    (-> shape
+        (assoc :x (+ x delta-x))
+        (assoc :y (+ y delta-y))))
   )
 
 (defn new-rectangle
@@ -183,6 +203,11 @@
           (if (and (> rect-width 0) (> rect-height 0))
             [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
                     :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
+
+  (move-delta [{:keys [x y] :as shape} delta-x delta-y]
+    (-> shape
+        (assoc :x (+ x delta-x))
+        (assoc :y (+ y delta-y))))
   )
 
 (defn new-path
@@ -203,8 +228,9 @@
 
   (toolbar-coords
     [{:keys [cx cy r]}]
-    (let [vx (+ cx r)]
-      (geo/viewportcord->clientcoord vx cy)))
+    (let [vx (+ cx r 20)
+          vy (- cy r 40)]
+      (geo/viewportcord->clientcoord vx vy)))
 
   (shape->svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]}]
     [:circle {:cx cx
@@ -237,7 +263,13 @@
         (let [[mouseX mouseY] @coordinates
               r (geo/distance cx cy mouseX mouseY)]
           [:circle {:cx cx :cy cy :r r
-                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
+                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]))))
+
+  (move-delta [{:keys [cx cy] :as shape} delta-x delta-y]
+    (-> shape
+        (assoc :cx (+ cx delta-x))
+        (assoc :cy (+ cy delta-y))))
+  )
 
 (defn new-circle
   "Retrieves a circle with the default parameters"

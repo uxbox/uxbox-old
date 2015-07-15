@@ -1,6 +1,7 @@
 .element-options {
   display: flex;
   position: absolute;
+  transition: all .1s ease;
 
   .element-icons {
     background-color: $color-white;
