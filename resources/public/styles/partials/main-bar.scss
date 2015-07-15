@@ -44,10 +44,10 @@
     left: 0;
     padding: 0 $small;
     position: absolute;
-    top: 110%;
+    top: 0;
     width: 100%;
     z-index: 12;
-    @include animation(0,.3s,fadeInDown);
+    @include animation(0,.2s,fadeInDown);
 
     li {
       font-size: $fs13;
