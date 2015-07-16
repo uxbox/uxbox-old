@@ -81,5 +81,7 @@
  (fn [state data]
    (let [[location project-uuid page-uuid] data]
      (if (= location :workspace)
-       (assoc state :project (storage/get-project project-uuid)
-                    :page (storage/get-page project-uuid page-uuid))))))
+       (-> state
+           (assoc :project (storage/get-project project-uuid))
+           (assoc :page (storage/get-page project-uuid page-uuid)))
+       state))))

@@ -127,7 +127,7 @@
  (fn [state [shape-uuid shape-val]]
    (assoc-in state [:page :shapes shape-uuid] shape-val)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :insert-group
  (fn [state [group-uuid group-val]]
    (let [project-uuid (get-in state [:project :uuid])
@@ -135,7 +135,7 @@
      (storage/create-group project-uuid page-uuid group-uuid group-val)
      nil)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :insert-shape
  (fn [state [shape-uuid shape-val]]
    (let [project-uuid (get-in state [:project :uuid])
