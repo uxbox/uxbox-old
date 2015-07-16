@@ -268,6 +268,13 @@
          [:div#element-actions.element-set
           {:class (when (not (= @show-element :actions)) "hide")}
           [:div.element-set-title "Actions"]
+          [:div.element-set-content
+            [:span.half "Rotation"]
+            [:input#stroke.input-text
+             {:placeholder "Degrees"
+              :type "number"
+              :value (:rotate selected-shape)
+              :on-change #(swap! db assoc-in [:page :shapes selected-uuid :rotate] (->> % .-target .-value))}]]
           [:div.element-set-content]]]))))
 
 (defn tools [db]
