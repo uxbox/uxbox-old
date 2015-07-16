@@ -5,20 +5,23 @@
 
 (defn create-project
   [{:keys [name width height layout]}]
-  (let [now (js/Date.)]
+  (let [now (js/Date.)
+        project-uuid (random-uuid)
+        page (d/create-page project-uuid "Homepage")]
     (pubsub/publish! [:create-project {:name name
                                        :width width
                                        :height height
                                        :layout layout
-                                       :uuid (random-uuid)
+                                       :uuid project-uuid
                                        :last-update now
                                        :created now
-                                       :pages []
+                                       :first-page-uuid (:uuid page)
+                                       :pages {(:uuid page) page}
                                        :comment-count 0}])))
 
 (defn create-page
   [project title]
-  (pubsub/publish! [:create-page [(:uuid project) (d/create-page project title)]]))
+  (pubsub/publish! [:create-page [(:uuid project) (d/create-page (:uuid project) title)]]))
 
 (defn change-page-title
   [project page title]
@@ -50,7 +53,8 @@
 (pubsub/register-transition
  :create-project
  (fn [state project]
-   (storage/create-project project)))
+   (storage/create-project project)
+   nil))
 
 (pubsub/register-effect
  :delete-project

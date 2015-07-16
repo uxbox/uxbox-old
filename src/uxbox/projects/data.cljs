@@ -11,11 +11,11 @@
      :comment-count 0}))
 
 (defn create-page
-  [project title]
+  [project-uuid title]
   {:title title
    :uuid (random-uuid)
    :width 640
    :height 1080
-   :project (:uuid project)
+   :project project-uuid
    :shapes {}
    :groups {}})
