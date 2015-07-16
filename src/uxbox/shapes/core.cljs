@@ -27,10 +27,15 @@
     "Moves the shape to an increment given by the delta-x and delta-y coordinates")
   )
 
+(defn generate-transformation
+  [{:keys [rotate center]}]
+  (let [x (:x center) y (:y center)]
+    (str "translate( "x" "y") rotate(" rotate ") translate( -"x" -"y")")))
+
 ;;=============================
 ;; LINES
 ;;=============================
-(defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity]
+(defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]
   Shape
 
   (intersect
@@ -47,24 +52,43 @@
       (geo/viewportcord->clientcoord vx vy)))
 
   (shape->svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity]}]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke stroke :strokeWidth stroke-width :stroke-opacity stroke-opacity}])
+    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
+    (let [length-x (geo/distance x1 0 x2 0)
+          length-y (geo/distance 0 y1 0 y2)
+          min-x (min x1 x2)
+          min-y (min y1 y2)
+          center-x (+ min-x (/ length-x 2))
+          center-y (+ min-y (/ length-y 2))]
+      [:line {:x1 x1
+              :y1 y1
+              :x2 x2
+              :y2 y2
+              :stroke stroke
+              :strokeWidth stroke-width
+              :stroke-opacity stroke-opacity
+              :transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}]))
 
   (shape->selected-svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity]}]
-    [:g
-      [:rect {:x (- x1 4)
-               :y (- y1 4)
-               :width 8
-               :height 8
-               :fill "#4af7c3"
-               :fill-opacity "0.75"}]
-       [:rect {:x (- x2 4)
-               :y (- y2 4)
-               :width 8
-               :height 8
-               :fill "#4af7c3"
-               :fill-opacity "0.75"}]])
+    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
+    (let [length-x (geo/distance x1 0 x2 0)
+          length-y (geo/distance 0 y1 0 y2)
+          min-x (min x1 x2)
+          min-y (min y1 y2)
+          center-x (+ min-x (/ length-x 2))
+          center-y (+ min-y (/ length-y 2))]
+      [:g {:transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}
+        [:rect {:x (- x1 4)
+                 :y (- y1 4)
+                 :width 8
+                 :height 8
+                 :fill "#4af7c3"
+                 :fill-opacity "0.75"}]
+         [:rect {:x (- x2 4)
+                 :y (- y2 4)
+                 :width 8
+                 :height 8
+                 :fill "#4af7c3"
+                 :fill-opacity "0.75"}]]))
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
@@ -90,12 +114,12 @@
 (defn new-line
   "Retrieves a line with the default parameters"
   [x1 y1 x2 y2]
-  (Line. x1 y1 x2 y2 "gray" 4 1))
+  (Line. x1 y1 x2 y2 "gray" 4 1 0))
 
 ;;=============================
 ;; RECTANGLES
 ;;=============================
-(defrecord Rectangle [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]
+(defrecord Rectangle [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
 
   (intersect [{:keys [x y width height]} px py]
@@ -109,7 +133,7 @@
           vy (- y 50)]
       (geo/viewportcord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
+  (shape->svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:rect
      {:x x
       :y y
@@ -122,9 +146,10 @@
       :stroke stroke
       :strokeWidth stroke-width
       :stroke-opacity stroke-opacity
-      }])
+      :rotate rotate
+      :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
 
-  (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity]}]
+  (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:rect {:x (- x 4)
             :y (- y 4)
             :width (+ width 8)
@@ -133,7 +158,9 @@
             :stroke "#4af7c3"
             :strokeWidth 2
             :strokeDasharray "5,5"
-            :fill-opacity "0.5"}])
+            :fill-opacity "0.5"
+            :rotate rotate
+            :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
 
   (shape->drawing-svg [{:keys [x y]}]
     (let [coordinates (atom [[x y]])
@@ -157,12 +184,12 @@
 (defn new-rectangle
   "Retrieves a line with the default parameters"
   [x y width height]
-  (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1))
+  (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1 0))
 
 ;;=============================
 ;; PATH
 ;;=============================
-(defrecord Path [path icowidth icoheight x y width height fill fill-opacity]
+(defrecord Path [path icowidth icoheight x y width height fill fill-opacity rotate]
   Shape
 
   (intersect [{:keys [x y width height]} px py]
@@ -176,12 +203,20 @@
           vy y]
       (geo/viewportcord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [path icowidth icoheight x y width height fill fill-opacity]}]
-    [:svg {:viewBox (str "0 0 " icowidth " " icoheight) :width width :height height :x x :y y
+  (shape->svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
+    [:svg {:viewBox (str "0 0 " icowidth " " icoheight)
+           :width width
+           :height height
+           :x x
+           :y y
            :preserveAspectRatio "none"}
-     [:path {:d path :fill fill :fill-opacity fill-opacity}]])
+     [
+      :g {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
+       [:path {:d path
+               :fill fill
+               :fill-opacity fill-opacity}]]])
 
-  (shape->selected-svg [{:keys [x y width height]}]
+  (shape->selected-svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
     [:rect {:x x
             :y y
             :width width
@@ -213,12 +248,12 @@
 (defn new-path-shape
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
-  (Path. path icowidth icoheight x y width height "black" 1))
+  (Path. path icowidth icoheight x y width height "black" 1 0))
 
 ;;=============================
 ;; CIRCLE
 ;;=============================
-(defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]
+(defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
 
   (intersect
@@ -232,7 +267,7 @@
           vy (- cy r 40)]
       (geo/viewportcord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]}]
+  (shape->svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:circle {:cx cx
               :cy cy
               :r r
@@ -240,9 +275,10 @@
               :fillOpacity fill-opacity
               :stroke stroke
               :strokeWidth stroke-width
-              :stroke-opacity stroke-opacity}])
+              :stroke-opacity stroke-opacity
+              :transform (generate-transformation {:rotate rotate :center {:x cx :y cy}})}])
 
-  (shape->selected-svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity]}]
+  (shape->selected-svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:rect {:x (- cx r 4)
             :y (- cy r 4)
             :width (+ 8 (* r 2))
@@ -251,7 +287,8 @@
             :stroke "#4af7c3"
             :strokeWidth 2
             :strokeDasharray "5,5"
-            :fill-opacity "0.5"}])
+            :fill-opacity "0.5"
+            :transform (generate-transformation {:rotate rotate :center {:x cx :y cy}})}])
 
 
   (shape->drawing-svg [{:keys [cx cy r]}]
@@ -279,7 +316,7 @@
 (defn new-circle
   "Retrieves a circle with the default parameters"
   [cx cy r]
-  (Circle. cx cy r "#cacaca" 1 "gray" 5 1))
+  (Circle. cx cy r "#cacaca" 1 "gray" 5 1 0))
 
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Rectangle) "/" ".") uxbox.shapes.core/map->Rectangle)
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Line) "/" ".") uxbox.shapes.core/map->Line)
