@@ -50,23 +50,20 @@
  (fn [state [project-uuid page]]
    (assoc-in state [:project :pages (:uuid page)] page)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :create-project
  (fn [state project]
-   (storage/create-project project)
-   nil))
+   (storage/create-project project)))
 
 (pubsub/register-effect
  :delete-project
  (fn [state uuid]
-   (storage/delete-project uuid)
-   nil))
+   (storage/delete-project uuid)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :create-page
  (fn [state [project-uuid page]]
-   (storage/create-page project-uuid page)
-   nil))
+   (storage/create-page project-uuid page)))
 
 (pubsub/register-transition
  :delete-page
@@ -82,14 +79,12 @@
  (fn [state [project page title]]
    (assoc-in state [:project :pages (:uuid page) :title] title)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :change-page-title
  (fn [state [project page title]]
-   (storage/change-page-title (:uuid project) page title)
-   nil))
+   (storage/change-page-title (:uuid project) page title)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :delete-page
  (fn [state [project page]]
-   (storage/delete-page (:uuid project) page)
-   nil))
+   (storage/delete-page (:uuid project) page)))

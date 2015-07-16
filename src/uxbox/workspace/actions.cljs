@@ -2,6 +2,10 @@
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.storage :as storage]))
 
+(defn change-shape-attr
+  [project-uuid page-uuid shape-uuid attr value]
+  (pubsub/publish! [:change-shape-attr [project-uuid page-uuid shape-uuid attr value]]))
+
 (defn close-setting-box
   [setting-box]
   (pubsub/publish! [:close-setting-box setting-box]))
@@ -37,6 +41,16 @@
 (defn view-page
   [project-uuid page-uuid]
   (pubsub/publish! [:view-page [project-uuid page-uuid]]))
+
+(pubsub/register-transition
+ :change-shape-attr
+ (fn [state [project-uuid page-uuid shape-uuid attr value]]
+   (assoc-in state [:page :shapes shape-uuid attr] value)))
+
+(pubsub/register-effect
+ :change-shape-attr
+ (fn [state [project-uuid page-uuid shape-uuid attr value]]
+   (storage/change-shape-attr project-uuid page-uuid shape-uuid attr value)))
 
 (pubsub/register-transition
  :close-setting-box

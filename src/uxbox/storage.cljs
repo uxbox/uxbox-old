@@ -1,6 +1,6 @@
 (ns uxbox.storage
   (:require [hodgepodge.core :refer [local-storage set-item get-item]]
-            [uxbox.shapes.core :refer [Rectangle Line]]))
+            [uxbox.shapes.core :refer [Rectangle Line move-delta]]))
 
 (def users [{:username "user-1"
              :password "user-1"}
@@ -167,3 +167,11 @@
 (defn create-group
       [project-uuid page-uuid group-uuid group]
       (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages page-uuid :groups group-uuid] group))))
+
+(defn change-shape-attr
+      [project-uuid page-uuid shape-uuid attr value]
+      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages page-uuid :shapes shape-uuid attr] value))))
+
+(defn move-shape
+      [project-uuid page-uuid shape-uuid deltax deltay]
+      (swap! data (fn [current] (update-in current [:projects project-uuid :pages page-uuid :shapes shape-uuid] move-delta deltax deltay))))
