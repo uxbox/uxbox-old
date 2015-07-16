@@ -7,8 +7,8 @@
             {:username "user-2"
              :password "user-2"}])
 
-(def projects {"c078f148-2686-4b07-a165-c455a0ab19a7" {:name "Design UX Box"
-                                                       :uuid "c078f148-2686-4b07-a165-c455a0ab19a7"
+(def projects {(uuid "c078f148-2686-4b07-a165-c455a0ab19a7") {:name "Design UX Box"
+                                                       :uuid (uuid "c078f148-2686-4b07-a165-c455a0ab19a7")
                                                        :last-update (js/Date. 2014 10 1)
                                                        :created (js/Date. 2014 9 1)
                                                        :owner "user-1"
@@ -37,8 +37,8 @@
                                                             :height 1080
                                                            :shapes {}
                                                            :groups {}}}}
-               "7b16847f-9298-4397-b093-a5364fdd1e97" {:name "Wireframes Taiga Tribe"
-                                                       :uuid "7b16847f-9298-4397-b093-a5364fdd1e97"
+               (uuid "7b16847f-9298-4397-b093-a5364fdd1e97") {:name "Wireframes Taiga Tribe"
+                                                       :uuid (uuid "7b16847f-9298-4397-b093-a5364fdd1e97")
                                                        :last-update (js/Date. 2005 10 1)
                                                        :created (js/Date. 2005 9 1)
                                                        :owner "user-1"
@@ -60,8 +60,8 @@
                                                            :shapes {}
 
                                                            :groups {}}}}
-               "01764df1-a6d6-407c-96c4-29110deeb641" {:name "A WYSH Roadmap"
-                                                       :uuid "01764df1-a6d6-407c-96c4-29110deeb641"
+               (uuid "01764df1-a6d6-407c-96c4-29110deeb641") {:name "A WYSH Roadmap"
+                                                       :uuid (uuid "01764df1-a6d6-407c-96c4-29110deeb641")
                                                        :last-update (js/Date. 2010 10 1)
                                                        :created (js/Date. 2010 9 1)
                                                        :owner "user-2"
