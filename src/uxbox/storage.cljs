@@ -89,7 +89,7 @@
           :created (:created project)
           :comment-count (count (:comments project))
           :first-page-uuid (first (keys (:pages project)))
-          :pages (count (:pages project))}]) (vals (:projects @data)))))
+          :pages (count (:pages project))}])
           :width (:width project)
           :height (:height project)
           :layout (:layout project)}]) (vals (:projects @data)))))
