@@ -138,16 +138,14 @@
  (fn [state [group-uuid group-val]]
    (let [project-uuid (get-in state [:project :uuid])
          page-uuid (get-in state [:page :uuid])]
-     (storage/create-group project-uuid page-uuid group-uuid group-val)
-     nil)))
+     (storage/create-group project-uuid page-uuid group-uuid group-val))))
 
 (pubsub/register-effect
  :insert-shape
  (fn [state [shape-uuid shape-val]]
    (let [project-uuid (get-in state [:project :uuid])
          page-uuid (get-in state [:page :uuid])]
-     (storage/create-shape project-uuid page-uuid shape-uuid shape-val)
-     nil)))
+     (storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
 
 (pubsub/register-event
   :viewport-mouse-click
@@ -182,8 +180,7 @@
           page-uuid (get-in state [:page :uuid])]
 
       (if selected-uuid
-         (storage/remove-shape project-uuid page-uuid selected-uuid)
-         nil)
+         (storage/remove-shape project-uuid page-uuid selected-uuid))
 
       (if selected-uuid
          (-> state
@@ -219,7 +216,11 @@
          (let [deltax (- x old-x)
                deltay (- y old-y)
                shape-x (get-in state [:page :shapes selected-uuid :x])
-               shape-y (get-in state [:page :shapes selected-uuid :y])]
+               shape-y (get-in state [:page :shapes selected-uuid :y])
+               selected-uuid (get-in state [:page :selected])
+               project-uuid (get-in state [:project :uuid])
+               page-uuid (get-in state [:page :uuid])]
+           (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
            (-> state
                (update-in [:page :shapes selected-uuid] shapes/move-delta deltax deltay)))
          state)))))
