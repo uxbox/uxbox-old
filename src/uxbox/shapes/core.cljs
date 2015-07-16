@@ -261,9 +261,13 @@
       (pubsub/register-event :viewport-mouse-move viewport-move)
       (fn []
         (let [[mouseX mouseY] @coordinates
-              r (geo/distance cx cy mouseX mouseY)]
+              r (geo/distance cx cy mouseX mouseY)
+              dx (- (geo/distance cx cy cx 0) r)
+              dy (- (geo/distance cx cy 0 cy) r)
+              r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)]
           [:circle {:cx cx :cy cy :r r
-                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]))))
+                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]
+          ))))
 
   (move-delta [{:keys [cx cy] :as shape} delta-x delta-y]
     (-> shape
