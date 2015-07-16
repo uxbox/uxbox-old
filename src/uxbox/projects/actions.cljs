@@ -29,14 +29,12 @@
  (fn [state project]
    (update state :projects-list assoc (:uuid project) project)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :create-project
  (fn [state project]
-   (storage/create-project project)
-   nil))
+   (storage/create-project project)))
 
-(pubsub/register-transition
+(pubsub/register-effect
  :delete-project
  (fn [state uuid]
-   (storage/delete-project uuid)
-   nil))
+   (storage/delete-project uuid)))

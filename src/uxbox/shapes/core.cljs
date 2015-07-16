@@ -210,7 +210,7 @@
         (assoc :y (+ y delta-y))))
   )
 
-(defn new-path
+(defn new-path-shape
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
   (Path. path icowidth icoheight x y width height "black" 1))
@@ -262,6 +262,7 @@
       (fn []
         (let [[mouseX mouseY] @coordinates
               r (geo/distance cx cy mouseX mouseY)
+              r (if (js/isNaN r) 0 r)
               dx (- (geo/distance cx cy cx 0) r)
               dy (- (geo/distance cx cy 0 cy) r)
               r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)]

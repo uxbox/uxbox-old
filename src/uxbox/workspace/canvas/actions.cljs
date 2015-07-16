@@ -74,7 +74,7 @@
          group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
-         shape-val (shapes/new-path rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
+         shape-val (shapes/new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
          group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
 
      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
