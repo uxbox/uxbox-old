@@ -62,6 +62,7 @@
         project-name (get-in @db [:new-project :name])
         project-width (get-in @db [:new-project :width])
         project-height (get-in @db [:new-project :height])
+        project-layout (get-in @db [:new-project :layout])
         layouts (keys (:project-layouts @db))]
     [tag
        [:div.lightbox-body
@@ -96,7 +97,10 @@
           [:input#project-btn.btn-primary
             {:value "Go go go!"
              :type "button"
-             :on-click #(let [new-project-attributes {:name (trim project-name) :width (int project-width)}]
+             :on-click #(let [new-project-attributes {:name (trim project-name)
+                                                      :width (int project-width)
+                                                      :height (int project-height)
+                                                      :layout project-layout}]
                           (create-project new-project-attributes)
                           (close-lightbox))}])
         [:a.close

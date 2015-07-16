@@ -96,8 +96,8 @@
   (let [viewport-height 3000
         viewport-width 3000
 
-        page-width (get-in @db [:page :width])
-        page-height (get-in @db [:page :height])
+        page-width (get-in @db [:project :width])
+        page-height (get-in @db [:project :height])
 
         document-start-x (- 500 (/ page-width 2))
         document-start-y (- 750 (/ page-height 2))

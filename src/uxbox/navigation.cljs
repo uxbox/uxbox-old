@@ -25,7 +25,7 @@
   (set-location! [:dashboard]))
 
 (defroute workspace-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
-  (set-location! [:workspace project-uuid page-uuid]))
+  (set-location! [:workspace (uuid project-uuid) (uuid page-uuid)]))
 
 ;; History
 

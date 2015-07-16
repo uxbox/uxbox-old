@@ -90,6 +90,9 @@
           :comment-count (count (:comments project))
           :first-page-uuid (first (keys (:pages project)))
           :pages (count (:pages project))}]) (vals (:projects @data)))))
+          :width (:width project)
+          :height (:height project)
+          :layout (:layout project)}]) (vals (:projects @data)))))
 
 (defn get-project
       [uuid]
@@ -100,7 +103,10 @@
          :created (:created project)
          :owner (:owner project)
          :comment-count (count (:comments project))
-         :pages-count (count (:pages project))}))
+         :pages-count (count (:pages project))
+         :width (:width project)
+         :height (:height project)
+         :layout (:layout project)}))
 
 (defn create-project
       [project]
