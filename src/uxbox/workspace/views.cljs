@@ -62,7 +62,6 @@
        [:select.input-select.small {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
         (for [[catalog-id catalog] (seq figures-catalogs/catalogs)]
           [:option {:key catalog-id :value catalog-id} (:name catalog)])]]
-      (.log js/console (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols])))
       (for [[figure-id figure] (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols]))]
         [:div.figure-btn {:key figure-id
                           :class (if (= (:selected-tool workspace) [:figure (:current-catalog @db) figure-id]) "selected" "")
@@ -448,7 +447,7 @@
   [:div
    [header db]
    [:main.main-content
-    [:section.workspace-content {:on-key-pressed (fn [e] (.log js/console "KEY => " e))}
+    [:section.workspace-content
      [toolbar db]
      [projectbar db]
      [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}

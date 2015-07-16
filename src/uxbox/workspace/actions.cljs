@@ -108,4 +108,6 @@
                     :page (storage/get-page project-uuid page-uuid)
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)
-                    :visible-project-bar false)))))
+                    :visible-project-bar false)
+       state
+       ))))

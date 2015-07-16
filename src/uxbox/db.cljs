@@ -58,10 +58,10 @@
                     :editing-pages {}
                     :new-page-name ""
                     :adding-new-page false
-                    :workspace-defaults {:selected-tool :rect
+                    :workspace-defaults {:selected-tool nil
                                          :selected-element 0
                                          :grid false}
-                    :workspace {:selected-tool :rect
+                    :workspace {:selected-tool nil
                                 :selected-groups #{}
                                 :selected-element 0
                                 :grid false}

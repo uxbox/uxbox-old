@@ -179,7 +179,7 @@
           project-uuid (get-in state [:project :uuid])
           page-uuid (get-in state [:page :uuid])]
 
-      (if selected-uuid
+      (when selected-uuid
          (storage/remove-shape project-uuid page-uuid selected-uuid))
 
       (if selected-uuid
@@ -187,7 +187,7 @@
             (update-in [:page :groups] remove-element selected-uuid)
             (update-in [:page :shapes] dissoc selected-uuid)
             (update-in [:page] dissoc :selected))
-         nil))))
+         state))))
 
 (pubsub/register-transition
  :viewport-mouse-down

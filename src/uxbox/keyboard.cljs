@@ -12,5 +12,5 @@
     (pubsub/publish! [event-id])))
 
 (defn start-keyboard! []
-  (let [app-node (dom/getElement "app")]
+  (let [app-node (aget (.getElementsByTagName js/document "html") 0)]
     (events/listen app-node EventType.KEYPRESS dispatch-key)))
