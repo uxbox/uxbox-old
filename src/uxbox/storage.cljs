@@ -7,19 +7,19 @@
             {:username "user-2"
              :password "user-2"}])
 
-(def projects {"c078f148-2686-4b07-a165-c455a0ab19a7" {:name "Design UX Box"
-                                                       :uuid "c078f148-2686-4b07-a165-c455a0ab19a7"
+(def projects {(uuid "c078f148-2686-4b07-a165-c455a0ab19a7") {:name "Design UX Box"
+                                                       :uuid (uuid "c078f148-2686-4b07-a165-c455a0ab19a7")
                                                        :last-update (js/Date. 2014 10 1)
                                                        :created (js/Date. 2014 9 1)
                                                        :owner "user-1"
                                                        :comments {
                                                          "3e14aaed-e3ab-45f4-9fc5-14dc023a545e" {:text "Comment1"}
                                                          "28409319-3daa-420b-8c1c-0044b4d4d6c4" {:text "Comment2"}}
-                                                       :pages (sorted-map
-                                                         "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88" {
+                                                       :pages {
+                                                         (uuid "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88") {
                                                            :title "My awesome page"
+                                                           :uuid (uuid "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88")
                                                            :author "Bobby Tables"
-                                                           :uuid "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88"
 
                                                            :width 640
                                                            :height 1080
@@ -27,9 +27,18 @@
                                                            ;:drawing {:shape :rectangle :x 100 :y 100}
 
                                                            :shapes {}
-                                                           :groups {}})}
-               "7b16847f-9298-4397-b093-a5364fdd1e97" {:name "Wireframes Taiga Tribe"
-                                                       :uuid "7b16847f-9298-4397-b093-a5364fdd1e97"
+                                                           :groups {}}
+                                                          (uuid "3df37adb-f18d-4afb-9908-397e3d46653d") {
+                                                            :title "Another awesome page"
+                                                            :uuid (uuid "3df37adb-f18d-4afb-9908-397e3d46653d")
+                                                            :author "Bobby Tables"
+
+                                                            :width 640
+                                                            :height 1080
+                                                           :shapes {}
+                                                           :groups {}}}}
+               (uuid "7b16847f-9298-4397-b093-a5364fdd1e97") {:name "Wireframes Taiga Tribe"
+                                                       :uuid (uuid "7b16847f-9298-4397-b093-a5364fdd1e97")
                                                        :last-update (js/Date. 2005 10 1)
                                                        :created (js/Date. 2005 9 1)
                                                        :owner "user-1"
@@ -37,11 +46,11 @@
                                                          "b1cafec8-4b1b-49b0-8ae2-3342dcbaaf6d" {:text "Comment1"}
                                                          "caee3210-4d16-4eae-a42f-a59a9228b886" {:text "Comment2"}
                                                          "8f017228-fecd-4145-ae92-c1c64b587b46" {:text "Comment1"}}
-                                                       :pages (sorted-map
-                                                         "082e1921-908d-4af6-897c-0a8a24d00b9b" {
+                                                       :pages {
+                                                         (uuid "082e1921-908d-4af6-897c-0a8a24d00b9b") {
                                                            :title "My awesome page"
+                                                           :uuid (uuid "082e1921-908d-4af6-897c-0a8a24d00b9b")
                                                            :author "Bobby Tables"
-                                                           :uuid "082e1921-908d-4af6-897c-0a8a24d00b9b"
 
                                                            :width 640
                                                            :height 1080
@@ -50,18 +59,18 @@
 
                                                            :shapes {}
 
-                                                           :groups {}})}
-               "01764df1-a6d6-407c-96c4-29110deeb641" {:name "A WYSH Roadmap"
-                                                       :uuid "01764df1-a6d6-407c-96c4-29110deeb641"
+                                                           :groups {}}}}
+               (uuid "01764df1-a6d6-407c-96c4-29110deeb641") {:name "A WYSH Roadmap"
+                                                       :uuid (uuid "01764df1-a6d6-407c-96c4-29110deeb641")
                                                        :last-update (js/Date. 2010 10 1)
                                                        :created (js/Date. 2010 9 1)
                                                        :owner "user-2"
                                                        :comment []
-                                                       :pages (sorted-map
-                                                         "e654dff7-ef99-465d-949e-abb907dc69ce" {
+                                                       :pages {
+                                                         (uuid "e654dff7-ef99-465d-949e-abb907dc69ce") {
                                                            :title "My awesome page"
+                                                           :uuid (uuid "e654dff7-ef99-465d-949e-abb907dc69ce")
                                                            :author "Bobby Tables"
-                                                           :uuid "e654dff7-ef99-465d-949e-abb907dc69ce"
 
                                                            :width 640
                                                            :height 1080
@@ -70,7 +79,7 @@
 
                                                            :shapes {}
 
-                                                           :groups {}})}})
+                                                           :groups {}}}}})
 
 (defonce data
   (if (:data local-storage)
@@ -92,7 +101,8 @@
           :pages (count (:pages project))
           :width (:width project)
           :height (:height project)
-          :layout (:layout project)}]) (vals (:projects @data)))))
+          :layout (:layout project)
+          :pages-count (count (:pages project))}]) (vals (:projects @data)))))
 
 (defn get-project
       [uuid]
@@ -106,11 +116,24 @@
          :pages-count (count (:pages project))
          :width (:width project)
          :height (:height project)
-         :layout (:layout project)}))
+         :layout (:layout project)
+         :pages (:pages project)}))
 
 (defn create-project
       [project]
       (swap! data (fn [current] (assoc-in current [:projects (:uuid project)] project))))
+
+(defn create-page
+      [project-uuid page]
+      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages (:uuid page)] page))))
+
+(defn change-page-title
+      [project-uuid page title]
+      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages (:uuid page) :title] title))))
+
+(defn delete-page
+      [project-uuid page]
+      (swap! data (fn [current] (update-in current [:projects project-uuid :pages] dissoc (:uuid page)))))
 
 (defn delete-project
       [uuid]

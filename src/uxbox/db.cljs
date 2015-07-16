@@ -6,6 +6,7 @@
 
 (def initial-state {:location [:login]
                     :lightbox nil
+                    :default-open-setting-boxes #{:tools :layers}
                     :open-setting-boxes #{:tools :layers}
                     :open-user-menu false
                     :user {:fullname "Michael Buchannon"
@@ -52,14 +53,25 @@
                     :new-project-defaults {
                       :name ""
                     }
-                    :workspace {:selected-tool nil
-                                :selected-groups #{}}
+                    :visible-project-bar false
+                    :new-project-name ""
+                    :editing-pages {}
+                    :new-page-name ""
+                    :adding-new-page false
+                    :workspace-defaults {:selected-tool :rect
+                                         :selected-element 0
+                                         :grid false}
+                    :workspace {:selected-tool :rect
+                                :selected-groups #{}
+                                :selected-element 0
+                                :grid false}
 
                     ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
                     ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement
                     ;; Style properties http://www.w3.org/TR/SVG/propidx.html
                     :current-catalog :material-design-actions
 
+                    :project nil
                     :page nil})
 
 (defonce app-state (atom initial-state))
