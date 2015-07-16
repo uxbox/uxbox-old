@@ -100,10 +100,6 @@
           shape-val (shapes/new-circle (:cx drawing-val) (:cy drawing-val) r)
           group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
-      (println "R1" (geo/distance x y (:cx drawing-val) (:cy drawing-val)))
-      (println "dx" dx)
-      (println "dy" dy)
-      (println "r" r)
       (do (pubsub/publish! [:insert-group [group-uuid group-val]])
           (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (-> state
