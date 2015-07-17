@@ -77,9 +77,9 @@
 
 (defn project-card [project]
   (let [{:keys [uuid last-update first-page-uuid]} project]
-    [:div.grid-item.project-th
-     {:key uuid}
-     [:h3 {:on-click #(navigate! (workspace-route {:project-uuid uuid :page-uuid first-page-uuid}))}
+    [:div.grid-item.project-th {:on-click #(navigate! (workspace-route {:project-uuid uuid :page-uuid first-page-uuid}))
+                                :key uuid}
+     [:h3
       (:name project)]
      [:span.project-th-update "Updated " (ago last-update)]
      [:div.project-th-actions
@@ -89,7 +89,7 @@
       [:div.project-th-icon.comments
        chat
        [:span (:comment-count project)]]
-      [:div.project-th-icon.delete {:on-click #(delete-project (:uuid project))}
+      [:div.project-th-icon.delete {:on-click #(do (.stopPropagation %) (delete-project (:uuid project)))}
        icons/trash]]]))
 
 (defn dashboard-grid [db]
