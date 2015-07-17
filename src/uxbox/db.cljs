@@ -11,32 +11,7 @@
                     :open-user-menu false
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
-                    :activity [
-                      {:author {:name "Other user" :avatar "../../images/avatar.jpg" }
-                       :uuid (random-uuid)
-                       :project {:uuid  a-project-id :name "Design of UXBox"}
-                       :datetime (js/Date. 2015 6 13 17 15)
-                       :event {:type "create new page" :name "Login"}}
-                      {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
-                       :uuid (random-uuid)
-                       :project {:uuid  another-project-id :name "Wireframes Taiga Tribe"}
-                       :datetime (js/Date. 2015 6 12 17 00)
-                       :event {:type "create new page" :name "Login"}}
-                      {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
-                       :uuid (random-uuid)
-                       :project {:uuid  another-project-id :name "Wireframes Taiga Tribe"}
-                       :datetime (js/Date. 2015 6 11 17 00)
-                       :event {:type "create new page" :name "Login"}}
-                      {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
-                       :uuid (random-uuid)
-                       :project {:uuid  another-project-id :name "Wireframes Taiga Tribe"}
-                       :datetime (js/Date. 2015 6 11 17 00)
-                       :event {:type "create new page" :name "Login"}}
-                      {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
-                       :uuid (random-uuid)
-                       :project {:uuid  another-project-id :name "Wireframes Taiga Tribe"}
-                       :datetime (js/Date. 2015 6 10 17 00)
-                       :event {:type "create new page" :name "Login"}}]
+                    :activity []
                     :project-sort-order :name
                     :project-orderings {
                       :name "name"
