@@ -7,7 +7,7 @@
   [{:keys [name width height layout]}]
   (let [now (js/Date.)
         project-uuid (random-uuid)
-        page (d/create-page project-uuid "Homepage")]
+        page (d/create-page project-uuid "Homepage" width height)]
     (pubsub/publish! [:create-project {:name name
                                        :width width
                                        :height height
@@ -21,7 +21,7 @@
 
 (defn create-page
   [project title]
-  (pubsub/publish! [:create-page [(:uuid project) (d/create-page (:uuid project) title)]]))
+  (pubsub/publish! [:create-page [(:uuid project) (d/create-page (:uuid project) title (:width project) (:height project))]]))
 
 (defn change-page-title
   [project page title]

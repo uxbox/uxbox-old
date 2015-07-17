@@ -1,9 +1,12 @@
 (ns uxbox.projects.data)
 
 (defn create-project
-  [name]
+  [name width height layout]
   (let [now (js/Date.)]
     {:name name
+     :width width
+     :height height
+     :layout layout
      :uuid (random-uuid)
      :last-update now
      :created now
@@ -11,11 +14,11 @@
      :comment-count 0}))
 
 (defn create-page
-  [project-uuid title]
+  [project-uuid title width height]
   {:title title
    :uuid (random-uuid)
-   :width 640
-   :height 1080
+   :width width
+   :height height
    :project project-uuid
    :shapes {}
    :groups {}})
