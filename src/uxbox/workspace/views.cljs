@@ -275,7 +275,7 @@
              {:placeholder "Degrees"
               :type "number"
               :value (:rotate selected-shape)
-              :on-change #(swap! db assoc-in [:page :shapes selected-uuid :rotate] (->> % .-target .-value))}]]
+              :on-change #(actions/change-shape-attr project-uuid page-uuid selected-uuid :rotate (->> % .-target .-value))}]]
           [:div.element-set-content]]]))))
 
 (defn tools [db]
