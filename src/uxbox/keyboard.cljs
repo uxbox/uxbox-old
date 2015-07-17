@@ -22,6 +22,10 @@
    "CTRL+SHIFT+C" [:open-setting-box :components]
    "CTRL+SHIFT+L" [:open-setting-box :layers]
    "CTRL+G" [:toggle-grid]
+   "CTRL+UP" [:move-layer-up]
+   "CTRL+DOWN" [:move-layer-down]
+   "CTRL+SHIFT+UP" [:move-layer-to-bottom]
+   "CTRL+SHIFT+DOWN" [:move-layer-to-top]
    })
 
 (defn dispatch-key [e]
