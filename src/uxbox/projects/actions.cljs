@@ -43,7 +43,15 @@
 (pubsub/register-transition
  :create-project
  (fn [state project]
-   (update state :projects-list assoc (:uuid project) project)))
+   (let [now (js/Date.)
+         activity {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+                   :uuid (random-uuid)
+                   :project {:uuid (:uuid project) :name (:name project)}
+                   :datetime now
+                   :event {:type :create-project :text "Create new project"}}]
+     (-> state
+       (update :projects-list assoc (:uuid project) project)
+       (update :activity #(into [activity] %))))))
 
 (pubsub/register-transition
  :create-page

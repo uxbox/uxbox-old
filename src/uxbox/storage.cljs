@@ -2,10 +2,51 @@
   (:require [hodgepodge.core :refer [local-storage set-item get-item]]
             [uxbox.shapes.core :refer [Rectangle Line move-delta]]))
 
-(def users [{:username "user-1"
-             :password "user-1"}
-            {:username "user-2"
-             :password "user-2"}])
+(def users {"user-1" {
+             :username "user-1"
+             :password "user-1"
+             :name "Michael Buchannon"
+             :activity [
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "7b16847f-9298-4397-b093-a5364fdd1e97") :name "Wireframes Taiga Tribe"}
+               :datetime (js/Date. 2005 9 1)
+               :event {:type :create-project}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "7b16847f-9298-4397-b093-a5364fdd1e97") :name "Wireframes Taiga Tribe"}
+               :datetime (js/Date. 2005 9 1)
+               :event {:type :create-page :name "My awesome page" :page-uuid (uuid "d429c2e1-f2b7-4d4f-abff-42eea0f8dc88")}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "7b16847f-9298-4397-b093-a5364fdd1e97") :name "Wireframes Taiga Tribe"}
+               :datetime (js/Date. 2005 9 3)
+               :event {:type :create-page :name "Another awesome page" :page-uuid (uuid "3df37adb-f18d-4afb-9908-397e3d46653d")}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "01764df1-a6d6-407c-96c4-29110deeb641") :name "A WYSH Roadmap"}
+               :datetime (js/Date. 2010 9 1)
+               :event {:type :create-project}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "01764df1-a6d6-407c-96c4-29110deeb641") :name "A WYSH Roadmap"}
+               :datetime (js/Date. 2010 9 1)
+               :event {:type :create-page :name "My awesome page" :page-uuid (uuid "082e1921-908d-4af6-897c-0a8a24d00b9b")}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "c078f148-2686-4b07-a165-c455a0ab19a7") :name "Design UX Box"}
+               :datetime (js/Date. 2014 9 1)
+               :event {:type :create-project}}
+              {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+               :uuid (random-uuid)
+               :project {:uuid (uuid "c078f148-2686-4b07-a165-c455a0ab19a7") :name "Design UX Box"}
+               :datetime (js/Date. 2014 9 1)
+               :event {:type :create-page :name "My awesome page" :page-uuid (uuid "e654dff7-ef99-465d-949e-abb907dc69ce")}}]}
+            "user-2" {
+             :username "user-2"
+             :password "user-2"
+             :name "John Doe"
+             :activity []}})
 
 (def projects {(uuid "c078f148-2686-4b07-a165-c455a0ab19a7") {:name "Design UX Box"
                                                        :uuid (uuid "c078f148-2686-4b07-a165-c455a0ab19a7")
@@ -88,6 +129,10 @@
 
 (add-watch data :local-storage (fn [_ _ _ new-value] (assoc! local-storage :data new-value)))
 
+(defn get-activity
+      [username]
+      (reverse (get-in @data [:users username :activity])))
+
 (defn get-projects
       [username]
       (into {} (map (fn [project]
@@ -121,11 +166,28 @@
 
 (defn create-project
       [project]
-      (swap! data (fn [current] (assoc-in current [:projects (:uuid project)] project))))
+      (let [now (js/Date.)
+            activity {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+                      :uuid (random-uuid)
+                      :project {:uuid (:uuid project) :name (:name project)}
+                      :datetime now
+                      :event {:type :create-project}}]
+        (swap! data (fn [current] (-> current
+                                      (assoc-in [:projects (:uuid project)] project)
+                                      (update-in [:users "user-1" :activity] conj activity))))))
 
 (defn create-page
       [project-uuid page]
-      (swap! data (fn [current] (assoc-in current [:projects project-uuid :pages (:uuid page)] page))))
+      (let [now (js/Date.)
+            project (get-in @data [:projects project-uuid])
+            activity {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+                      :uuid (random-uuid)
+                      :project {:uuid (:uuid project) :name (:name project)}
+                      :datetime now
+                      :event {:type :create-page :name (:title page) :page-uuid (:uuid page)}}]
+        (swap! data (fn [current] (-> current
+                                      (assoc-in [:projects project-uuid :pages (:uuid page)] page)
+                                      (update-in [:users "user-1" :activity] conj activity))))))
 
 (defn change-page-title
       [project-uuid page title]

@@ -25,5 +25,7 @@
  :location
  (fn [state location]
    (if (= (last location) :dashboard)
-     (assoc state :projects-list (storage/get-projects "user-1"))
+     (-> state
+         (assoc :projects-list (storage/get-projects "user-1"))
+         (assoc :activity (storage/get-activity "user-1")))
      state)))

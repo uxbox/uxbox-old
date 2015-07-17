@@ -13,32 +13,41 @@
     [link "/" logo]]
    [user db]])
 
-(defn activity-item [item]
+(defn activity-item [db item]
   (let [{:keys [project
                 author
-                event]} item]
+                event]} item
+        first-page-uuid (get-in @db [:projects-list (:uuid project) :first-page-uuid])]
     [:div.activity-input
-     {:key (:uuid project)}
+     {:key (:uuid item)}
      [:img.activity-author
       {:border "0", :src "../../images/avatar.jpg"}]
-     [:div.activity-content
-      [:span.bold (:name author)]
-      [:span (:type event)]
-      [:div.activity-project
-       [:a {:on-click #(navigate! (workspace-route (:uuid project) (:first-page-uuid project)))} (:name event)]
-       [:span "in"]
-       [:a {:on-click #(navigate! (workspace-route (:uuid project) (:first-page-uuid project)))} (:name project)]]
-      [:span.activity-time (ago (:datetime item))]]]))
+     (when (= (:type event) :create-page)
+       [:div.activity-content
+        [:span.bold (:name author)]
+        [:span "Create new page"]
+        [:div.activity-project
+         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid (:page-uuid event)}))} (:name event)]
+         [:span "in"]
+         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid first-page-uuid}))} (:name project)]]
+        [:span.activity-time (ago (:datetime item))]])
+     (when (= (:type event) :create-project)
+       [:div.activity-content
+        [:span.bold (:name author)]
+        [:span "Create new project"]
+         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid first-page-uuid}))} (:name project)]
+        [:span.activity-time (ago (:datetime item))]])
+     ]))
 
 
 (defn activity [db]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
     [:h4 "ACTIVITY"]
-    (for [[day items] (seq (group-by #(.toDateString (:datetime %1)) (:activity @db)))]
+    (for [[day items] (doall (seq (group-by #(.toDateString (:datetime %1)) (take 15 (:activity @db)))))]
        (concat
-        [[:span.date-ribbon (.calendar (js/moment. day))]]
-        (map activity-item items)))]])
+        [[:span.date-ribbon {:key day} (.calendar (js/moment. day))]]
+        (map #(activity-item db %) items)))]])
 
 (defn mysvg [db icon-name]
   [:svg {:src (str "/assets/images/" icon-name ".svg") }])
