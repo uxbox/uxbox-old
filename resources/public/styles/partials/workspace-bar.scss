@@ -97,6 +97,10 @@
         position: relative;
         width: 30px;
 
+        a {
+          padding-top: 6px;
+        }
+
         svg {
           fill: $color-gray-dark;
           height: 18px;

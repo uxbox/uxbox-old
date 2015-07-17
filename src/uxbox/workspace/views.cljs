@@ -9,7 +9,8 @@
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
             [uxbox.geometry :as geo]
-            [uxbox.shapes.core :as shapes]))
+            [uxbox.shapes.core :as shapes]
+            [uxbox.pubsub :as pubsub]))
 
 (defn project-tree
   [db]
@@ -34,7 +35,17 @@
        icons/redo]]
      [:ul.options-btn
       [:li.tooltip.tooltip-bottom {:alt "Export (Ctrl + E)"}
-       icons/export]
+       [:a {:download (str (get-in @db [:page :title]) ".svg")
+            :href "#"
+            :on-click (fn [e]
+                        (let [innerHTML (.-innerHTML (.getElementById js/document "page-layout"))
+                              width (get-in @db [:page :width])
+                              height (get-in @db [:page :height])
+                              html (str "<svg width='" width  "' height='" height  "'>" innerHTML "</svg>")
+                              data (js/Blob. #js [html] #js {:type "application/octet-stream"})
+                              url (.createObjectURL (.-URL js/window) data)]
+                          (set! (.-href (.-currentTarget e)) url) ))}
+        icons/export]]
       [:li.tooltip.tooltip-bottom {:alt "Image (Ctrl + I)"}
        icons/image]]
      [:ul.options-btn
