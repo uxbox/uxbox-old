@@ -9,6 +9,8 @@
 (def event-keys
   {"DELETE"  [:delete-key-pressed]
    "ESC"     [:set-tool nil]
+   "CTRL+C"  [:copy-selected]
+   "CTRL+V"  [:paste-selected]
    "CTRL+B"  [:set-tool :rect]
    "CTRL+E"  [:set-tool :circle]
    "CTRL+L"  [:set-tool :line]

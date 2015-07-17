@@ -1,6 +1,7 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage :as storage]))
+            [uxbox.storage :as storage]
+            [uxbox.workspace.canvas.actions :refer [new-group]]))
 
 (defn change-shape-attr
   [project-uuid page-uuid shape-uuid attr value]
@@ -17,6 +18,14 @@
 (defn set-tool
   [tool]
   (pubsub/publish! [:set-tool tool]))
+
+(defn copy-selected
+  []
+  (pubsub/publish! [:copy-selected]))
+
+(defn paste-selected
+  []
+  (pubsub/publish! [:paste-selected]))
 
 (defn set-figures-catalog
   [catalog]
@@ -68,6 +77,25 @@
  :set-tool
  (fn [state tool]
    (assoc-in state [:workspace :selected-tool] tool)))
+
+ (pubsub/register-transition
+  :copy-selected
+  (fn [state]
+    (let [selected-uuid (get-in state [:page :selected])
+          selected-shape (get-in state [:page :shapes selected-uuid])]
+          (assoc-in state [:workspace :selected] selected-shape))))
+
+(pubsub/register-effect
+ :paste-selected
+ (fn [state]
+   (let [shape-val (get-in state [:workspace :selected])
+         shape-uuid (random-uuid)
+         group-uuid (random-uuid)
+         new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+         group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+          (assoc-in state [:workspace :selected] nil)))))
 
 (pubsub/register-transition
  :set-figures-catalog
