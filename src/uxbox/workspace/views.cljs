@@ -344,7 +344,7 @@
        icons/close]]
      [:div.tool-window-content
       [:ul.element-list
-       (map group (seq groups))]]]))
+       (map group (sort-by #(:order (nth % 1)) (seq groups)))]]]))
 
 (defn toolbar
   [db]
