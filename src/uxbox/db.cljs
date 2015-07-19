@@ -5,6 +5,7 @@
 (defonce another-project-id (random-uuid))
 
 (def initial-state {:location [:login]
+                    :login-form :login
                     :lightbox nil
                     :default-open-setting-boxes #{:tools :layers}
                     :open-setting-boxes #{:tools :layers}
