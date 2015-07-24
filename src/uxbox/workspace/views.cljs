@@ -352,13 +352,13 @@
     [:div.tool-bar-inside
      [:ul.main-tools
       [:li.tooltip {:alt "Shapes (Ctrl + Shift + F)" :class (if (:tools (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/open-setting-box :tools)} icons/shapes]
+            :on-click #(actions/toggle-setting-box :tools)} icons/shapes]
       [:li.tooltip {:alt "Components (Ctrl + Shift + C)" :class (if (:components (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/open-setting-box :components)} icons/puzzle]
+            :on-click #(actions/toggle-setting-box :components)} icons/puzzle]
       [:li.tooltip {:alt "Icons (Ctrl + Shift + I)" :class (if (:figures (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/open-setting-box :figures)} icons/icon-set]
+            :on-click #(actions/toggle-setting-box :figures)} icons/icon-set]
       [:li.tooltip {:alt "Elements (Ctrl + Shift + L)" :class (if (:layers (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/open-setting-box :layers)} icons/layers]
+            :on-click #(actions/toggle-setting-box :layers)} icons/layers]
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
