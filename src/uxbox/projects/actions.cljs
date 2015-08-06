@@ -1,7 +1,7 @@
 (ns uxbox.projects.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.projects.data :as d]
-            [uxbox.storage :as storage]))
+            [uxbox.storage.api :as storage]))
 
 (defn create-project
   [{:keys [name width height layout]}]
@@ -15,9 +15,8 @@
                                        :uuid project-uuid
                                        :last-update now
                                        :created now
-                                       :first-page-uuid (:uuid page)
-                                       :pages {(:uuid page) page}
-                                       :comment-count 0}])))
+                                       :first-page-uuid (:uuid page)}])
+    (pubsub/publish! [:create-page [project-uuid page]])))
 
 (defn create-page
   [project title]

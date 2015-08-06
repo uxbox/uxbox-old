@@ -1,7 +1,7 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
-            [uxbox.storage :as storage]
+            [uxbox.storage.api :as storage]
             [uxbox.shapes.core :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]

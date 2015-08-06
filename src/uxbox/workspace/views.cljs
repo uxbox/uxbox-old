@@ -429,8 +429,9 @@
   [db]
   (let [project (:project @db)
         project-name (:name project)
-        pages (:pages project)
+        pages (:project-pages @db)
         page-components (map (fn [p] [project-page db p]) (vals pages))]
+    (.log js/console (clj->js pages))
     [:div#project-bar.project-bar
      (when (not (:visible-project-bar @db))
        {:class "toggle"})

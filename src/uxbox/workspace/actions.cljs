@@ -1,6 +1,6 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage :as storage]
+            [uxbox.storage.api :as storage]
             [uxbox.workspace.canvas.actions :refer [new-group]]))
 
 (defn change-shape-attr
@@ -142,6 +142,7 @@
      (if (= location :workspace)
        (assoc state :project (storage/get-project project-uuid)
                     :page (storage/get-page project-uuid page-uuid)
+                    :project-pages (storage/get-pages project-uuid)
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)
                     :visible-project-bar false)

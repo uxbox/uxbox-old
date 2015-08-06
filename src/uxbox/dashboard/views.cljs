@@ -94,7 +94,7 @@
      [:div.project-th-actions
       [:div.project-th-icon.pages
        icons/page
-       [:span (:pages-count project)]]
+       [:span (:pages project)]]
       [:div.project-th-icon.comments
        chat
        [:span (:comment-count project)]]

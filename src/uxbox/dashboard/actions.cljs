@@ -1,6 +1,6 @@
 (ns uxbox.dashboard.actions
   (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage :as storage]))
+            [uxbox.storage.api :as storage]))
 
 (defn set-projects-order
   [order]
