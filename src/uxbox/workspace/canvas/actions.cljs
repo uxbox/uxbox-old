@@ -1,7 +1,7 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
-            [uxbox.storage :as storage]
+            [uxbox.storage.api :as storage]
             [uxbox.shapes.core :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
@@ -30,12 +30,12 @@
  (fn [state [x y]]
    (let [selected-uuid
          (->> state
-              :page :groups vals
+              :groups vals
               (sort-by #(- (:order %)))
               (filter :visible)
               (mapcat :shapes)
-              (filter #(not (nil? (get-in state [:page :shapes %]))))
-              (filter #(shapes/intersect (get-in state [:page :shapes %]) x y))
+              (filter #(not (nil? (get-in state [:shapes %]))))
+              (filter #(shapes/intersect (get-in state [:shapes %]) x y))
               first)]
      (assoc-in state [:page :selected] selected-uuid)) ))
 
@@ -44,7 +44,7 @@
    (let [shape-uuid (random-uuid)
          group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-         new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
          shape-val (new-rectangle rect-x rect-y rect-width rect-height)
          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
@@ -60,7 +60,7 @@
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
           group-uuid (random-uuid)
-          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
           shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)
           group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
@@ -77,7 +77,7 @@
    (let [shape-uuid (random-uuid)
          group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-         new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
          shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
          group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
 
@@ -93,7 +93,7 @@
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
           group-uuid (random-uuid)
-          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
           cx (:cx drawing-val)
           cy (:cy drawing-val)
           r (geo/distance x y cx cy)
@@ -129,13 +129,13 @@
 (pubsub/register-transition
  :insert-group
  (fn [state [group-uuid group-val]]
-   (assoc-in state [:page :groups group-uuid] group-val)))
+   (assoc-in state [:groups group-uuid] group-val)))
 
 
 (pubsub/register-transition
  :insert-shape
  (fn [state [shape-uuid shape-val]]
-   (assoc-in state [:page :shapes shape-uuid] shape-val)))
+   (assoc-in state [:shapes shape-uuid] shape-val)))
 
 (pubsub/register-effect
  :insert-group
@@ -188,8 +188,8 @@
 
       (if selected-uuid
          (-> state
-            (update-in [:page :groups] remove-element selected-uuid)
-            (update-in [:page :shapes] dissoc selected-uuid)
+            (update-in [:groups] remove-element selected-uuid)
+            (update-in [:shapes] dissoc selected-uuid)
             (update-in [:page] dissoc :selected))
          state))))
 
@@ -198,7 +198,7 @@
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (-> state
-         (update-in [:page :shapes selected-uuid] assoc :dragging true))
+         (update-in [:shapes selected-uuid] assoc :dragging true))
      state)))
 
 (pubsub/register-transition
@@ -206,7 +206,7 @@
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (-> state
-         (update-in [:page :shapes selected-uuid] dissoc :dragging))
+         (update-in [:shapes selected-uuid] dissoc :dragging))
      state)))
 
 (pubsub/register-transition
@@ -216,15 +216,15 @@
      (let [[old-x old-y] @last-event
            selected-uuid (get-in state [:page :selected])]
        (reset! last-event [x y])
-       (if (and selected-uuid (get-in state [:page :shapes selected-uuid :dragging]))
+       (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
          (let [deltax (- x old-x)
                deltay (- y old-y)
-               shape-x (get-in state [:page :shapes selected-uuid :x])
-               shape-y (get-in state [:page :shapes selected-uuid :y])
+               shape-x (get-in state [:shapes selected-uuid :x])
+               shape-y (get-in state [:shapes selected-uuid :y])
                selected-uuid (get-in state [:page :selected])
                project-uuid (get-in state [:project :uuid])
                page-uuid (get-in state [:page :uuid])]
            (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
            (-> state
-               (update-in [:page :shapes selected-uuid] shapes/move-delta deltax deltay)))
+               (update-in [:shapes selected-uuid] shapes/move-delta deltax deltay)))
          state)))))

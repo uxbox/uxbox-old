@@ -1,6 +1,7 @@
 (ns uxbox.navigation
   (:require [uxbox.db :as db]
             [uxbox.pubsub :refer [publish! register-transition]]
+            [uxbox.storage.api :as storage]
             [secretary.core :as s :refer-macros [defroute]]
             [goog.events :as events])
   (:import [goog.history Html5History]
@@ -24,8 +25,11 @@
 (defroute dashboard-route "/dashboard" []
   (set-location! [:dashboard]))
 
-(defroute workspace-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
+(defroute workspace-page-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
   (set-location! [:workspace (uuid project-uuid) (uuid page-uuid)]))
+
+(defroute workspace-route "/workspace/:project-uuid" [project-uuid]
+  (set-location! [:workspace (uuid project-uuid) (:uuid (storage/get-first-page project-uuid))]))
 
 ;; History
 

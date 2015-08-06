@@ -35,7 +35,6 @@
 
              {:id "test"
               :source-paths ["src" "test"]
-              :notify-command ["node" "out/tests.js"]
               :compiler {:output-to "out/tests.js"
                           :output-dir "out"
                           :source-map true
@@ -43,7 +42,6 @@
                           :cache-analysis false
                           :main uxbox.runner
                           :optimizations :none
-                          :target :nodejs
                           :pretty-print true}}
 
              {:id "min"

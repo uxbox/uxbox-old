@@ -3,8 +3,8 @@
             [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
-            [uxbox.navigation :refer [link]]
-            [uxbox.projects.actions :refer [create-page change-page-title delete-page]]
+            [uxbox.navigation :refer [link workspace-page-route navigate!]]
+            [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
@@ -110,7 +110,7 @@
       (let [selected-uuid (get-in @db [:page :selected])
             project-uuid (get-in @db [:project :uuid])
             page-uuid (get-in @db [:page :uuid])
-            selected-shape (get-in @db [:page :shapes selected-uuid])
+            selected-shape (get-in @db [:shapes selected-uuid])
             [popup-x popup-y] (shapes/toolbar-coords selected-shape)]
         [:div#element-options.element-options
          {:style #js {:left popup-x :top popup-y}}
@@ -314,13 +314,19 @@
 
 (defn layers
   [db]
-  (let [{:keys [page workspace]} @db
-        {:keys [groups]} page
-
-        group (fn [[group-id group] item]
+  (let [{:keys [page workspace groups]} @db]
+   [:div#layers.tool-window
+     [:div.tool-window-bar
+      [:div.tool-window-icon
+       icons/layers]
+      [:span "Elements"]
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
+       icons/close]]
+     [:div.tool-window-content
+      [:ul.element-list
+       (for [[group-id group] (sort-by #(:order (second %)) (seq groups))]
            [:li {:key group-id
-                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")
-                 }
+                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")}
             [:div.toggle-element {:class (if (:visible group) "selected" "")
                                   :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
             [:div.block-element {:class (if (:locked group) "selected" "")
@@ -334,17 +340,7 @@
               (= (:icon group) :arrow) icons/arrow
               (= (:icon group) :curve) icons/curve)]
             [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])
-        ]
-   [:div#layers.tool-window
-     [:div.tool-window-bar
-      [:div.tool-window-icon
-       icons/layers]
-      [:span "Elements"]
-      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
-       icons/close]]
-     [:div.tool-window-content
-      [:ul.element-list
-       (map group (sort-by #(:order (nth % 1)) (seq groups)))]]]))
+         ]]]))
 
 (defn toolbar
   [db]
@@ -362,42 +358,42 @@
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
-(defn project-page
-  [db page]
+(defn project-pages
+  [db pages]
   (let [current-page (:page @db)
         current-project (:project @db)
-        editing-pages (:editing-pages @db)
-        page-uuid (:uuid page)]
+        editing-pages (:editing-pages @db)]
+    [:ul.tree-view
+      (for [page (vals pages)]
+        (if (contains? editing-pages (:uuid page))
+          [:input.input-text
+           {:title "page-title"
+            :auto-focus true
+            :placeholder "Page title"
+            :type "text"
+            :value (get editing-pages (:uuid page))
+            :on-change #(swap! db assoc-in [:editing-pages (:uuid page)] (.-value (.-target %)))
+            :on-key-up #(cond
+                          (= (.-keyCode %) 13)
+                            (when (not (empty? (str/trim (get editing-pages (:uuid page)))))
+                              (change-page-title current-project page (get editing-pages (:uuid page)))
+                              (swap! db update :editing-pages dissoc (:uuid page)))
+                          (= (.-keyCode %) 27)
+                            (swap! db update :editing-pages dissoc (:uuid page)))
+            :key (:uuid page)}]
 
-    (if (contains? editing-pages page-uuid)
-      [:input.input-text
-       {:title "page-title"
-        :auto-focus true
-        :placeholder "Page title"
-        :type "text"
-        :value (get editing-pages page-uuid)
-        :on-change #(swap! db assoc-in [:editing-pages page-uuid] (.-value (.-target %)))
-        :on-key-up #(cond
-                      (= (.-keyCode %) 13)
-                        (when (not (empty? (str/trim (get editing-pages page-uuid))))
-                          (change-page-title current-project page (get editing-pages page-uuid))
-                          (swap! db update :editing-pages dissoc page-uuid))
-                      (= (.-keyCode %) 27)
-                        (swap! db update :editing-pages dissoc page-uuid))
-        :key page-uuid}]
-
-      [:li.single-page
-       {:class (if (= page-uuid (:uuid current-page)) "current" "")
-        :on-click #(when (not= page-uuid (:uuid current-page))
-                     (actions/view-page (:uuid current-project) page-uuid))
-        :key page-uuid}
-       [:div.tree-icon icons/page]
-       [:span (:title page)]
-       [:div.options
-        [:div
-         {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages page-uuid] (:title page)))}
-         icons/pencil]
-        [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]])))
+          [:li.single-page
+           {:class (when (= (:uuid page) (:uuid current-page)) "current")
+            :on-click #(when (not= (:uuid page) (:uuid current-page))
+                         (navigate! (workspace-page-route {:project-uuid (:uuid current-project) :page-uuid (:uuid page)})))
+            :key (:uuid page)}
+           [:div.tree-icon icons/page]
+           [:span (:title page)]
+           [:div.options
+            [:div
+             {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages (:uuid page)] (:title page)))}
+             icons/pencil]
+            [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]]))]))
 
 (defn clean-new-page!
   [db]
@@ -417,7 +413,7 @@
       :on-key-up #(cond
                     (= (.-keyCode %) 13)
                     (when (not (empty? (str/trim (:new-page-title @db))))
-                      (create-page project (:new-page-title @db))
+                      (create-simple-page project (:new-page-title @db))
                       (clean-new-page! db))
                     (= (.-keyCode %) 27)
                     (clean-new-page! db))}]
@@ -429,15 +425,13 @@
   [db]
   (let [project (:project @db)
         project-name (:name project)
-        pages (:pages project)
-        page-components (map (fn [p] [project-page db p]) (vals pages))]
+        pages (:project-pages @db)]
     [:div#project-bar.project-bar
      (when (not (:visible-project-bar @db))
        {:class "toggle"})
      [:div.project-bar-inside
       [:span.project-name project-name]
-      [:ul.tree-view
-       page-components]
+      [project-pages db pages]
       [new-page db project]]]))
 
 (defn settings

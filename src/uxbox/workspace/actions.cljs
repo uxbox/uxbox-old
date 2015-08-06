@@ -1,6 +1,6 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage :as storage]
+            [uxbox.storage.api :as storage]
             [uxbox.workspace.canvas.actions :refer [new-group]]))
 
 (defn change-shape-attr
@@ -47,14 +47,10 @@
   [group-id]
   (pubsub/publish! [:toggle-group-lock group-id]))
 
-(defn view-page
-  [project-uuid page-uuid]
-  (pubsub/publish! [:view-page [project-uuid page-uuid]]))
-
 (pubsub/register-transition
  :change-shape-attr
  (fn [state [project-uuid page-uuid shape-uuid attr value]]
-   (assoc-in state [:page :shapes shape-uuid attr] value)))
+   (assoc-in state [:shapes shape-uuid attr] value)))
 
 (pubsub/register-effect
  :change-shape-attr
@@ -90,7 +86,7 @@
   :copy-selected
   (fn [state]
     (let [selected-uuid (get-in state [:page :selected])
-          selected-shape (get-in state [:page :shapes selected-uuid])]
+          selected-shape (get-in state [:shapes selected-uuid])]
           (assoc-in state [:workspace :selected] selected-shape))))
 
 (pubsub/register-effect
@@ -99,7 +95,7 @@
    (let [shape-val (get-in state [:workspace :selected])
          shape-uuid (random-uuid)
          group-uuid (random-uuid)
-         new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
       (do (pubsub/publish! [:insert-group [group-uuid group-val]])
           (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
@@ -123,17 +119,12 @@
 (pubsub/register-transition
  :toggle-group-visiblity
  (fn [state group-id]
-   (update-in state [:page :groups group-id :visible] #(not %1))))
+   (update-in state [:groups group-id :visible] #(not %1))))
 
 (pubsub/register-transition
  :toggle-group-lock
  (fn [state group-id]
-   (update-in state [:page :groups group-id :locked] #(not %1))))
-
-(pubsub/register-transition
- :view-page
- (fn [state [project-uuid page-uuid]]
-   (assoc state :page (storage/get-page project-uuid page-uuid))))
+   (update-in state [:groups group-id :locked] #(not %1))))
 
 (pubsub/register-transition
  :location
@@ -141,7 +132,10 @@
    (let [[location project-uuid page-uuid] data]
      (if (= location :workspace)
        (assoc state :project (storage/get-project project-uuid)
-                    :page (storage/get-page project-uuid page-uuid)
+                    :page (storage/get-page page-uuid)
+                    :project-pages (storage/get-pages project-uuid)
+                    :groups (storage/get-groups project-uuid page-uuid)
+                    :shapes (storage/get-shapes project-uuid page-uuid)
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)
                     :visible-project-bar false)
