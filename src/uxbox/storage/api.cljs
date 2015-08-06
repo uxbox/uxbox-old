@@ -27,9 +27,8 @@
     (insert-event {:type :create-project :data project}))
 
 (defn create-page
-    [project-uuid page]
-    (let [page-data (assoc page :project-uuid project-uuid)]
-      (insert-event {:type :create-page :data page-data})))
+    [page]
+    (insert-event {:type :create-page :data page}))
 
 (defn change-page-title
     [project-uuid page title]

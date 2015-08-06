@@ -2,16 +2,11 @@
 
 (defn create-project
   [name width height layout]
-  (let [now (js/Date.)]
-    {:name name
-     :width width
-     :height height
-     :layout layout
-     :uuid (random-uuid)
-     :last-update now
-     :created now
-     :pages []
-     :comment-count 0}))
+  {:name name
+   :width width
+   :height height
+   :layout layout
+   :uuid (random-uuid)})
 
 (defn create-page
   [project-uuid title width height]
@@ -19,6 +14,4 @@
    :uuid (random-uuid)
    :width width
    :height height
-   :project project-uuid
-   :shapes {}
-   :groups {}})
+   :project-uuid project-uuid})

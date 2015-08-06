@@ -6,19 +6,19 @@
     (atom (:projects-view local-storage))
     (atom {})))
 
-(add-watch projects-view :local-storage (fn [_ _ _ new-value] (assoc! local-storage :projects-view new-value)))
+(add-watch projects-view :projects-view-storage (fn [_ _ _ new-value] (assoc! local-storage :projects-view new-value)))
 
 (defonce pages-view
   (if (:pages-view local-storage)
     (atom (:pages-view local-storage))
     (atom {})))
 
-(add-watch pages-view :local-storage (fn [_ _ _ new-value] (assoc! local-storage :pages-view new-value)))
+(add-watch pages-view :page-view-storage (fn [_ _ _ new-value] (assoc! local-storage :pages-view new-value)))
 
 (defonce activity-view
   (if (:activity-view local-storage)
     (atom (:activity-view local-storage))
     (atom {})))
 
-(add-watch activity-view :local-storage (fn [_ _ _ new-value] (assoc! local-storage :activity-view new-value)))
+(add-watch activity-view :activity-view-storage (fn [_ _ _ new-value] (assoc! local-storage :activity-view new-value)))
 

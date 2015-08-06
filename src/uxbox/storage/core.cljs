@@ -5,7 +5,6 @@
 (defn proccess-event [event]
   ;; TODO
   ;; (generators/undo-tree event)
-  (.log js/console "HOLA")
   (generators/projects-data event)
   (generators/pages-data event)
   event)
@@ -26,4 +25,5 @@
 ;; (add-watch storage (fn [at oldValue newValue] (generators/undo-tree newValue)))
 
 (add-watch storage :data-views-generator
-   (fn [at oldValue newValue] (proccess-event(last newValue))))
+   (fn [key atom oldValue newValue]
+    (proccess-event(last newValue))))
