@@ -7,6 +7,8 @@
   ;; (generators/undo-tree event)
   (generators/projects-data event)
   (generators/pages-data event)
+  (generators/groups-data event)
+  (generators/shapes-data event)
   event)
 
 (defonce storage
