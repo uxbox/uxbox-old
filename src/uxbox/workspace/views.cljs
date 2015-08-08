@@ -3,8 +3,8 @@
             [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
-            [uxbox.navigation :refer [link]]
-            [uxbox.projects.actions :refer [create-page change-page-title delete-page]]
+            [uxbox.navigation :refer [link workspace-page-route navigate!]]
+            [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
@@ -387,9 +387,9 @@
         :key page-uuid}]
 
       [:li.single-page
-       {:class (if (= page-uuid (:uuid current-page)) "current" "")
+       {:class (when (= page-uuid (:uuid current-page)) "current")
         :on-click #(when (not= page-uuid (:uuid current-page))
-                     (actions/view-page (:uuid current-project) page-uuid))
+                     (navigate! (workspace-page-route {:project-uuid (:uuid current-project) :page-uuid page-uuid})))
         :key page-uuid}
        [:div.tree-icon icons/page]
        [:span (:title page)]
@@ -417,7 +417,7 @@
       :on-key-up #(cond
                     (= (.-keyCode %) 13)
                     (when (not (empty? (str/trim (:new-page-title @db))))
-                      (create-page project (:new-page-title @db))
+                      (create-simple-page project (:new-page-title @db))
                       (clean-new-page! db))
                     (= (.-keyCode %) 27)
                     (clean-new-page! db))}]
@@ -431,7 +431,6 @@
         project-name (:name project)
         pages (:project-pages @db)
         page-components (map (fn [p] [project-page db p]) (vals pages))]
-    (.log js/console (clj->js pages))
     [:div#project-bar.project-bar
      (when (not (:visible-project-bar @db))
        {:class "toggle"})

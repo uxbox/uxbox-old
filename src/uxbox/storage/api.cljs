@@ -1,5 +1,5 @@
 (ns uxbox.storage.api
-  (:require [uxbox.storage.views :refer [projects-view pages-view activity-view]]
+  (:require [uxbox.storage.views :refer [projects-view pages-view activity-view groups-view shapes-view]]
             [uxbox.storage.core :refer [insert-event]]
             [uxbox.shapes.core :refer [move-delta]]))
 
@@ -9,7 +9,6 @@
 
 (defn get-projects
     [username]
-    (.log js/console (clj->js @projects-view))
     @projects-view)
 
 (defn get-project [uuid]
@@ -17,11 +16,24 @@
 
 (defn get-pages
     [project-uuid]
-    (into {} (filter #(= (:project-uuid %)) @pages-view)))
+    (into {} (filter #(= (:project-uuid (second %))) @pages-view)))
+
+(defn get-first-page [uuid]
+    (let [pages (get-pages uuid)]
+      ;; TODO get the first by a valid order
+      (first (vals pages))))
 
 (defn get-page
+    [page-uuid]
+    (get @pages-view page-uuid))
+
+(defn get-groups
     [project-uuid page-uuid]
-    (get @pages-view [page-uuid]))
+    (into {} (filter #(and (= (:project-uuid (second %)) project-uuid) (= (:page-uuid (second %)) page-uuid)) @groups-view)))
+
+(defn get-shapes
+    [project-uuid page-uuid]
+    (into {} (filter #(and (= (:project-uuid (second %)) project-uuid) (= (:page-uuid (second %)) page-uuid)) @shapes-view)))
 
 (defn create-project [project]
     (insert-event {:type :create-project :data project}))
@@ -53,4 +65,4 @@
 
 (defn move-shape
     [project-uuid page-uuid shape-uuid deltax deltay]
-    (insert-event {:type :move-shape :data {:project-uuid project-uuid :page-uuid page-uuid :shape-uuid shape-uuid :delta (move-delta deltax deltay)}}))
+    (insert-event {:type :move-shape :data {:project-uuid project-uuid :page-uuid page-uuid :shape-uuid shape-uuid :delta-x deltax :delta-y deltay}}))

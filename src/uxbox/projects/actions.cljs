@@ -15,6 +15,10 @@
   [page]
   (pubsub/publish! [:create-page page]))
 
+(defn create-simple-page
+  [project title]
+  (pubsub/publish! [:create-page (d/create-page (:uuid project) title (:width project) (:height project))]))
+
 (defn change-page-title
   [project page title]
   (pubsub/publish! [:change-page-title [project page title]]))
