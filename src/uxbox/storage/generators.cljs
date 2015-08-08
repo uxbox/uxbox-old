@@ -20,5 +20,5 @@
     (case (:type event)
       :create-page (swap! pages-view (fn [current] (assoc current (:uuid event-data) event-data)))
       :delete-page (swap! pages-view (fn [current] (dissoc current (:page-uuid event-data))))
-      :delete-project (swap! pages-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid %) current)))))
+      :delete-project (swap! pages-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
       "default")))
