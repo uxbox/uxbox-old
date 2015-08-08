@@ -66,3 +66,12 @@
 (defn move-shape
     [project-uuid page-uuid shape-uuid deltax deltay]
     (insert-event {:type :move-shape :data {:project-uuid project-uuid :page-uuid page-uuid :shape-uuid shape-uuid :delta-x deltax :delta-y deltay}}))
+
+(defn create-group
+    [project-uuid page-uuid group-uuid group]
+    (let [group-data (-> group (assoc :project-uuid project-uuid) (assoc :page-uuid page-uuid))]
+      (insert-event {:type :create-group :data group-data})))
+
+(defn remove-group
+    [project-uuid page-uuid group-uuid]
+    (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))

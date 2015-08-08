@@ -362,42 +362,42 @@
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
-(defn project-page
-  [db page]
+(defn project-pages
+  [db pages]
   (let [current-page (:page @db)
         current-project (:project @db)
-        editing-pages (:editing-pages @db)
-        page-uuid (:uuid page)]
+        editing-pages (:editing-pages @db)]
+    [:ul.tree-view
+      (for [page (vals pages)]
+        (if (contains? editing-pages (:uuid page))
+          [:input.input-text
+           {:title "page-title"
+            :auto-focus true
+            :placeholder "Page title"
+            :type "text"
+            :value (get editing-pages (:uuid page))
+            :on-change #(swap! db assoc-in [:editing-pages (:uuid page)] (.-value (.-target %)))
+            :on-key-up #(cond
+                          (= (.-keyCode %) 13)
+                            (when (not (empty? (str/trim (get editing-pages (:uuid page)))))
+                              (change-page-title current-project page (get editing-pages (:uuid page)))
+                              (swap! db update :editing-pages dissoc (:uuid page)))
+                          (= (.-keyCode %) 27)
+                            (swap! db update :editing-pages dissoc (:uuid page)))
+            :key (:uuid page)}]
 
-    (if (contains? editing-pages page-uuid)
-      [:input.input-text
-       {:title "page-title"
-        :auto-focus true
-        :placeholder "Page title"
-        :type "text"
-        :value (get editing-pages page-uuid)
-        :on-change #(swap! db assoc-in [:editing-pages page-uuid] (.-value (.-target %)))
-        :on-key-up #(cond
-                      (= (.-keyCode %) 13)
-                        (when (not (empty? (str/trim (get editing-pages page-uuid))))
-                          (change-page-title current-project page (get editing-pages page-uuid))
-                          (swap! db update :editing-pages dissoc page-uuid))
-                      (= (.-keyCode %) 27)
-                        (swap! db update :editing-pages dissoc page-uuid))
-        :key page-uuid}]
-
-      [:li.single-page
-       {:class (when (= page-uuid (:uuid current-page)) "current")
-        :on-click #(when (not= page-uuid (:uuid current-page))
-                     (navigate! (workspace-page-route {:project-uuid (:uuid current-project) :page-uuid page-uuid})))
-        :key page-uuid}
-       [:div.tree-icon icons/page]
-       [:span (:title page)]
-       [:div.options
-        [:div
-         {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages page-uuid] (:title page)))}
-         icons/pencil]
-        [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]])))
+          [:li.single-page
+           {:class (when (= (:uuid page) (:uuid current-page)) "current")
+            :on-click #(when (not= (:uuid page) (:uuid current-page))
+                         (navigate! (workspace-page-route {:project-uuid (:uuid current-project) :page-uuid (:uuid page)})))
+            :key (:uuid page)}
+           [:div.tree-icon icons/page]
+           [:span (:title page)]
+           [:div.options
+            [:div
+             {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages (:uuid page)] (:title page)))}
+             icons/pencil]
+            [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]]))]))
 
 (defn clean-new-page!
   [db]
@@ -429,15 +429,13 @@
   [db]
   (let [project (:project @db)
         project-name (:name project)
-        pages (:project-pages @db)
-        page-components (map (fn [p] [project-page db p]) (vals pages))]
+        pages (:project-pages @db)]
     [:div#project-bar.project-bar
      (when (not (:visible-project-bar @db))
        {:class "toggle"})
      [:div.project-bar-inside
       [:span.project-name project-name]
-      [:ul.tree-view
-       page-components]
+      [project-pages db pages]
       [new-page db project]]]))
 
 (defn settings
