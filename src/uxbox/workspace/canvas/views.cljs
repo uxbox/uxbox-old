@@ -45,7 +45,7 @@
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
                    [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
-                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
+                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
                   [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
                   :else
@@ -68,7 +68,7 @@
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
                    [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
-                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
+                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
                   [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
                   :else
