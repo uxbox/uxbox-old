@@ -1,5 +1,5 @@
 (ns uxbox.storage.generators
-  (:require [uxbox.storage.views :refer [projects-view pages-view]]))
+  (:require [uxbox.storage.views :refer [projects-view pages-view groups-view shapes-view]]))
 
 ;; TODO
 ;; (defn undo-tree [events])
@@ -21,4 +21,25 @@
       :create-page (swap! pages-view (fn [current] (assoc current (:uuid event-data) event-data)))
       :delete-page (swap! pages-view (fn [current] (dissoc current (:page-uuid event-data))))
       :delete-project (swap! pages-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
+      "default")))
+
+(defn groups-data [event]
+  (let [event-data (:data event)]
+    (case (:type event)
+      :create-group (swap! groups-view (fn [current] (assoc current (:uuid event-data) event-data)))
+      :toggle-group-visibility (swap! groups-view (fn [current] (update-in current [(:group-uuid event-data) :visible] not)))
+      :toggle-group-lock (swap! groups-view (fn [current] (update-in current [(:group-uuid event-data) :locked] not)))
+      :delete-group (swap! groups-view (fn [current] (dissoc current (:group-uuid event-data))))
+      :delete-page (swap! groups-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
+      :delete-project (swap! groups-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
+      "default")))
+
+(defn shapes-data [event]
+  (let [event-data (:data event)]
+    (case (:type event)
+      :create-shape (swap! shapes-view (fn [current] (assoc current (:uuid event-data) event-data)))
+      :delete-shape (swap! shapes-view (fn [current] (dissoc current (:shape-uuid event-data))))
+      :delete-group (swap! shapes-view (fn [current] (into {} (filter #(not= (:group-uuid event-data) (:group-uuid (second %))) current))))
+      :delete-page (swap! shapes-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
+      :delete-project (swap! shapes-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
       "default")))

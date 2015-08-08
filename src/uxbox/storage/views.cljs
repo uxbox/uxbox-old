@@ -22,3 +22,16 @@
 
 (add-watch activity-view :activity-view-storage (fn [_ _ _ new-value] (assoc! local-storage :activity-view new-value)))
 
+(defonce groups-view
+  (if (:groups-view local-storage)
+    (atom (:groups-view local-storage))
+    (atom {})))
+
+(add-watch groups-view :groups-view-storage (fn [_ _ _ new-value] (assoc! local-storage :groups-view new-value)))
+
+(defonce shapes-view
+  (if (:shapes-view local-storage)
+    (atom (:shapes-view local-storage))
+    (atom {})))
+
+(add-watch shapes-view :shapes-view-storage (fn [_ _ _ new-value] (assoc! local-storage :shapes-view new-value)))
