@@ -66,4 +66,4 @@
   [x y width height path icowidth icoheight]
   (Path. path icowidth icoheight x y width height "black" 1 0))
 
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.core/Path) "/" ".") uxbox.shapes.core/map->Path)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.path/Path) "/" ".") uxbox.shapes.path/map->Path)
