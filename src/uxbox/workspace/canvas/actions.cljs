@@ -3,6 +3,10 @@
             [uxbox.geometry :as geo]
             [uxbox.storage :as storage]
             [uxbox.shapes.core :as shapes]
+            [uxbox.shapes.line :refer [new-line map->Line]]
+            [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
+            [uxbox.shapes.circle :refer [new-circle map->Circle]]
+            [uxbox.shapes.path :refer [new-path-shape map->Path]]
             [uxbox.workspace.figures.catalogs :refer [catalogs]]))
 
 (defn drawing-shape
@@ -41,7 +45,7 @@
          group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
-         shape-val (shapes/new-rectangle rect-x rect-y rect-width rect-height)
+         shape-val (new-rectangle rect-x rect-y rect-width rect-height)
          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
@@ -50,14 +54,14 @@
               (assoc-in [:page :drawing] nil)
               (assoc-in [:workspace :selected-tool] nil))))
 
-   (assoc-in state [:page :drawing] (shapes/map->Rectangle {:x x :y y}))))
+   (assoc-in state [:page :drawing] (map->Rectangle {:x x :y y}))))
 
 (defn drawing-line [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
           group-uuid (random-uuid)
           new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
-          shape-val (shapes/new-line (:x1 drawing-val) (:y1 drawing-val) x y)
+          shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)
           group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
       (do (pubsub/publish! [:insert-group [group-uuid group-val]])
@@ -66,7 +70,7 @@
               (assoc-in [:page :drawing] nil)
               (assoc-in [:workspace :selected-tool] nil))))
 
-    (assoc-in state [:page :drawing] (shapes/map->Line {:x1 x :y1 y :x2 x :y2 y}))))
+    (assoc-in state [:page :drawing] (map->Line {:x1 x :y1 y :x2 x :y2 y}))))
 
 (defn drawing-path [state [x y] symbol]
  (if-let [drawing-val (get-in state [:page :drawing])]
@@ -74,7 +78,7 @@
          group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
          new-group-order (->> state :page :groups vals (sort-by :order) last :order inc)
-         shape-val (shapes/new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
+         shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
          group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
 
      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
@@ -83,7 +87,7 @@
               (assoc-in [:page :drawing] nil)
               (assoc-in [:workspace :selected-tool] nil))))
 
-   (assoc-in state [:page :drawing] (shapes/map->Path {:x x :y y}))))
+   (assoc-in state [:page :drawing] (map->Path {:x x :y y}))))
 
 (defn drawing-circle [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
@@ -97,7 +101,7 @@
           dx (- (geo/distance cx cy cx 0) r)
           dy (- (geo/distance cx cy 0 cy) r)
           r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)
-          shape-val (shapes/new-circle (:cx drawing-val) (:cy drawing-val) r)
+          shape-val (new-circle (:cx drawing-val) (:cy drawing-val) r)
           group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
 
       (do (pubsub/publish! [:insert-group [group-uuid group-val]])
@@ -106,7 +110,7 @@
               (assoc-in [:page :drawing] nil)
               (assoc-in [:workspace :selected-tool] nil))))
 
-    (assoc-in state [:page :drawing] (shapes/map->Circle {:cx x :cy y}))))
+    (assoc-in state [:page :drawing] (map->Circle {:cx x :cy y}))))
 
 (pubsub/register-transition
   :drawing-shape

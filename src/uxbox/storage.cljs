@@ -1,6 +1,6 @@
 (ns uxbox.storage
   (:require [hodgepodge.core :refer [local-storage set-item get-item]]
-            [uxbox.shapes.core :refer [Rectangle Line move-delta]]))
+            [uxbox.shapes.core :as shapes]))
 
 (def users {"user-1" {
              :username "user-1"
@@ -236,4 +236,4 @@
 
 (defn move-shape
       [project-uuid page-uuid shape-uuid deltax deltay]
-      (swap! data (fn [current] (update-in current [:projects project-uuid :pages page-uuid :shapes shape-uuid] move-delta deltax deltay))))
+      (swap! data (fn [current] (update-in current [:projects project-uuid :pages page-uuid :shapes shape-uuid] shapes/move-delta deltax deltay))))
