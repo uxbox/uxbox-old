@@ -35,6 +35,10 @@
     [project-uuid page-uuid]
     (into {} (filter #(and (= (:project-uuid (second %)) project-uuid) (= (:page-uuid (second %)) page-uuid)) @shapes-view)))
 
+(defn get-shape
+    [shape-uuid]
+    (get @shapes-view shape-uuid))
+
 (defn create-project [project]
     (insert-event {:type :create-project :data project}))
 
@@ -80,10 +84,6 @@
     [project-uuid page-uuid group-uuid]
     (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))
 
-(defn toggle-group-lock
-    [group-uuid]
-    (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))
-
 (defn toggle-group-visibility
     [group-uuid]
     (insert-event {:type :toggle-group-visibility :data {:group-uuid group-uuid}}))
@@ -91,3 +91,11 @@
 (defn toggle-group-lock
     [group-uuid]
     (insert-event {:type :toggle-group-lock :data {:group-uuid group-uuid}}))
+
+(defn move-group-up
+    [group-uuid]
+    (insert-event {:type :move-group-up :data {:group-uuid group-uuid}}))
+
+(defn move-group-down
+    [group-uuid]
+    (insert-event {:type :move-group-down :data {:group-uuid group-uuid}}))
