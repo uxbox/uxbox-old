@@ -1,5 +1,5 @@
 (ns uxbox.storage.generators
-  (:require [uxbox.storage.views :refer [projects-view pages-view groups-view shapes-view]]))
+  (:require [uxbox.storage.atoms :refer [projects-view pages-view groups-view shapes-view]]))
 
 ;; TODO
 ;; (defn undo-tree [events])

@@ -2,6 +2,7 @@
     (:require [uxbox.db :as db]
               [uxbox.navigation :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
+              [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
@@ -35,6 +36,7 @@
   [app-state]
   (start-history!)
   (start-keyboard!)
+  (start-storage!)
   (render! app-state $el))
 
 (start! db/app-state)

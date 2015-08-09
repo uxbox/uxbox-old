@@ -1,6 +1,6 @@
 (ns uxbox.storage.api
-  (:require [uxbox.storage.views :refer [projects-view pages-view activity-view groups-view shapes-view]]
-            [uxbox.storage.core :refer [insert-event]]
+  (:require [uxbox.storage.core :refer [insert-event]]
+            [uxbox.storage.atoms :refer [ projects-view pages-view activity-view groups-view shapes-view]]
             [uxbox.shapes.core :refer [move-delta]]))
 
 (defn get-activity
