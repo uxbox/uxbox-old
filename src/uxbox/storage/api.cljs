@@ -56,7 +56,7 @@
 
 (defn create-shape
     [project-uuid page-uuid shape-uuid shape]
-    (let [shape-data (assoc shape :project-uuid project-uuid :page-uuid page-uuid)]
+    (let [shape-data (assoc shape :project-uuid project-uuid :page-uuid page-uuid :uuid shape-uuid)]
       (insert-event {:type :create-shape :data shape-data})))
 
 (defn remove-shape
@@ -69,7 +69,7 @@
 
 (defn create-group
     [project-uuid page-uuid group-uuid group]
-    (let [group-data (assoc group :project-uuid project-uuid :page-uuid page-uuid)]
+    (let [group-data (assoc group :project-uuid project-uuid :page-uuid page-uuid :uuid group-uuid)]
       (insert-event {:type :create-group :data group-data})))
 
 (defn remove-group

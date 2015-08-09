@@ -314,12 +314,19 @@
 
 (defn layers
   [db]
-  (let [{:keys [page workspace groups]} @db
-
-        group (fn [[group-id group] item]
+  (let [{:keys [page workspace groups]} @db]
+   [:div#layers.tool-window
+     [:div.tool-window-bar
+      [:div.tool-window-icon
+       icons/layers]
+      [:span "Elements"]
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
+       icons/close]]
+     [:div.tool-window-content
+      [:ul.element-list
+       (for [[group-id group] (sort-by #(:order (second %)) (seq groups))]
            [:li {:key group-id
-                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")
-                 }
+                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")}
             [:div.toggle-element {:class (if (:visible group) "selected" "")
                                   :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
             [:div.block-element {:class (if (:locked group) "selected" "")
@@ -333,17 +340,7 @@
               (= (:icon group) :arrow) icons/arrow
               (= (:icon group) :curve) icons/curve)]
             [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])
-        ]
-   [:div#layers.tool-window
-     [:div.tool-window-bar
-      [:div.tool-window-icon
-       icons/layers]
-      [:span "Elements"]
-      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
-       icons/close]]
-     [:div.tool-window-content
-      [:ul.element-list
-       (map group (sort-by #(:order (nth % 1)) (seq groups)))]]]))
+         ]]]))
 
 (defn toolbar
   [db]
