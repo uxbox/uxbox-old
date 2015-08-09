@@ -96,6 +96,8 @@
   (let [viewport-height 3000
         viewport-width 3000
         page (:page @db)
+        page-groups (:groups @db)
+        page-shapes (:shapes @db)
 
         page-width (:width page)
         page-height (:height page)
@@ -106,7 +108,7 @@
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
                       (->> shape-ids
-                           (map #(get-in page [:shapes %]))
+                           (map #(get page-shapes %))
                            (filter #(not (nil? %)))
                            ))
 
@@ -119,8 +121,7 @@
                                   (map shapes/shape->svg)))))
 
         ;; Retrieve the list of shapes grouped if applies
-        shapes-svg (->> page
-                        :groups vals
+        shapes-svg (->> page-groups
                         (sort-by :order)
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))
@@ -147,7 +148,7 @@
        (when-let [shape (get page :drawing)]
          [shapes/shape->drawing-svg shape])
        (when-let [selected-uuid (get page :selected)]
-         [shapes/shape->selected-svg (get-in page [:shapes selected-uuid])])
+         [shapes/shape->selected-svg (get page-shapes selected-uuid)])
        ]
       (if (:grid (:workspace @db))
         [grid viewport-width viewport-height document-start-x document-start-y 100])

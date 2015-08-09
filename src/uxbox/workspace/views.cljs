@@ -110,7 +110,7 @@
       (let [selected-uuid (get-in @db [:page :selected])
             project-uuid (get-in @db [:project :uuid])
             page-uuid (get-in @db [:page :uuid])
-            selected-shape (get-in @db [:page :shapes selected-uuid])
+            selected-shape (get-in @db [:shapes selected-uuid])
             [popup-x popup-y] (shapes/toolbar-coords selected-shape)]
         [:div#element-options.element-options
          {:style #js {:left popup-x :top popup-y}}
@@ -314,8 +314,7 @@
 
 (defn layers
   [db]
-  (let [{:keys [page workspace]} @db
-        {:keys [groups]} page
+  (let [{:keys [page workspace groups]} @db
 
         group (fn [[group-id group] item]
            [:li {:key group-id

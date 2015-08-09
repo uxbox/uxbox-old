@@ -34,9 +34,9 @@
 
 (defn start!
   [app-state]
+  (start-storage!)
   (start-history!)
   (start-keyboard!)
-  (start-storage!)
   (render! app-state $el))
 
 (start! db/app-state)
