@@ -75,3 +75,15 @@
 (defn remove-group
     [project-uuid page-uuid group-uuid]
     (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))
+
+(defn toggle-group-lock
+    [group-uuid]
+    (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))
+
+(defn toggle-group-visibility
+    [group-uuid]
+    (insert-event {:type :toggle-group-visibility :data {:group-uuid group-uuid}}))
+
+(defn toggle-group-lock
+    [group-uuid]
+    (insert-event {:type :toggle-group-lock :data {:group-uuid group-uuid}}))
