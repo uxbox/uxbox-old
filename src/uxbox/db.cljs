@@ -28,6 +28,9 @@
                     :projects-list {}
                     :new-project-defaults {
                       :name ""
+                      :width 1920
+                      :height 1080
+                      :layout :desktop
                     }
                     :visible-project-bar false
                     :new-project-name ""
