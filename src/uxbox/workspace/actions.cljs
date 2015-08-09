@@ -121,6 +121,16 @@
  (fn [state group-id]
    (update-in state [:groups group-id :visible] #(not %1))))
 
+(pubsub/register-effect
+ :toggle-group-visiblity
+ (fn [state group-id]
+   (storage/toggle-group-visibility group-id)))
+
+(pubsub/register-effect
+ :toggle-group-lock
+ (fn [state group-id]
+   (storage/toggle-group-lock group-id)))
+
 (pubsub/register-transition
  :toggle-group-lock
  (fn [state group-id]
