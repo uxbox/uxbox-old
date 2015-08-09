@@ -44,4 +44,5 @@
       :delete-page (swap! shapes-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
       :delete-project (swap! shapes-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
       :move-shape (swap! shapes-view (fn [current] (update-in current [(:shape-uuid event-data)] shapes/move-delta (:delta-x event-data) (:delta-y event-data))))
+      :change-shape-attr (swap! shapes-view (fn [current] (assoc-in current [(:shape-uuid event-data) (:attr event-data)] (:value event-data))))
       "default")))

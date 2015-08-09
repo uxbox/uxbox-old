@@ -67,6 +67,10 @@
     [project-uuid page-uuid shape-uuid deltax deltay]
     (insert-event {:type :move-shape :data {:project-uuid project-uuid :page-uuid page-uuid :shape-uuid shape-uuid :delta-x deltax :delta-y deltay}}))
 
+(defn change-shape-attr
+    [project-uuid page-uuid shape-uuid attr value]
+    (insert-event {:type :change-shape-attr :data {:project-uuid project-uuid :page-uuid page-uuid :shape-uuid shape-uuid :attr attr :value value}}))
+
 (defn create-group
     [project-uuid page-uuid group-uuid group]
     (let [group-data (assoc group :project-uuid project-uuid :page-uuid page-uuid :uuid group-uuid)]
