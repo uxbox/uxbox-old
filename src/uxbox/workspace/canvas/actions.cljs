@@ -228,3 +228,62 @@
            (-> state
                (update-in [:shapes selected-uuid] shapes/move-delta deltax deltay)))
          state)))))
+
+(pubsub/register-transition
+ :move-layer-down
+ (fn [state _]
+   (let [selected-uuid (get-in state [:page :selected])
+         groups (:groups state)
+         selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+         previous-group (last (take-while #(not= (nth % 0) (nth selected-group 0)) (sort-by #(:order (nth % 1)) (seq groups))))
+         selected-group-order (:order (nth selected-group 1))
+         previous-group-order (:order (nth previous-group 1))]
+     (if (and selected-group previous-group)
+       (do
+         (storage/move-group-down selected-group)
+         (-> state
+             (assoc-in [:groups (nth selected-group 0) :order] previous-group-order)
+             (assoc-in [:groups (nth previous-group 0) :order] selected-group-order)))
+       state))))
+
+(pubsub/register-transition
+ :move-layer-up
+ (fn [state _]
+   (let [selected-uuid (get-in state [:page :selected])
+         groups (:groups state)
+         selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+         next-group (last (take-while #(not= (nth % 0) (nth selected-group 0)) (reverse (sort-by #(:order (nth % 1)) (seq groups)))))
+         selected-group-order (:order (nth selected-group 1))
+         next-group-order (:order (nth next-group 1))]
+     (if (and selected-group next-group)
+       (do
+
+         (storage/move-group-up selected-group)
+         (-> state
+             (assoc-in [:groups (nth selected-group 0) :order] next-group-order)
+             (assoc-in [:groups (nth next-group 0) :order] selected-group-order)))
+       state))))
+
+;; Not working yet
+;; (pubsub/register-transition
+;;  :move-layer-to-bottom
+;;  (fn [state _]
+;;    (let [selected-uuid (get-in state [:page :selected])
+;;          groups (:groups state)
+;;          selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+;;          min-order-group (min (map :order (vals groups)))]
+;;      (.log js/console min-order-group)
+;;      (.log js/console (dec min-order-group))
+;;      (-> state
+;;          (assoc-in [:groups (nth selected-group 0) :order] (dec min-order-group))))))
+;;
+;; (pubsub/register-transition
+;;  :move-layer-to-top
+;;  (fn [state _]
+;;    (let [selected-uuid (get-in state [:page :selected])
+;;          groups (:groups state)
+;;          selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+;;          max-order-group (max (map :order (vals groups)))]
+;;      (.log js/console max-order-group)
+;;      (.log js/console (inc max-order-group))
+;;      (assoc-in state [:groups (nth selected-group 0) :order] (inc max-order-group)))))
