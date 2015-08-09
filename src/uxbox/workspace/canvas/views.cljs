@@ -122,6 +122,7 @@
 
         ;; Retrieve the list of shapes grouped if applies
         shapes-svg (->> page-groups
+                        (vals)
                         (sort-by :order)
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))
