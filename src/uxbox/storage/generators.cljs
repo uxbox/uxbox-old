@@ -1,5 +1,6 @@
 (ns uxbox.storage.generators
-  (:require [uxbox.storage.atoms :refer [projects-view pages-view groups-view shapes-view]]))
+  (:require [uxbox.storage.atoms :refer [projects-view pages-view groups-view shapes-view]]
+            [uxbox.shapes.core :as shapes]))
 
 ;; TODO
 ;; (defn undo-tree [events])
@@ -42,4 +43,5 @@
       :delete-group (swap! shapes-view (fn [current] (into {} (filter #(not= (:group-uuid event-data) (:group-uuid (second %))) current))))
       :delete-page (swap! shapes-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
       :delete-project (swap! shapes-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
+      :move-shape (swap! shapes-view (fn [current] (update-in current [(:shape-uuid event-data)] shapes/move-delta (:delta-x event-data) (:delta-y event-data))))
       "default")))
