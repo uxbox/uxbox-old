@@ -29,6 +29,7 @@
                 (proccess-event (last new-value))))
    (backend/bind-key atoms/storage :data)
    (backend/bind-key atoms/projects-view :projects-view)
+   (backend/bind-key atoms/pages-view :pages-view)
    (backend/bind-key atoms/activity-view :activity-view)
    (backend/bind-key atoms/groups-view :groups-view)
    (backend/bind-key atoms/shapes-view :shapes-view)))
