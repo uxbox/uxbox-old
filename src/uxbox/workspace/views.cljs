@@ -60,7 +60,7 @@
 
 (defn figures
   [db]
-  (let [{:keys [workspace]} @db]
+  (let [{:keys [workspace current-catalog]} @db]
    [:div#form-figures.tool-window
      [:div.tool-window-bar
       [:div.tool-window-icon
@@ -73,10 +73,10 @@
        [:select.input-select.small {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
         (for [[catalog-id catalog] (seq figures-catalogs/catalogs)]
           [:option {:key catalog-id :value catalog-id} (:name catalog)])]]
-      (for [[figure-id figure] (seq (get-in figures-catalogs/catalogs [(:current-catalog @db) :symbols]))]
+      (for [[figure-id figure] (seq (get-in figures-catalogs/catalogs [current-catalog :symbols]))]
         [:div.figure-btn {:key figure-id
-                          :class (if (= (:selected-tool workspace) [:figure (:current-catalog @db) figure-id]) "selected" "")
-                          :on-click #(actions/set-tool [:figure (:current-catalog @db) figure-id])}
+                          :class (if (= (:selected-tool workspace) [:figure current-catalog figure-id]) "selected" "")
+                          :on-click #(actions/set-tool [:figure current-catalog figure-id])}
           [:svg (:svg figure)]])]]))
 
 (defn components
