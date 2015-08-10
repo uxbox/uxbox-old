@@ -264,29 +264,24 @@
              (assoc-in [:groups (nth next-group 0) :order] selected-group-order)))
        state))))
 
-;; Not working yet
-;; (pubsub/register-transition
-;;  :move-layer-to-bottom
-;;  (fn [state _]
-;;    (let [selected-uuid (get-in state [:page :selected])
-;;          groups (:groups state)
-;;          selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
-;;          min-order-group (min (map :order (vals groups)))]
-;;      (.log js/console min-order-group)
-;;      (.log js/console (dec min-order-group))
-;;      (-> state
-;;          (assoc-in [:groups (nth selected-group 0) :order] (dec min-order-group))))))
-;;
-;; (pubsub/register-transition
-;;  :move-layer-to-top
-;;  (fn [state _]
-;;    (let [selected-uuid (get-in state [:page :selected])
-;;          groups (:groups state)
-;;          selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
-;;          max-order-group (max (map :order (vals groups)))]
-;;      (.log js/console max-order-group)
-;;      (.log js/console (inc max-order-group))
-;;      (assoc-in state [:groups (nth selected-group 0) :order] (inc max-order-group)))))
+(pubsub/register-transition
+ :move-layer-to-bottom
+ (fn [state _]
+   (let [selected-uuid (get-in state [:page :selected])
+         groups (:groups state)
+         selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+         min-order-group (apply min (map :order (vals groups)))]
+     (-> state
+         (assoc-in [:groups (first selected-group) :order] (dec min-order-group))))))
+
+(pubsub/register-transition
+ :move-layer-to-top
+ (fn [state _]
+   (let [selected-uuid (get-in state [:page :selected])
+         groups (:groups state)
+         selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
+         max-order-group (apply max (map :order (vals groups)))]
+     (assoc-in state [:groups (first selected-group) :order] (inc max-order-group)))))
 
 (pubsub/register-transition
  :viewport-scroll
