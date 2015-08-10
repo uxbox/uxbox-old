@@ -25,7 +25,7 @@
   [:header#workspace-bar.workspace-bar
     [:div.main-icon
      [link "/dashboard"
-      icons/logo]]
+      icons/logo-icon]]
     [project-tree db]
     [:div.workspace-options
      [:ul.options-btn
