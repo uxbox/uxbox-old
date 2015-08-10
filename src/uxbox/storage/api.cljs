@@ -48,7 +48,7 @@
 
 (defn change-page-title
     [project-uuid page title]
-    (insert-event {:type :change-page-title :data {:project-uuid project-uuid :page-uuid (:uuid page) :old-title (:page title) :new-title title}}))
+    (insert-event {:type :change-page-title :data {:project-uuid project-uuid :page-uuid (:uuid page) :old-title (:title page) :new-title title}}))
 
 (defn delete-page
     [project-uuid page]

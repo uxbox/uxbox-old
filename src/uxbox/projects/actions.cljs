@@ -52,7 +52,7 @@
 (pubsub/register-transition
  :create-page
  (fn [state page]
-   (assoc-in state [:pages (:uuid page)] page)))
+   (assoc-in state [:project-pages (:uuid page)] page)))
 
 (pubsub/register-effect
  :create-project
@@ -73,15 +73,15 @@
  :delete-page
  (fn [state [project page]]
    (let [page-uuid (:uuid page)
-         new-state (update-in state [:project :pages] dissoc page-uuid)]
+         new-state (update-in state [:project-pages] dissoc page-uuid)]
      (if (= (:uuid (:page state)) page-uuid)
-       (assoc new-state :page (first (vals (get-in new-state [:project :pages]))))
+       (assoc new-state :page (first (vals (get-in new-state [:project-pages]))))
        new-state))))
 
 (pubsub/register-transition
  :change-page-title
  (fn [state [project page title]]
-   (assoc-in state [:project :pages (:uuid page) :title] title)))
+   (assoc-in state [:project-pages (:uuid page) :title] title)))
 
 (pubsub/register-effect
  :change-page-title
