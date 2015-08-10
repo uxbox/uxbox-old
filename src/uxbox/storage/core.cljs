@@ -4,7 +4,7 @@
     [uxbox.storage.generators :as generators]
     [uxbox.storage.atoms :as atoms]))
 
-(defn proccess-event [event]
+(defn process-event [event]
   ;; TODO
   ;; (generators/undo-tree event)
   (generators/projects-data event)
@@ -16,17 +16,14 @@
 (defn insert-event [event-data]
   (let [now (js/Date.)
         event (assoc event-data :now now)]
-    (swap! atoms/storage (fn [current] (conj current event)))))
+    (swap! atoms/storage (fn [current] (conj current event))
+    (process-event event))))
 
 (defn start-storage!
   ([]
    (start-storage! backend/default-backend))
   ([b]
    (backend/set-backend! b)
-   (add-watch atoms/storage
-              :data-views-generator
-              (fn [_ _ _ new-value]
-                (proccess-event (last new-value))))
    (backend/bind-key atoms/storage :data)
    (backend/bind-key atoms/projects-view :projects-view)
    (backend/bind-key atoms/pages-view :pages-view)
