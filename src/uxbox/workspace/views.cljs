@@ -449,15 +449,19 @@
 
 (defn workspace
   [db]
-  [:div
-   [header db]
-   [:main.main-content
-    [:section.workspace-content
-     [toolbar db]
-     [projectbar db]
-     [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")}
-      (when (get-in @db [:page :selected])
-        [elementoptions db])
-      [canvas db]]]
-    (if (not (empty? (:open-setting-boxes @db)))
-     [settings db])]])
+  (let [on-event (fn [event-type]
+         (fn [e]
+           (pubsub/publish! [event-type {:top (.-scrollTop (.-target e)) :left (.-scrollLeft (.-target e))}])
+           (.preventDefault e)))]
+    [:div
+     [header db]
+     [:main.main-content
+      [:section.workspace-content
+       [toolbar db]
+       [projectbar db]
+       [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")  :on-scroll (on-event :viewport-scroll)}
+        (when (get-in @db [:page :selected])
+          [elementoptions db])
+        [canvas db]]]
+      (if (not (empty? (:open-setting-boxes @db)))
+       [settings db])]]))

@@ -287,3 +287,8 @@
 ;;      (.log js/console max-order-group)
 ;;      (.log js/console (inc max-order-group))
 ;;      (assoc-in state [:groups (nth selected-group 0) :order] (inc max-order-group)))))
+
+(pubsub/register-transition
+ :viewport-scroll
+ (fn [state data]
+   (assoc state :scroll data)))
