@@ -45,7 +45,7 @@
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
                    [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
-                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
+                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
                   [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
                   :else
@@ -68,7 +68,7 @@
                   (= (mod value big-ticks-mod) 0)
                   [:g {:key position}
                    [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
-                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:font-size "12px"}} value]]
+                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
                   (= (mod value mid-ticks-mod) 0)
                   [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
                   :else
@@ -96,6 +96,8 @@
   (let [viewport-height 3000
         viewport-width 3000
         page (:page @db)
+        page-groups (:groups @db)
+        page-shapes (:shapes @db)
 
         page-width (:width page)
         page-height (:height page)
@@ -106,7 +108,7 @@
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
                       (->> shape-ids
-                           (map #(get-in page [:shapes %]))
+                           (map #(get page-shapes %))
                            (filter #(not (nil? %)))
                            ))
 
@@ -119,8 +121,8 @@
                                   (map shapes/shape->svg)))))
 
         ;; Retrieve the list of shapes grouped if applies
-        shapes-svg (->> page
-                        :groups vals
+        shapes-svg (->> page-groups
+                        (vals)
                         (sort-by :order)
                         (filter :visible)
                         (map #(update-in % [:shapes] ids->shapes))
@@ -147,7 +149,7 @@
        (when-let [shape (get page :drawing)]
          [shapes/shape->drawing-svg shape])
        (when-let [selected-uuid (get page :selected)]
-         [shapes/shape->selected-svg (get-in page [:shapes selected-uuid])])
+         [shapes/shape->selected-svg (get page-shapes selected-uuid)])
        ]
       (if (:grid (:workspace @db))
         [grid viewport-width viewport-height document-start-x document-start-y 100])

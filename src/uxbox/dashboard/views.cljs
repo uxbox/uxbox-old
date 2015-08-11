@@ -4,7 +4,7 @@
             [uxbox.dashboard.icons :as icons]
             [uxbox.icons :refer [chat logo]]
             [uxbox.user.views :refer [user]]
-            [uxbox.navigation :refer [link navigate! workspace-route]]
+            [uxbox.navigation :refer [link navigate! workspace-page-route workspace-route]]
             [uxbox.time :refer [ago]]))
 
 (defn header [db]
@@ -16,8 +16,7 @@
 (defn activity-item [db item]
   (let [{:keys [project
                 author
-                event]} item
-        first-page-uuid (get-in @db [:projects-list (:uuid project) :first-page-uuid])]
+                event]} item]
     [:div.activity-input
      {:key (:uuid item)}
      [:img.activity-author
@@ -27,15 +26,15 @@
         [:span.bold (:name author)]
         [:span "Create new page"]
         [:div.activity-project
-         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid (:page-uuid event)}))} (:name event)]
+         [:a {:on-click #(navigate! (workspace-page-route {:project-uuid (:uuid project) :page-uuid (:page-uuid event)}))} (:name event)]
          [:span "in"]
-         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid first-page-uuid}))} (:name project)]]
+         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project)}))} (:name project)]]
         [:span.activity-time (ago (:datetime item))]])
      (when (= (:type event) :create-project)
        [:div.activity-content
         [:span.bold (:name author)]
         [:span "Create new project"]
-         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project) :page-uuid first-page-uuid}))} (:name project)]
+         [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project)}))} (:name project)]
         [:span.activity-time (ago (:datetime item))]])
      ]))
 
@@ -85,8 +84,8 @@
    [:span "+ New project"]])
 
 (defn project-card [project]
-  (let [{:keys [uuid last-update first-page-uuid]} project]
-    [:div.grid-item.project-th {:on-click #(navigate! (workspace-route {:project-uuid uuid :page-uuid first-page-uuid}))
+  (let [{:keys [uuid last-update]} project]
+    [:div.grid-item.project-th {:on-click #(navigate! (workspace-route {:project-uuid uuid}))
                                 :key uuid}
      [:h3
       (:name project)]
@@ -94,7 +93,7 @@
      [:div.project-th-actions
       [:div.project-th-icon.pages
        icons/page
-       [:span (:pages-count project)]]
+       [:span (:pages project)]]
       [:div.project-th-icon.comments
        chat
        [:span (:comment-count project)]]

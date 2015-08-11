@@ -2,10 +2,12 @@
     (:require [uxbox.db :as db]
               [uxbox.navigation :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
+              [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
               [uxbox.user.views :refer [login]]
+              [hodgepodge.core :refer [local-storage]]
               [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
@@ -33,6 +35,7 @@
 
 (defn start!
   [app-state]
+  (start-storage! local-storage)
   (start-history!)
   (start-keyboard!)
   (render! app-state $el))
