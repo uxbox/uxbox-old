@@ -100,8 +100,8 @@
         page-width (:width page)
         page-height (:height page)
 
-        document-start-x (- 500 (/ page-width 2))
-        document-start-y (- 750 (/ page-height 2))
+        document-start-x 50
+        document-start-y 50
 
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
@@ -141,7 +141,7 @@
      [:svg#viewport {:width viewport-height :height viewport-width}
       [horizontal-rule viewport-width document-start-x 100]
       [vertical-rule viewport-height document-start-y 100]
-      [:svg#page-canvas  {:x 50 :y 50 :width page-width :height page-height};; Document
+      [:svg#page-canvas  {:x document-start-x :y document-start-y :width page-width :height page-height};; Document
        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
        (apply vector :svg#page-layout shapes-svg)
        (when-let [shape (get page :drawing)]
