@@ -201,16 +201,29 @@
  :viewport-mouse-down
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
-     (-> state
-         (update-in [:shapes selected-uuid] assoc :dragging true))
+     (let [coors {:x (get-in state [:shapes selected-uuid :x]) :y (get-in state [:shapes selected-uuid :y])}]
+       (-> state
+           (update-in [:shapes selected-uuid] assoc :dragging-coors coors)
+           (update-in [:shapes selected-uuid] assoc :dragging true)))
      state)))
 
 (pubsub/register-transition
  :viewport-mouse-up
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
-     (-> state
-         (update-in [:shapes selected-uuid] dissoc :dragging))
+     (let [x (get-in state [:shapes selected-uuid :x])
+           y (get-in state [:shapes selected-uuid :y])
+           old-x (get-in state [:shapes selected-uuid :dragging-coors :x])
+           old-y (get-in state [:shapes selected-uuid :dragging-coors :y])
+           deltax (- x old-x)
+           deltay (- y old-y)
+           project-uuid (get-in state [:project :uuid])
+           page-uuid (get-in state [:page :uuid])]
+       (do
+         (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
+         (-> state
+             (update-in [:shapes selected-uuid] dissoc :dragging-coors)
+             (update-in [:shapes selected-uuid] dissoc :dragging))))
      state)))
 
 (pubsub/register-transition
@@ -223,12 +236,7 @@
        (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
          (let [deltax (- x old-x)
                deltay (- y old-y)
-               shape-x (get-in state [:shapes selected-uuid :x])
-               shape-y (get-in state [:shapes selected-uuid :y])
-               selected-uuid (get-in state [:page :selected])
-               project-uuid (get-in state [:project :uuid])
-               page-uuid (get-in state [:page :uuid])]
-           (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
+               selected-uuid (get-in state [:page :selected])]
            (-> state
                (update-in [:shapes selected-uuid] shapes/move-delta deltax deltay)))
          state)))))
