@@ -137,6 +137,7 @@
      (cond
        (= selected-tool :rect) (drawing-rect state coords)
        (= selected-tool :line) (drawing-line state coords)
+       (= selected-tool :text) (drawing-text state coords)
        (= selected-tool :circle) (drawing-circle state coords)
        (= (first selected-tool) :figure)
          (let [[_ catalog symbol] selected-tool]
