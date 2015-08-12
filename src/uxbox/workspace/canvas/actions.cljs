@@ -5,6 +5,7 @@
             [uxbox.shapes.core :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
+            [uxbox.shapes.text :refer [new-text map->Text]]
             [uxbox.shapes.circle :refer [new-circle map->Circle]]
             [uxbox.shapes.path :refer [new-path-shape map->Path]]
             [uxbox.workspace.figures.catalogs :refer [catalogs]]))
@@ -55,6 +56,23 @@
               (assoc-in [:workspace :selected-tool] nil))))
 
    (assoc-in state [:page :drawing] (map->Rectangle {:x x :y y}))))
+
+(defn drawing-text [state [x y]]
+ (if-let [drawing-val (get-in state [:page :drawing])]
+   (let [shape-uuid (random-uuid)
+         group-uuid (random-uuid)
+         [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
+         shape-val (new-rectangle rect-x rect-y rect-width rect-height)
+         group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+
+     (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+         (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+         (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+   (assoc-in state [:page :drawing] (map->Text {:x x :y y}))))
 
 (defn drawing-line [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
