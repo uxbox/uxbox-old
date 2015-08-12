@@ -57,7 +57,7 @@
         (let [[mouseX mouseY] @coordinates
               [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouseX mouseY)]
           (if (and (> rect-width 0) (> rect-height 0))
-            [:text {:x rect-x :y rect-y :width rect-width :height rect-height
+            [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
                     :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
 
   (move-delta
