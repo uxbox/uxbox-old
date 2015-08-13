@@ -31,54 +31,6 @@
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
-(defn vertical-rule
-  [height start-height zoom]
-  (let [padding 20
-        big-ticks-mod 100
-        mid-ticks-mod 50
-        step-size 10
-        ticks (range (- padding start-height) (- height start-height padding) step-size)
-
-        lines (fn
-                [position value padding]
-                (cond
-                  (= (mod value big-ticks-mod) 0)
-                  [:g {:key position}
-                   [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
-                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
-                  (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
-                  :else
-                  [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "#7f7f7f"}]))
-        ]
-    [:g.vertical-rule
-     [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
-     (map #(lines (+ %1 start-height) %1 padding) ticks)]))
-
-(defn horizontal-rule
-  [width start-width zoom]
-  (let [padding 20
-        big-ticks-mod 100
-        mid-ticks-mod 50
-        step-size 10
-        ticks (range (- padding start-width) (- width start-width padding) step-size)
-        lines (fn
-                [position value padding]
-                (cond
-                  (= (mod value big-ticks-mod) 0)
-                  [:g {:key position}
-                   [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
-                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
-                  (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
-                  :else
-                  [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "#7f7f7f"}]))
-        ]
-    [:g.horizontal-rule
-     [:rect {:x padding :y 0 :width width :height padding :fill "#bab7b7"}]
-     [:rect {:x 0 :y 0 :width padding :height padding :fill "#bab7b7"}]
-     (map #(lines (+ %1 start-width) %1 padding) ticks)]))
-
 
 (defn debug-coordinates [db]
   (let [coordinates (atom [])
@@ -141,8 +93,6 @@
            :on-mouse-up (on-event :viewport-mouse-up)}
      [debug-coordinates db]
      [:svg#viewport {:width viewport-height :height viewport-width}
-      [horizontal-rule viewport-width document-start-x 100]
-      [vertical-rule viewport-height document-start-y 100]
       [:svg#page-canvas  {:x document-start-x :y document-start-y :width page-width :height page-height};; Document
        [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
        (apply vector :svg#page-layout shapes-svg)

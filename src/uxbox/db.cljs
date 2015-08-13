@@ -49,6 +49,7 @@
                     ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement
                     ;; Style properties http://www.w3.org/TR/SVG/propidx.html
                     :current-catalog :material-design-actions
+                    :scroll {:top 0 :left 0}
 
                     :project nil
                     :page nil})
