@@ -157,14 +157,15 @@
 
 (pubsub/register-event
   :viewport-mouse-click
-  (fn [state coords]
-    (if (get-in state [:workspace :selected-tool])
-      (drawing-shape coords)
-      (select-shape coords))))
+  (fn [state]
+    (let [coords (:mouse-position state)]
+      (if (get-in state [:workspace :selected-tool])
+        (drawing-shape coords)
+        (select-shape coords)))))
 
 (pubsub/register-transition
  :viewport-mouse-drag
- (fn [state [state coords]]
+ (fn [state _]
    (if (get-in state [:page :selected])
      state
      state)))
@@ -229,8 +230,9 @@
 (pubsub/register-transition
  :viewport-mouse-move
  (let [last-event (atom [0 0])]
-   (fn [state [x y]]
-     (let [[old-x old-y] @last-event
+   (fn [state _]
+     (let [[x y] (:mouse-position state)
+           [old-x old-y] @last-event
            selected-uuid (get-in state [:page :selected])]
        (reset! last-event [x y])
        (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
@@ -296,6 +298,32 @@
      (assoc-in state [:groups (first selected-group) :order] (inc max-order-group)))))
 
 (pubsub/register-transition
+ :zoom-in
+ (fn [state data]
+   (update-in state [:workspace :zoom] #(+ % 0.1))))
+
+(pubsub/register-transition
+ :zoom-out
+ (fn [state data]
+   (update-in state [:workspace :zoom] #(max 0 (- % 0.1)))))
+
+(pubsub/register-transition
+ :zoom-reset
+ (fn [state data]
+   (assoc-in state [:workspace :zoom] 1)))
+
+(pubsub/register-transition
+  :zoom-wheel
+  (fn [state delta]
+    (update-in state [:workspace :zoom] #(max 0 (+ % (* 0.01 delta))))))
+
+(pubsub/register-transition
  :viewport-scroll
  (fn [state data]
    (assoc state :scroll data)))
+
+(pubsub/register-transition
+ :viewport-mouse-move
+ (fn [state data]
+   (let [zoom (get-in state [:workspace :zoom])]
+     (assoc state :mouse-position [(int (/ (first data) zoom)) (int (/ (second data) zoom))]))))

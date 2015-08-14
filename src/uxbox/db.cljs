@@ -39,11 +39,13 @@
                     :adding-new-page false
                     :workspace-defaults {:selected-tool nil
                                          :selected-element 0
-                                         :grid false}
+                                         :grid false
+                                         :zoom 1}
                     :workspace {:selected-tool nil
                                 :selected-groups #{}
                                 :selected-element 0
-                                :grid false}
+                                :grid false
+                                :zoom 1}
 
                     ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
                     ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement

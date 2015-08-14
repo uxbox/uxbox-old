@@ -110,10 +110,11 @@
       (let [selected-uuid (get-in @db [:page :selected])
             project-uuid (get-in @db [:project :uuid])
             page-uuid (get-in @db [:page :uuid])
+            zoom (get-in @db [:workspace :zoom])
             selected-shape (get-in @db [:shapes selected-uuid])
             [popup-x popup-y] (shapes/toolbar-coords selected-shape)]
         [:div#element-options.element-options
-         {:style #js {:left popup-x :top popup-y}}
+         {:style #js {:left (* popup-x zoom) :top (* popup-y zoom)}}
          [:ul.element-icons
           [:li#e-info {:on-click (fn [e] (reset! show-element :options))
                        :class (when (= @show-element :options) "selected")} icons/infocard]
@@ -450,54 +451,55 @@
 (defn vertical-rule
   [db height start-height zoom]
   (let [padding 20
-        big-ticks-mod 100
-        mid-ticks-mod 50
+        big-ticks-mod (/ 100 zoom)
+        mid-ticks-mod (/ 50 zoom)
         step-size 10
-        ticks (range (- padding start-height) (- height start-height padding) step-size)
+        ticks (concat (range (- padding start-height) 0 step-size) (range 0 (- height start-height padding) step-size))
 
         lines (fn
                 [position value padding]
                 (cond
-                  (= (mod value big-ticks-mod) 0)
-                  [:g {:key position}
-                   [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
-                   [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
-                  (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
+                  (< (mod value big-ticks-mod) step-size)
+                    [:g {:key position}
+                     [:line {:y1 position :y2 position :x1 5 :x2 padding :stroke "#7f7f7f"}]
+                     [:text {:y position :x 5 :transform (str/format "rotate(90 0 %s)" position) :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
+                  (< (mod value mid-ticks-mod) step-size)
+                    [:line {:key position :y1 position :y2 position :x1 10 :x2 padding :stroke "#7f7f7f"}]
                   :else
-                  [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "#7f7f7f"}]))
+                    [:line {:key position :y1 position :y2 position :x1 15 :x2 padding :stroke "#7f7f7f"}]))
         ]
     [:g
      [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
-     (map #(lines (+ %1 start-height) %1 padding) ticks)]))
+     (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]))
 
 (defn horizontal-rule
   [db width start-width zoom]
   (let [padding 20
-        big-ticks-mod 100
-        mid-ticks-mod 50
+        big-ticks-mod (/ 100 zoom)
+        mid-ticks-mod (/ 50 zoom)
         step-size 10
-        ticks (range (- padding start-width) (- width start-width padding) step-size)
+        ticks (concat (range (- padding start-width) 0 step-size) (range 0 (- width start-width padding) step-size))
         lines (fn
                 [position value padding]
                 (cond
-                  (= (mod value big-ticks-mod) 0)
-                  [:g {:key position}
-                   [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
-                   [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
-                  (= (mod value mid-ticks-mod) 0)
-                  [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
+                  (< (mod value big-ticks-mod) step-size)
+                    [:g {:key position}
+                     [:line {:x1 position :x2 position :y1 5 :y2 padding :stroke "#7f7f7f"}]
+                     [:text {:x (+ position 2) :y 13 :fill "#7f7f7f" :style #js {:fontSize "12px"}} value]]
+                  (< (mod value mid-ticks-mod) step-size)
+                    [:line {:key position :x1 position :x2 position :y1 10 :y2 padding :stroke "#7f7f7f"}]
                   :else
-                  [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "#7f7f7f"}]))
+                    [:line {:key position :x1 position :x2 position :y1 15 :y2 padding :stroke "#7f7f7f"}]))
         ]
     [:g
      [:rect {:x padding :y 0 :width width :height padding :fill "#bab7b7"}]
      [:rect {:x 0 :y 0 :width padding :height padding :fill "#bab7b7"}]
-     (map #(lines (+ %1 start-width) %1 padding) ticks)]))
+     (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]))
 
 (defn workspace
   [db]
-  (let [on-event (fn [event-type]
+  (let [zoom (get-in @db [:workspace :zoom])
+        on-event (fn [event-type]
          (fn [e]
            (pubsub/publish! [event-type {:top (.-scrollTop (.-target e)) :left (.-scrollLeft (.-target e))}])
            (.preventDefault e)))]
@@ -508,9 +510,9 @@
        [toolbar db]
        [projectbar db]
        [:svg.horizontal-rule {:width 3000 :height 3000 :style {:left (str (- (- (get-in @db [:scroll :left]) 50)) "px")}}
-        [horizontal-rule db 3000 50 100]]
+        [horizontal-rule db 3000 50 zoom]]
        [:svg.vertical-rule {:width 3000 :height 3000 :style {:top (str (- (get-in @db [:scroll :top])) "px")}}
-        [vertical-rule db 3000 50 100]]
+        [vertical-rule db 3000 50 zoom]]
        [:section.workspace-canvas {:class (if (empty? (:open-setting-boxes @db)) "no-tool-bar" "")  :on-scroll (on-event :viewport-scroll)}
         (when (get-in @db [:page :selected])
           [elementoptions db])
