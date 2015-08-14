@@ -8,24 +8,24 @@
 
 (defn grid
   [width height start-width start-height zoom]
-  (let [padding 20
-        ticks-mod 100
-        step-size 10
+  (let [padding (* 20 zoom)
+        ticks-mod (/ 100 zoom)
+        step-size (/ 10 zoom)
 
         vertical-ticks (range (- padding start-height) (- height start-height padding) step-size)
         horizontal-ticks (range (- padding start-width) (- width start-width padding) step-size)
 
         vertical-lines (fn
           [position value padding]
-          (if (= (mod value ticks-mod) 0)
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :opacity 0.75}]
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :opacity 0.25}]))
+          (if (< (mod value ticks-mod) step-size)
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.75}]
+             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.25}]))
 
         horizontal-lines (fn
           [position value padding]
-          (if (= (mod value ticks-mod) 0)
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :opacity 0.75}]
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :opacity 0.25}]))
+          (if (< (mod value ticks-mod) step-size)
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.75}]
+             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.25}]))
         ]
     [:g.grid
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
@@ -33,16 +33,12 @@
 
 
 (defn debug-coordinates [db]
-  (let [coordinates (atom [])
-        viewport-move (fn [state coord]
-                        (reset! coordinates coord))]
-    (pubsub/register-event :viewport-mouse-move viewport-move)
-    (fn []
-      (let [[mouseX mouseY] @coordinates]
-        [:div {:style #js {:position "absolute" :left "80px" :top "20px"}}
-         [:table
-          [:tr [:td "X:"] [:td mouseX]]
-          [:tr [:td "Y:"] [:td mouseY]]]]))))
+  (let [zoom (get-in @db [:workspace :zoom])
+        [mouseX mouseY] (:mouse-position @db)]
+    [:div {:style #js {:position "absolute" :left "80px" :top "20px"}}
+     [:table
+      [:tr [:td "X:"] [:td mouseX]]
+      [:tr [:td "Y:"] [:td mouseY]]]]))
 
 (defn canvas [db]
   (let [viewport-height 3000
@@ -56,6 +52,8 @@
 
         document-start-x 50
         document-start-y 50
+
+        zoom (get-in @db [:workspace :zoom])
 
         ;; Get a group of ids and retrieves the list of shapes
         ids->shapes (fn [shape-ids]
@@ -85,22 +83,32 @@
                    (fn [e]
                      (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
                        (pubsub/publish! [event-type coords])
-                       (.preventDefault e))))]
+                       (.preventDefault e))))
+
+        on-wheel-event (fn [event-type]
+                   (fn [e]
+                     (when (.-altKey e)
+                       (do (if (> (.-deltaY e) 0)
+                             (pubsub/publish! [event-type 5])
+                             (pubsub/publish! [event-type -5]))
+                           (.preventDefault e)))))]
 
     [:div {:on-mouse-move (on-event :viewport-mouse-move)
            :on-click (on-event :viewport-mouse-click)
            :on-mouse-down (on-event :viewport-mouse-down)
-           :on-mouse-up (on-event :viewport-mouse-up)}
+           :on-mouse-up (on-event :viewport-mouse-up)
+           :on-wheel (on-wheel-event :zoom-wheel)}
      [debug-coordinates db]
      [:svg#viewport {:width viewport-height :height viewport-width}
-      [:svg#page-canvas  {:x document-start-x :y document-start-y :width page-width :height page-height};; Document
-       [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
-       (apply vector :svg#page-layout shapes-svg)
-       (when-let [shape (get page :drawing)]
-         [shapes/shape->drawing-svg shape])
-       (when-let [selected-uuid (get page :selected)]
-         [shapes/shape->selected-svg (get page-shapes selected-uuid)])
-       ]
-      (if (:grid (:workspace @db))
-        [grid viewport-width viewport-height document-start-x document-start-y 100])
-      ]]))
+      [:g.zoom {:transform (str "scale(" zoom " " zoom ")")}
+        [:svg#page-canvas  {:x document-start-x :y document-start-y :width page-width :height page-height};; Document
+         [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
+         (apply vector :svg#page-layout shapes-svg)
+         (when-let [shape (get page :drawing)]
+           [shapes/shape->drawing-svg shape])
+         (when-let [selected-uuid (get page :selected)]
+           [shapes/shape->selected-svg (get page-shapes selected-uuid)])
+         ]
+        (if (:grid (:workspace @db))
+          [grid viewport-width viewport-height document-start-x document-start-y zoom])
+        ]]]))

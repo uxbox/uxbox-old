@@ -26,6 +26,9 @@
    "CTRL+DOWN" [:move-layer-down]
    "CTRL+SHIFT+UP" [:move-layer-to-bottom]
    "CTRL+SHIFT+DOWN" [:move-layer-to-top]
+   "SHIFT+I" [:zoom-in]
+   "SHIFT+0" [:zoom-reset]
+   "SHIFT+O" [:zoom-out]
    })
 
 (defn dispatch-key [e]
