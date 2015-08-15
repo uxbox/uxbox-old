@@ -1,10 +1,18 @@
 (ns uxbox.shapes.circle
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
             [uxbox.pubsub :as pubsub]
+            [uxbox.icons :as icons]
             [uxbox.geometry :as geo]
             [uxbox.icons :as icons]
             [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
+
+(def circle-menu {:name "Size and position"
+                  :icon icons/infocard
+                  :key :options
+                  :options [{:name "Position" :inputs [{:name "X" :type :number :shape-key :cx :value-filter int}
+                                                       {:name "Y" :type :number :shape-key :cy :value-filter int}]}
+                            {:name "Radius" :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
 
 (defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
@@ -68,6 +76,9 @@
     (-> shape
         (assoc :cx (+ cx delta-x))
         (assoc :cy (+ cy delta-y))))
+  (menu-info
+    [shape]
+    [circle-menu stroke-menu fill-menu actions-menu])
   )
 
 (defn new-circle

@@ -1,10 +1,20 @@
 (ns uxbox.shapes.rectangle
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
             [uxbox.pubsub :as pubsub]
+            [uxbox.icons :as icons]
             [uxbox.geometry :as geo]
             [uxbox.icons :as icons]
             [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
+
+(def rectangle-menu {:name "Size and position"
+                     :icon icons/infocard
+                     :key :options
+                     :options [{:name "Position" :inputs [{:name "X" :type :number :shape-key :x :value-filter int}
+                                                          {:name "Y" :type :number :shape-key :y :value-filter int}]}
+                               {:name "Size" :inputs [{:name "Width" :type :number :shape-key :width :value-filter int}
+                                                      {:name "lock" :type :lock}
+                                                      {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
 (defrecord Rectangle [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
@@ -72,6 +82,10 @@
     (-> shape
         (assoc :x (+ x delta-x))
         (assoc :y (+ y delta-y))))
+
+  (menu-info
+    [shape]
+    [rectangle-menu stroke-menu fill-menu actions-menu])
   )
 
 (defn new-rectangle
