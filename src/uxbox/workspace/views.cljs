@@ -90,18 +90,9 @@
        [:div.tool-window-close {:on-click #(actions/close-setting-box :components)}
         icons/close]]
      [:div.tool-window-content
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :rect) "selected" "")
-                      :on-click #(actions/set-tool :rect)} icons/box]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :circle) "selected" "")
-                      :on-click #(actions/set-tool :circle)} icons/circle]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :line) "selected" "")
-                      :on-click #(actions/set-tool :line)} icons/line]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :curve) "selected" "")
-                      :on-click #(actions/set-tool :curve)} icons/curve]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :text) "selected" "")
-                      :on-click #(actions/set-tool :text)} icons/text]
-      [:div.tool-btn {:class (if (= (:selected-tool workspace) :arrow) "selected" "")
-                      :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
+      (for [tool (sort :order (vals (get-in @db [:components :components])))]
+        [:div.tool-btn.tooltip.tooltip-hover {:alt (:text tool) :class (if (= (:selected-tool workspace) (:key tool)) "selected" "")
+                                              :key (:key tool) :on-click #(actions/set-tool (:key tool))} (:icon tool)])]]))
 
 (defn elementoptions
   [db]
@@ -300,18 +291,9 @@
       [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
        icons/close]]
      [:div.tool-window-content
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Box (Ctrl + B)" :class (if (= (:selected-tool workspace) :rect) "selected" "")
-                      :on-click #(actions/set-tool :rect)} icons/box]
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Circle (Ctrl + E)" :class (if (= (:selected-tool workspace) :circle) "selected" "")
-                      :on-click #(actions/set-tool :circle)} icons/circle]
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Line (Ctrl + L)" :class (if (= (:selected-tool workspace) :line) "selected" "")
-                      :on-click #(actions/set-tool :line)} icons/line]
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Bezier (Ctrl + U)" :class (if (= (:selected-tool workspace) :curve) "selected" "")
-                      :on-click #(actions/set-tool :curve)} icons/curve]
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Text (Ctrl + T)" :class (if (= (:selected-tool workspace) :text) "selected" "")
-                      :on-click #(actions/set-tool :text)} icons/text]
-      [:div.tool-btn.tooltip.tooltip-hover {:alt "Arrow (Ctrl + A)" :class (if (= (:selected-tool workspace) :arrow) "selected" "")
-                      :on-click #(actions/set-tool :arrow)} icons/arrow]]]))
+      (for [tool (sort :order (vals (get-in @db [:components :tools])))]
+        [:div.tool-btn.tooltip.tooltip-hover {:alt (:text tool) :class (if (= (:selected-tool workspace) (:key tool)) "selected" "")
+                                              :key (:key tool) :on-click #(actions/set-tool (:key tool))} (:icon tool)])]]))
 
 (defn layers
   [db]

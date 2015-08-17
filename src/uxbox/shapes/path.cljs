@@ -1,5 +1,5 @@
 (ns uxbox.shapes.path
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
             [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
             [cljs.reader :as reader]
@@ -65,5 +65,23 @@
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
   (Path. path icowidth icoheight x y width height "black" 1 0))
+
+(defn drawing-path [state [x y] symbol]
+ (if-let [drawing-val (get-in state [:page :drawing])]
+   (let [shape-uuid (random-uuid)
+         group-uuid (random-uuid)
+         [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
+         shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
+         group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
+
+     (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+         (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+         (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:page :selected] shape-uuid)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+   (assoc-in state [:page :drawing] (map->Path {:x x :y y}))))
 
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.path/Path) "/" ".") uxbox.shapes.path/map->Path)

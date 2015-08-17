@@ -1,7 +1,8 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.storage.api :as storage]
-            [uxbox.workspace.canvas.actions :refer [new-group]]))
+            [uxbox.workspace.canvas.actions :refer [new-group]]
+            [uxbox.shapes.core :refer [new-group]]))
 
 (defn change-shape-attr
   [project-uuid page-uuid shape-uuid attr value]

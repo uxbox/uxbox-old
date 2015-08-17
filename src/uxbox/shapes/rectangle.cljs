@@ -1,7 +1,8 @@
 (ns uxbox.shapes.rectangle
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
             [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
+            [uxbox.icons :as icons]
             [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
 
@@ -72,4 +73,24 @@
   [x y width height]
   (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1 0))
 
+(defn drawing-rectangle [state [x y]]
+ (if-let [drawing-val (get-in state [:page :drawing])]
+   (let [shape-uuid (random-uuid)
+         group-uuid (random-uuid)
+         [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
+         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
+         shape-val (new-rectangle rect-x rect-y rect-width rect-height)
+         group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+
+     (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+         (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+         (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:page :selected] shape-uuid)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+   (assoc-in state [:page :drawing] (map->Rectangle {:x x :y y}))))
+
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.rectangle/Rectangle) "/" ".") uxbox.shapes.rectangle/map->Rectangle)
+
+(pubsub/publish! [:register-shape {:shape Rectangle :new new-rectangle :drawing drawing-rectangle :key :rect :icon icons/box :text "Box (Ctrl + B)" :menu :tools :order 10}])
