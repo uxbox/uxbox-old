@@ -6,11 +6,11 @@
             [uxbox.navigation :refer [link workspace-page-route navigate!]]
             [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
-            [uxbox.workspace.figures.catalogs :as figures-catalogs]
             [uxbox.workspace.canvas.views :refer [canvas]]
             [uxbox.geometry :as geo]
             [uxbox.shapes.core :as shapes]
             [uxbox.pubsub :as pubsub]))
+
 
 (defn project-tree
   [db]
@@ -58,26 +58,26 @@
        icons/organize]]]
    [user db]])
 
-(defn figures
+(defn icons-sets
   [db]
-  (let [{:keys [workspace current-catalog]} @db]
+  (let [{:keys [workspace current-icons-set components]} @db]
    [:div#form-figures.tool-window
      [:div.tool-window-bar
       [:div.tool-window-icon
        icons/window]
       [:span "Figures"]
-      [:div.tool-window-close {:on-click #(actions/close-setting-box :figures)}
+      [:div.tool-window-close {:on-click #(actions/close-setting-box :icons-sets)}
        icons/close]]
      [:div.tool-window-content
       [:div.figures-catalog
-       [:select.input-select.small {:on-change #(actions/set-figures-catalog (keyword (.-value (.-target %))))}
-        (for [[catalog-id catalog] (seq figures-catalogs/catalogs)]
-          [:option {:key catalog-id :value catalog-id} (:name catalog)])]]
-      (for [[figure-id figure] (seq (get-in figures-catalogs/catalogs [current-catalog :symbols]))]
-        [:div.figure-btn {:key figure-id
-                          :class (if (= (:selected-tool workspace) [:figure current-catalog figure-id]) "selected" "")
-                          :on-click #(actions/set-tool [:figure current-catalog figure-id])}
-          [:svg (:svg figure)]])]]))
+       [:select.input-select.small {:on-change #(actions/set-icons-set (keyword (.-value (.-target %))))}
+        (for [[icons-set-key icons-set] (seq (:icons-sets components))]
+          [:option {:key icons-set-key :value icons-set-key} (:name icons-set)])]]
+      (for [[icon-key icon] (seq (get-in components [:icons-sets current-icons-set :icons]))]
+        [:div.figure-btn {:key icon-key
+                          :class (if (= (:selected-tool workspace) [:icon current-icons-set icon-key]) "selected" "")
+                          :on-click #(actions/set-tool [:icon current-icons-set icon-key])}
+          [:svg (:svg icon)]])]]))
 
 (defn components
   [db]
@@ -334,8 +334,8 @@
             :on-click #(actions/toggle-setting-box :tools)} icons/shapes]
       [:li.tooltip {:alt "Components (Ctrl + Shift + C)" :class (if (:components (:open-setting-boxes @db)) "current" "")
             :on-click #(actions/toggle-setting-box :components)} icons/puzzle]
-      [:li.tooltip {:alt "Icons (Ctrl + Shift + I)" :class (if (:figures (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/toggle-setting-box :figures)} icons/icon-set]
+      [:li.tooltip {:alt "Icons (Ctrl + Shift + I)" :class (if (:icons (:open-setting-boxes @db)) "current" "")
+            :on-click #(actions/toggle-setting-box :icons)} icons/icon-set]
       [:li.tooltip {:alt "Elements (Ctrl + Shift + L)" :class (if (:layers (:open-setting-boxes @db)) "current" "")
             :on-click #(actions/toggle-setting-box :layers)} icons/layers]
       [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
@@ -423,8 +423,8 @@
     [:div.settings-bar-inside
      (if (:tools (:open-setting-boxes @db))
       [tools db])
-     (if (:figures (:open-setting-boxes @db))
-      [figures db])
+     (if (:icons (:open-setting-boxes @db))
+      [icons-sets db])
      (if (:components (:open-setting-boxes @db))
       [components db])
      (if (:layers (:open-setting-boxes @db))
