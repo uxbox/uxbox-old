@@ -1,4 +1,5 @@
-(ns uxbox.shapes.core)
+(ns uxbox.shapes.core
+  (:require [uxbox.pubsub :as pubsub]))
 
 ;;=============================
 ;; SHAPE PROTOCOL DEFINITION
@@ -27,3 +28,16 @@
   [{:keys [rotate center]}]
   (let [x (:x center) y (:y center)]
     (str "translate( "x" "y") rotate(" rotate ") translate( -"x" -"y")")))
+
+(defn new-group [name order shape-uuid]
+  {:name name
+   :order order
+   :visible true
+   :locked false
+   :icon :square
+   :shapes [shape-uuid]})
+
+(pubsub/register-transition
+ :register-shape
+ (fn [state shape-info]
+   (assoc-in state [:components :tools (:key shape-info)] shape-info)))

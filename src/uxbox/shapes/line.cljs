@@ -1,7 +1,8 @@
 (ns uxbox.shapes.line
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
             [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
+            [uxbox.icons :as icons]
             [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
 
@@ -86,4 +87,22 @@
   [x1 y1 x2 y2]
   (Line. x1 y1 x2 y2 "gray" 4 1 0))
 
+(defn drawing-line [state [x y]]
+  (if-let [drawing-val (get-in state [:page :drawing])]
+    (let [shape-uuid (random-uuid)
+          group-uuid (random-uuid)
+          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
+          shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)
+          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+
+      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
+          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+          (-> state
+              (assoc-in [:page :drawing] nil)
+              (assoc-in [:page :selected] shape-uuid)
+              (assoc-in [:workspace :selected-tool] nil))))
+
+    (assoc-in state [:page :drawing] (map->Line {:x1 x :y1 y :x2 x :y2 y}))))
+
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".") uxbox.shapes.line/map->Line)
+(pubsub/publish! [:register-shape {:shape Line :new new-line :drawing drawing-line :key :line :icon icons/line :text "Line (Ctrl + L)" :menu :tools :order 30}])
