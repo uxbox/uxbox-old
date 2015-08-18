@@ -1,8 +1,8 @@
-(ns uxbox.workspace.figures.material-design-hardware)
+(ns uxbox.icons-sets.material-design-hardware
+  (:require [uxbox.icons-sets.register]
+            [uxbox.pubsub :as pubsub]))
 
-(def material-design-hardware {
-  :name "Material Design (Hardware)"
-  :symbols (sorted-map
+(def material-design-hardware (sorted-map
    :cast {
     :name "Cast"
     :svg [:path
@@ -238,4 +238,6 @@
     :svg [:path
      {:style {:stroke nil},
       :d
-      "M40 24c0-5.09-2.38-9.62-6.09-12.55l-1.91-11.45h-16l-1.91 11.45c-3.71 2.93-6.09 7.46-6.09 12.55s2.38 9.62 6.09 12.55l1.91 11.45h16l1.91-11.45c3.71-2.93 6.09-7.46 6.09-12.55zm-28 0c0-6.63 5.37-12 12-12s12 5.37 12 12-5.37 12-12 12-12-5.37-12-12z"}]})})
+      "M40 24c0-5.09-2.38-9.62-6.09-12.55l-1.91-11.45h-16l-1.91 11.45c-3.71 2.93-6.09 7.46-6.09 12.55s2.38 9.62 6.09 12.55l1.91 11.45h16l1.91-11.45c3.71-2.93 6.09-7.46 6.09-12.55zm-28 0c0-6.63 5.37-12 12-12s12 5.37 12 12-5.37 12-12 12-12-5.37-12-12z"}]}))
+
+(pubsub/publish! [:register-icons-set {:key :material-design-hardware :name "Material Design (Hardware)" :icons material-design-hardware}])

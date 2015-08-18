@@ -6,8 +6,7 @@
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
             [uxbox.shapes.circle :refer [new-circle map->Circle]]
-            [uxbox.shapes.path :refer [new-path-shape map->Path drawing-path]]
-            [uxbox.workspace.figures.catalogs :refer [catalogs]]))
+            [uxbox.shapes.path :refer [new-path-shape map->Path drawing-path]]))
 
 (defn drawing-shape
   [coordinates]
@@ -38,9 +37,9 @@
          list-of-tools (get-in state [:components :tools])]
      (cond
        (contains? list-of-tools selected-tool) ((get-in list-of-tools [selected-tool :drawing])  state coords)
-       (= (first selected-tool) :figure)
-         (let [[_ catalog symbol] selected-tool]
-           (drawing-path state coords (get-in catalogs [catalog :symbols symbol])))
+       (= (first selected-tool) :icon)
+         (let [[_ catalog icon] selected-tool]
+           (drawing-path state coords (get-in state [:components :icons-sets catalog :icons icon])))
        :else state
        ))))
 

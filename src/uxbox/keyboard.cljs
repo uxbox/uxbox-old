@@ -17,7 +17,7 @@
    "SHIFT+Q" [:set-tool :rect]
    "SHIFT+W" [:set-tool :circle]
    "SHIFT+E" [:set-tool :line]
-   "CTRL+SHIFT+I" [:open-setting-box :figures]
+   "CTRL+SHIFT+I" [:open-setting-box :icons]
    "CTRL+SHIFT+F" [:open-setting-box :tools]
    "CTRL+SHIFT+C" [:open-setting-box :components]
    "CTRL+SHIFT+L" [:open-setting-box :layers]

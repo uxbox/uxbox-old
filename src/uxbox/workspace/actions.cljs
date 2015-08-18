@@ -28,9 +28,9 @@
   []
   (pubsub/publish! [:paste-selected]))
 
-(defn set-figures-catalog
-  [catalog]
-  (pubsub/publish! [:set-figures-catalog catalog]))
+(defn set-icons-set
+  [icons-set]
+  (pubsub/publish! [:set-icons-set icons-set]))
 
 (defn toggle-grid
   []
@@ -103,9 +103,9 @@
           (assoc-in state [:workspace :selected] nil)))))
 
 (pubsub/register-transition
- :set-figures-catalog
+ :set-icons-set
  (fn [state catalog]
-   (assoc state :current-catalog catalog)))
+   (assoc state :current-icons-set catalog)))
 
 (pubsub/register-transition
  :toggle-grid

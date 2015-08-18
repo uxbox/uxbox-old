@@ -1,8 +1,8 @@
-(ns uxbox.workspace.figures.material-design-editor)
+(ns uxbox.icons-sets.material-design-editor
+  (:require [uxbox.icons-sets.register]
+            [uxbox.pubsub :as pubsub]))
 
-(def material-design-editor {
-  :name "Material Design (Editor)"
-  :symbols (sorted-map
+(def material-design-editor (sorted-map
    :attach-file {
     :name "Attach File"
     :svg [:path
@@ -296,4 +296,6 @@
     :svg [:path
      {:style {:stroke nil},
       :d
-      "M8 38h12v-4h-12v4zm32-28h-32v4h32v-4zm-6 12h-26v4h26.5c2.21 0 4 1.79 4 4s-1.79 4-4 4h-4.5v-4l-6 6 6 6v-4h4c4.41 0 8-3.59 8-8s-3.59-8-8-8z"}]})})
+      "M8 38h12v-4h-12v4zm32-28h-32v4h32v-4zm-6 12h-26v4h26.5c2.21 0 4 1.79 4 4s-1.79 4-4 4h-4.5v-4l-6 6 6 6v-4h4c4.41 0 8-3.59 8-8s-3.59-8-8-8z"}]}))
+
+(pubsub/publish! [:register-icons-set {:key :material-design-editor :name "Material Design (Editor)" :icons material-design-editor}])
