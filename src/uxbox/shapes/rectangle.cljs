@@ -37,17 +37,23 @@
       :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
 
   (shape->selected-svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
-    [:rect {:x (- x 4)
-            :y (- y 4)
-            :width (+ width 8)
-            :height (+ height 8)
-            :fill "transparent"
-            :stroke "#4af7c3"
-            :strokeWidth 2
-            :strokeDasharray "5,5"
-            :fill-opacity "0.5"
-            :rotate rotate
-            :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
+    [:g
+     [:rect {:x (- x 4)
+             :y (- y 4)
+             :width (+ width 8)
+             :height (+ height 8)
+             :fill "transparent"
+             :stroke "#4af7c3"
+             :strokeWidth 2
+             :strokeDasharray "5,5"
+             :fill-opacity "0.5"
+             :rotate rotate
+             :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}]
+
+      [:rect {:x (- x 8) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
   (shape->drawing-svg [{:keys [x y]}]
     (let [coordinates (atom [[x y]])

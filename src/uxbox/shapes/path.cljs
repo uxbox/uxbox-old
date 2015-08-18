@@ -33,15 +33,20 @@
                :fill-opacity fill-opacity}]]])
 
   (shape->selected-svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
-    [:rect {:x x
-            :y y
-            :width width
-            :height height
-            :fill "transparent"
-            :stroke "#4af7c3"
-            :strokeWidth 2
-            :strokeDasharray "5,5"
-            :fill-opacity "0.5"}])
+    [:g
+      [:rect {:x x
+              :y y
+              :width width
+              :height height
+              :fill "transparent"
+              :stroke "#4af7c3"
+              :strokeWidth 2
+              :strokeDasharray "5,5"
+              :fill-opacity "0.5"}]
+      [:rect {:x (- x 8) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
   (shape->drawing-svg [{:keys [x y]}]
     (let [coordinates (atom [[x y]])
