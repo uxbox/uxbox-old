@@ -218,7 +218,7 @@
 (pubsub/register-transition
  :zoom-out
  (fn [state data]
-   (update-in state [:workspace :zoom] #(max 0 (- % 0.1)))))
+   (update-in state [:workspace :zoom] #(max 0.01 (- % 0.1)))))
 
 (pubsub/register-transition
  :zoom-reset
@@ -228,7 +228,7 @@
 (pubsub/register-transition
   :zoom-wheel
   (fn [state delta]
-    (update-in state [:workspace :zoom] #(max 0 (+ % (* 0.01 delta))))))
+    (update-in state [:workspace :zoom] #(max 0.01 (+ % (* % 0.015 delta))))))
 
 (pubsub/register-transition
  :viewport-scroll
