@@ -28,7 +28,7 @@
               (filter #(not (nil? (get-in state [:shapes %]))))
               (filter #(shapes/intersect (get-in state [:shapes %]) x y))
               first)]
-     (assoc-in state [:page :selected] selected-uuid)) ))
+     (update-in state [:page :selected] #(conj % selected-uuid)))))
 
 (pubsub/register-transition
   :drawing-shape
@@ -97,18 +97,19 @@
 (pubsub/register-transition
   :delete-key-pressed
   (fn [state]
-    (let [selected-uuid (get-in state [:page :selected])
+    (let [selected-uuids (get-in state [:page :selected])
           project-uuid (get-in state [:project :uuid])
           page-uuid (get-in state [:page :uuid])]
 
-      (when selected-uuid
+      (when selected-uuids
+
          (storage/remove-shape project-uuid page-uuid selected-uuid))
 
-      (if selected-uuid
+      (if selected-uuids
          (-> state
             (update-in [:groups] remove-element selected-uuid)
             (update-in [:shapes] dissoc selected-uuid)
-            (update-in [:page] dissoc :selected))
+            (assoc-in [:page :selected] []))
          state))))
 
 (pubsub/register-transition

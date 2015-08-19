@@ -106,8 +106,9 @@
          (apply vector :svg#page-layout shapes-svg)
          (when-let [shape (get page :drawing)]
            [shapes/shape->drawing-svg shape])
-         (when-let [selected-uuid (get page :selected)]
-           [shapes/shape->selected-svg (get page-shapes selected-uuid)])
+         (when-let [selected-uuids (get page :selected)]
+           (for [selected-uuid selected-uuids]
+             [shapes/shape->selected-svg (get page-shapes selected-uuid)]))
          ]
         (if (:grid (:workspace @db))
           [grid viewport-width viewport-height document-start-x document-start-y zoom])

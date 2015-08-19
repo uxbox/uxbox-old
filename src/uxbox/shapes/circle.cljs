@@ -105,7 +105,7 @@
           (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (-> state
               (assoc-in [:page :drawing] nil)
-              (assoc-in [:page :selected] shape-uuid)
+              (assoc-in [:page :selected] [shape-uuid])
               (assoc-in [:workspace :selected-tool] nil))))
 
     (assoc-in state [:page :drawing] (map->Circle {:cx x :cy y}))))
