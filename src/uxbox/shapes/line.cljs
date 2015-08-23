@@ -1,10 +1,19 @@
 (ns uxbox.shapes.line
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation new-group]]
+  (:require [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
             [uxbox.pubsub :as pubsub]
+            [uxbox.icons :as icons]
             [uxbox.geometry :as geo]
             [uxbox.icons :as icons]
             [cljs.reader :as reader]
             [reagent.core :refer [atom]]))
+
+(def line-menu {:name "Position"
+                :icon icons/infocard
+                :key :options
+                :options [{:name "Start" :inputs [{:name "X" :type :number :shape-key :x1 :value-filter int}
+                                                  {:name "Y" :type :number :shape-key :y1 :value-filter int}]}
+                          {:name "End" :inputs [{:name "X" :type :number :shape-key :x2 :value-filter int}
+                                                {:name "Y" :type :number :shape-key :y2 :value-filter int}]}]})
 
 (defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]
   Shape
@@ -71,7 +80,7 @@
       (fn []
         (let [[mouseX mouseY] @coordinates2]
           [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
-                  :style #js {:fill "transparent" :stroke "gray" :stroke-width 2 :strokeDasharray "5,5"}}]))))
+                  :style #js {:fill "transparent" :stroke "gray" :strokeWidth 2 :strokeDasharray "5,5"}}]))))
 
   (move-delta
     [{:keys [x1 y1 x2 y2] :as shape} delta-x delta-y]
@@ -80,6 +89,10 @@
         (assoc :y1 (+ y1 delta-y))
         (assoc :x2 (+ x2 delta-x))
         (assoc :y2 (+ y2 delta-y))))
+
+  (menu-info
+    [shape]
+    [line-menu stroke-menu actions-menu])
   )
 
 (defn new-line
