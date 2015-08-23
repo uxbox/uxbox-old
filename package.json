@@ -4,6 +4,10 @@
   "main": "app.js",
   "author": "Uxbox",
   "license": "BSD",
+  "scripts": {
+    "watch": "gulp",
+    "dist": "gulp dist"
+  },
   "dependencies": {
     "gulp": "~3.8.11",
     "gulp-clean": "^0.3.1",

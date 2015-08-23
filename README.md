@@ -38,6 +38,26 @@ user> (cljs-repl)
 After that, a figwheel message will appear and the prompt will change to `cljs.user>`. We can now evaluate ClojureScript in the
 browser from the REPL.
 
+### Static resources generation
+
+The project's static resources are processed using [gulp](http://gulpjs.com/). First of all, install the npm dependencies running:
+
+```
+npm install
+```
+
+To start watching the files and process them with each change, run:
+
+```
+npm run watch
+```
+
+To process the resources just once, run:
+
+```
+npm run dist
+```
+
 ### Testing
 
 For running the tests from a shell, run the following command:
