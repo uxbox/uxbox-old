@@ -193,7 +193,7 @@
         (:icon tool)])]])
 
 (rum/defc layers < rum/cursored
-  [groups selected-groups]
+  [shapes page]
   [:div#layers.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
@@ -203,23 +203,17 @@
       icons/close]]
     [:div.tool-window-content
      [:ul.element-list
-      (for [[group-id group] (sort-by #(:order (second %)) @groups)]
-          [:li {:key group-id
-                :class (when (contains? @selected-groups group-id)
-                         "selected")}
-           [:div.toggle-element {:class (if (:visible group) "selected" "")
-                                 :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
-           [:div.block-element {:class (if (:locked group) "selected" "")
-                                :on-click #(actions/toggle-group-lock group-id)} icons/lock]
+      (for [shape-id (:root @page)]
+        (let [shape (get @shapes shape-id)]
+          [:li {:key shape-id
+                :class (when (= (:selected @page) shape-id) "selected")}
+           [:div.toggle-element {:class (if (:visible shape) "selected" "")
+                                 :on-click #(actions/toggle-shape-visibility shape-id)} icons/eye]
+           [:div.block-element {:class (if (:locked shape) "selected" "")
+                                :on-click #(actions/toggle-shape-lock shape-id)} icons/lock]
            [:div.element-icon
-            (cond
-             (= (:icon group) :square) icons/box
-             (= (:icon group) :circle) icons/circle
-             (= (:icon group) :line) icons/line
-             (= (:icon group) :text) icons/text
-             (= (:icon group) :arrow) icons/arrow
-             (= (:icon group) :curve) icons/curve)]
-           [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])]]])
+            (shapes/icon shape)]
+           [:span {:on-click #(actions/toggle-select-shape shape-id)} (:name shape)]]))]]])
 
 (rum/defc toolbar < rum/static
   [open-setting-boxes]
@@ -338,10 +332,10 @@
    components-cursor
    current-icons-set
    workspace
-   groups]
+   shapes
+   page]
   (let [component-tools (rum/cursor components-cursor [:tools])
-        selected-tool (rum/cursor workspace [:selected-tool])
-        selected-groups (rum/cursor workspace [:selected-groups])]
+        selected-tool (rum/cursor workspace [:selected-tool])]
     [:aside#settings-bar.settings-bar
      [:div.settings-bar-inside
       (when (:tools open-setting-boxes)
@@ -351,7 +345,7 @@
       (when (:components open-setting-boxes)
         (components selected-tool components-cursor))
       (when (:layers open-setting-boxes)
-        (layers groups selected-groups))]]))
+        (layers shapes page))]]))
 
 (rum/defc vertical-rule < rum/static
   [top zoom height start-height]
@@ -422,14 +416,13 @@
 (def document-start-y 50)
 
 (rum/defc viewport < rum/cursored
-  [page groups shapes zoom grid?]
+  [page shapes zoom grid?]
   [:svg#viewport
    {:width viewport-height
     :height viewport-width}
    [:g.zoom
     {:transform (str "scale(" @zoom " " @zoom ")")}
     (canvas @page
-            @groups
             @shapes
             {:viewport-height viewport-height
              :viewport-width viewport-width
@@ -445,14 +438,12 @@
 (rum/defc working-area < rum/cursored
   [open-setting-boxes
    page-cursor
-   groups-cursor
    project-cursor
    workspace-cursor
    shapes-cursor
    zoom-cursor]
   (let [zoom @zoom-cursor
         page @page-cursor
-        groups @groups-cursor
         project @project-cursor
         workspace @workspace-cursor
         shapes @shapes-cursor]
@@ -466,7 +457,6 @@
                          shapes-cursor))
       (debug-coordinates)
       (viewport page-cursor
-                groups-cursor
                 shapes-cursor
                 zoom-cursor
                 (rum/cursor workspace-cursor [:grid?]))]))
@@ -489,7 +479,6 @@
         project (rum/cursor db [:project])
         pages (rum/cursor db [:project-pages])
 
-        groups (rum/cursor db [:groups])
         page (rum/cursor db [:page])
         project-bar-visible? (rum/cursor db [:project-bar-visible?])
 
@@ -510,7 +499,6 @@
        ;; Working area
        (working-area open-setting-boxes
                      page
-                     groups
                      project
                      workspace
                      shapes
@@ -521,4 +509,5 @@
                 components-cursor
                 current-icons-set
                 workspace
-                groups))]]]))
+                shapes
+                page))]]]))

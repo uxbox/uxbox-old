@@ -1,7 +1,6 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage.api :as storage]
-            [uxbox.shapes.core :refer [new-group]]))
+            [uxbox.storage.api :as storage]))
 
 (defn change-shape-attr
   [project-uuid page-uuid shape-uuid attr value]
@@ -35,17 +34,17 @@
   []
   (pubsub/publish! [:toggle-grid]))
 
-(defn toggle-select-group
-  [group-id]
-  (pubsub/publish! [:toggle-select-group group-id]))
+(defn toggle-select-shape
+  [shape-id]
+  (pubsub/publish! [:toggle-select-shape shape-id]))
 
-(defn toggle-group-visibility
-  [group-id]
-  (pubsub/publish! [:toggle-group-visiblity group-id]))
+(defn toggle-shape-visibility
+  [shape-id]
+  (pubsub/publish! [:toggle-shape-visiblity shape-id]))
 
-(defn toggle-group-lock
-  [group-id]
-  (pubsub/publish! [:toggle-group-lock group-id]))
+(defn toggle-shape-lock
+  [shape-id]
+  (pubsub/publish! [:toggle-shape-lock shape-id]))
 
 (pubsub/register-transition
  :change-shape-attr
@@ -93,12 +92,8 @@
  :paste-selected
  (fn [state]
    (let [shape-val (get-in state [:workspace :selected])
-         shape-uuid (random-uuid)
-         group-uuid (random-uuid)
-         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
-         group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
-      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
-          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+         shape-uuid (random-uuid)]
+      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (assoc-in state [:workspace :selected] nil)))))
 
 (pubsub/register-transition
@@ -112,29 +107,29 @@
    (update-in state [:workspace :grid?] not)))
 
 (pubsub/register-transition
- :toggle-select-group
- (fn [state group-id]
-   (assoc-in state [:workspace :selected-groups] #{group-id})))
+ :toggle-select-shape
+ (fn [state shape-id]
+   (assoc-in state [:page :selected] shape-id)))
 
 (pubsub/register-transition
- :toggle-group-visiblity
- (fn [state group-id]
-   (update-in state [:groups group-id :visible] #(not %1))))
+ :toggle-shape-visiblity
+ (fn [state shape-id]
+   (update-in state [:shapes shape-id :visible] #(not %1))))
 
 (pubsub/register-effect
- :toggle-group-visiblity
- (fn [state group-id]
-   (storage/toggle-group-visibility group-id)))
+ :toggle-shape-visiblity
+ (fn [state shape-id]
+   (storage/toggle-shape-visibility shape-id)))
 
 (pubsub/register-effect
- :toggle-group-lock
- (fn [state group-id]
-   (storage/toggle-group-lock group-id)))
+ :toggle-shape-lock
+ (fn [state shape-id]
+   (storage/toggle-shape-lock shape-id)))
 
 (pubsub/register-transition
- :toggle-group-lock
- (fn [state group-id]
-   (update-in state [:groups group-id :locked] #(not %1))))
+ :toggle-shape-lock
+ (fn [state shape-id]
+   (update-in state [:shapes shape-id :locked] #(not %1))))
 
 (pubsub/register-transition
  :location
@@ -144,7 +139,6 @@
        (assoc state :project (storage/get-project project-uuid)
                     :page (storage/get-page page-uuid)
                     :project-pages (storage/get-pages project-uuid)
-                    :groups (storage/get-groups project-uuid page-uuid)
                     :shapes (storage/get-shapes project-uuid page-uuid)
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)

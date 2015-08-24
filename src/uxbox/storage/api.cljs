@@ -1,6 +1,6 @@
 (ns uxbox.storage.api
   (:require [uxbox.storage.core :refer [insert-event]]
-            [uxbox.storage.atoms :refer [projects-view pages-view activity-view groups-view shapes-view]]
+            [uxbox.storage.atoms :refer [projects-view pages-view activity-view shapes-view]]
             [uxbox.shapes.core :refer [move-delta]]))
 
 (defn get-activity
@@ -27,12 +27,6 @@
 (defn get-page
   [page-uuid]
   (get @pages-view page-uuid))
-
-(defn get-groups
-  [project-uuid page-uuid]
-  (into {} (filter #(and (= (:project-uuid (second %)) project-uuid)
-                         (= (:page-uuid (second %)) page-uuid))
-                   @groups-view)))
 
 (defn get-shapes
   [project-uuid page-uuid]
@@ -103,27 +97,18 @@
                           :attr attr
                           :value value}}))
 
-(defn create-group
-  [project-uuid page-uuid group-uuid group]
-  (let [group-data (assoc group :project-uuid project-uuid :page-uuid page-uuid :uuid group-uuid)]
-    (insert-event {:type :create-group :data group-data})))
+(defn toggle-shape-visibility
+  [shape-uuid]
+  (insert-event {:type :toggle-shape-visibility :data {:shape-uuid shape-uuid}}))
 
-(defn remove-group
-  [project-uuid page-uuid group-uuid]
-  (insert-event {:type :delete-group :data {:project-uuid project-uuid :page-uuid page-uuid :group-uuid group-uuid}}))
+(defn toggle-shape-lock
+  [shape-uuid]
+  (insert-event {:type :toggle-shape-lock :data {:shape-uuid shape-uuid}}))
 
-(defn toggle-group-visibility
-  [group-uuid]
-  (insert-event {:type :toggle-group-visibility :data {:group-uuid group-uuid}}))
+(defn move-shape-up
+  [shape-uuid]
+  (insert-event {:type :move-shape-up :data {:shape-uuid shape-uuid}}))
 
-(defn toggle-group-lock
-  [group-uuid]
-  (insert-event {:type :toggle-group-lock :data {:group-uuid group-uuid}}))
-
-(defn move-group-up
-  [group-uuid]
-  (insert-event {:type :move-group-up :data {:group-uuid group-uuid}}))
-
-(defn move-group-down
-  [group-uuid]
-  (insert-event {:type :move-group-down :data {:group-uuid group-uuid}}))
+(defn move-shape-down
+  [shape-uuid]
+  (insert-event {:type :move-shape-down :data {:shape-uuid shape-uuid}}))

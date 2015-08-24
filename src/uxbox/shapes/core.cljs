@@ -25,20 +25,15 @@
     "Moves the shape to an increment given by the delta-x and delta-y coordinates")
 
   (menu-info [shape]
-    "Get the info to build the shape menu"))
+    "Get the info to build the shape menu")
+
+  (icon [shape]
+    "Get the icon of the shape"))
 
 (defn generate-transformation
   [{:keys [rotate center]}]
   (let [x (:x center) y (:y center)]
     (str "translate( " x "," y ") rotate(" rotate ") translate( -" x ", -" y ")")))
-
-(defn new-group [name order shape-uuid]
-  {:name name
-   :order order
-   :visible true
-   :locked false
-   :icon :square
-   :shapes [shape-uuid]})
 
 (pubsub/register-transition
  :register-shape

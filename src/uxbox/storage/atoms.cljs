@@ -4,5 +4,4 @@
 (def projects-view (atom {}))
 (def pages-view (atom {}))
 (def activity-view (atom {}))
-(def groups-view (atom {}))
 (def shapes-view (atom {}))

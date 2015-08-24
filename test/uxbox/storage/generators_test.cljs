@@ -74,45 +74,6 @@
     (t/is (contains? @a/pages-view "456"))
     (t/is (not (contains? @a/pages-view "123")))))
 
-(t/deftest groups-data-generator
-  (t/testing "That event manage correctly create group"
-    (reset! a/groups-view {})
-    (g/groups-data {:type :create-group :data {:uuid "123" :some-extra-data :test}})
-    (t/is (contains? @a/groups-view "123"))
-    (t/is (= (get @a/groups-view "123") {:uuid "123" :some-extra-data :test})))
-
-  (t/testing "That event manage correctly toggle group lock"
-    (reset! a/groups-view {"123" {:locked true}})
-    (g/groups-data {:type :toggle-group-lock :data {:group-uuid "123"}})
-    (t/is (not (get-in @a/groups-view ["123" :locked])))
-    (g/groups-data {:type :toggle-group-lock :data {:group-uuid "123"}})
-    (t/is (get-in @a/groups-view ["123" :locked])))
-
-  (t/testing "That event manage correctly toggle group visibility"
-    (reset! a/groups-view {"123" {:visible true}})
-    (g/groups-data {:type :toggle-group-visibility :data {:group-uuid "123"}})
-    (t/is (not (get-in @a/groups-view ["123" :visible])))
-    (g/groups-data {:type :toggle-group-visibility :data {:group-uuid "123"}})
-    (t/is (get-in @a/groups-view ["123" :visible])))
-
-  (t/testing "That event manage correctly delete group"
-    (reset! a/groups-view {"123" {:data :data} "456" {:data :data}})
-    (g/groups-data {:type :delete-group :data {:group-uuid "123"}})
-    (t/is (contains? @a/groups-view "456"))
-    (t/is (not (contains? @a/groups-view "123"))))
-
-  (t/testing "That event manage correctly delete page"
-    (reset! a/groups-view {"123" {:page-uuid "deleted-project"} "456" {:page-uuid "not-deleted-project"}})
-    (g/groups-data {:type :delete-page :data {:page-uuid "deleted-project"}})
-    (t/is (contains? @a/groups-view "456"))
-    (t/is (not (contains? @a/groups-view "123"))))
-
-  (t/testing "That event manage correctly delete project"
-    (reset! a/groups-view {"123" {:project-uuid "deleted-project"} "456" {:project-uuid "not-deleted-project"}})
-    (g/groups-data {:type :delete-project :data {:project-uuid "deleted-project"}})
-    (t/is (contains? @a/groups-view "456"))
-    (t/is (not (contains? @a/groups-view "123")))))
-
 (t/deftest shapes-data-generator
   (t/testing "That event manage correctly create shape"
     (reset! a/shapes-view {})
@@ -123,12 +84,6 @@
   (t/testing "That event manage correctly delete shape"
     (reset! a/shapes-view {"123" {:data :data} "456" {:data :data}})
     (g/shapes-data {:type :delete-shape :data {:shape-uuid "123"}})
-    (t/is (contains? @a/shapes-view "456"))
-    (t/is (not (contains? @a/shapes-view "123"))))
-
-  (t/testing "That event manage correctly delete shape"
-    (reset! a/shapes-view {"123" {:group-uuid "deleted-project"} "456" {:group-uuid "not-deleted-project"}})
-    (g/shapes-data {:type :delete-group :data {:group-uuid "deleted-project"}})
     (t/is (contains? @a/shapes-view "456"))
     (t/is (not (contains? @a/shapes-view "123"))))
 

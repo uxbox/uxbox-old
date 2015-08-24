@@ -1,5 +1,5 @@
 (ns uxbox.storage.generators
-  (:require [uxbox.storage.atoms :refer [projects-view pages-view groups-view shapes-view]]
+  (:require [uxbox.storage.atoms :refer [projects-view pages-view shapes-view]]
             [uxbox.shapes.core :as shapes]))
 
 ;; TODO
@@ -23,17 +23,7 @@
       :delete-page (swap! pages-view (fn [current] (dissoc current (:page-uuid event-data))))
       :change-page-title (swap! pages-view (fn [current] (assoc-in current [(:page-uuid event-data) :title] (:new-title event-data))))
       :delete-project (swap! pages-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
-      "default")))
-
-(defn groups-data [event]
-  (let [event-data (:data event)]
-    (case (:type event)
-      :create-group (swap! groups-view (fn [current] (assoc current (:uuid event-data) event-data)))
-      :toggle-group-visibility (swap! groups-view (fn [current] (update-in current [(:group-uuid event-data) :visible] not)))
-      :toggle-group-lock (swap! groups-view (fn [current] (update-in current [(:group-uuid event-data) :locked] not)))
-      :delete-group (swap! groups-view (fn [current] (dissoc current (:group-uuid event-data))))
-      :delete-page (swap! groups-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
-      :delete-project (swap! groups-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
+      :create-shape (swap! pages-view (fn [current] (update-in current [(:page-uuid event-data) :root] #(conj % (:uuid event-data)))))
       "default")))
 
 (defn shapes-data [event]
@@ -41,9 +31,10 @@
     (case (:type event)
       :create-shape (swap! shapes-view (fn [current] (assoc current (:uuid event-data) event-data)))
       :delete-shape (swap! shapes-view (fn [current] (dissoc current (:shape-uuid event-data))))
-      :delete-group (swap! shapes-view (fn [current] (into {} (filter #(not= (:group-uuid event-data) (:group-uuid (second %))) current))))
       :delete-page (swap! shapes-view (fn [current] (into {} (filter #(not= (:page-uuid event-data) (:page-uuid (second %))) current))))
       :delete-project (swap! shapes-view (fn [current] (into {} (filter #(not= (:project-uuid event-data) (:project-uuid (second %))) current))))
       :move-shape (swap! shapes-view (fn [current] (update-in current [(:shape-uuid event-data)] shapes/move-delta (:delta-x event-data) (:delta-y event-data))))
       :change-shape-attr (swap! shapes-view (fn [current] (assoc-in current [(:shape-uuid event-data) (:attr event-data)] (:value event-data))))
+      :toggle-shape-visibility (swap! shapes-view (fn [current] (update-in current [(:shape-uuid event-data) :visible] not)))
+      :toggle-shape-lock (swap! shapes-view (fn [current] (update-in current [(:shape-uuid event-data) :locked] not)))
       "default")))
