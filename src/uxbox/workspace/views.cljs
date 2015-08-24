@@ -98,43 +98,45 @@
   [db]
   (let [show-element (atom :options)]
     (fn []
-      (let [selected-uuid (get-in @db [:page :selected])
-            project-uuid (get-in @db [:project :uuid])
-            page-uuid (get-in @db [:page :uuid])
-            zoom (get-in @db [:workspace :zoom])
-            selected-shape (get-in @db [:shapes selected-uuid])
-            [popup-x popup-y] (shapes/toolbar-coords selected-shape)
-            show-element-value @show-element]
-        [:div#element-options.element-options
-         {:style #js {:left (* popup-x zoom) :top (* popup-y zoom)}}
-         [:ul.element-icons
-          (for [menu (shapes/menu-info selected-shape)]
-            [:li#e-info {:on-click (fn [e] (reset! show-element (:key menu)))
-                         :key (str "menu-" (:key menu))
-                         :class (when (= show-element-value (:key menu)) "selected")} (:icon menu)])]
-         (for [menu (shapes/menu-info selected-shape)]
-           [:div#element-basics.element-set
-            {:key (:key menu)
-             :class (when (not (= show-element-value (:key menu))) "hide")}
-            [:div.element-set-title (:name menu)]
-            [:div.element-set-content
-             (for [option (:options menu)]
-               [:div {:key (str (:key menu) "-" (:name option))}
-                [:span (:name option)]
-                [:div.row-flex
-                 (for [input (:inputs option)]
-                   (cond
-                     (or (= :number (:type input)) (= :text (:type input)) (= :color (:type input)))
-                       [:input#width.input-text
-                        {:placeholder (:name input)
-                         :key (str (:key menu) "-" (:name option) "-" (:shape-key input))
-                         :type (cond (= (:type input) :number) "number" (= (:type input) :text) "text" (= (:type input) :color) "text")
-                         :value (get selected-shape (:shape-key input))
-                         :on-change #(actions/change-shape-attr project-uuid page-uuid selected-uuid (:shape-key input) ((:value-filter input) (->> % .-target .-value )))}]
-                     (= :lock (:type input))
-                       [:div.lock-size
-                        {:key (str (:key menu) "-" (:name option) "-lock")}
-                          icons/lock]))]])]])]))))
+      (let [selected-uuids (get-in @db [:page :selected])]
+        (when (= 1 (count selected-uuids))
+          (let [selected-uuid (first selected-uuids)
+                selected-shape (get-in @db [:shapes selected-uuid])
+                project-uuid (get-in @db [:project :uuid])
+                page-uuid (get-in @db [:page :uuid])
+                zoom (get-in @db [:workspace :zoom])
+                [popup-x popup-y] (shapes/toolbar-coords selected-shape)
+                show-element-value @show-element]
+            [:div#element-options.element-options
+             {:style #js {:left (* popup-x zoom) :top (* popup-y zoom)}}
+             [:ul.element-icons
+              (for [menu (shapes/menu-info selected-shape)]
+                [:li#e-info {:on-click (fn [e] (reset! show-element (:key menu)))
+                             :key (str "menu-" (:key menu))
+                             :class (when (= show-element-value (:key menu)) "selected")} (:icon menu)])]
+             (for [menu (shapes/menu-info selected-shape)]
+               [:div#element-basics.element-set
+                {:key (:key menu)
+                 :class (when (not (= show-element-value (:key menu))) "hide")}
+                [:div.element-set-title (:name menu)]
+                [:div.element-set-content
+                 (for [option (:options menu)]
+                   [:div {:key (str (:key menu) "-" (:name option))}
+                    [:span (:name option)]
+                    [:div.row-flex
+                     (for [input (:inputs option)]
+                       (cond
+                         (or (= :number (:type input)) (= :text (:type input)) (= :color (:type input)))
+                           [:input#width.input-text
+                            {:placeholder (:name input)
+                             :key (str (:key menu) "-" (:name option) "-" (:shape-key input))
+                             :type (cond (= (:type input) :number) "number" (= (:type input) :text) "text" (= (:type input) :color) "text")
+                             :value (get selected-shape (:shape-key input))
+                             :on-change #(actions/change-shape-attr project-uuid page-uuid selected-uuid (:shape-key input) ((:value-filter input) (->> % .-target .-value )))}]
+                         (= :lock (:type input))
+                           [:div.lock-size
+                            {:key (str (:key menu) "-" (:name option) "-lock")}
+                              icons/lock]))]])]])]))))))
 
 (defn tools [db]
   (let [{:keys [workspace]} @db]

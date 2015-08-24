@@ -108,7 +108,8 @@
            [shapes/shape->drawing-svg shape])
          (when-let [selected-uuids (get page :selected)]
            (for [selected-uuid selected-uuids]
-             [shapes/shape->selected-svg (get page-shapes selected-uuid)]))
+             [:g {:key selected-uuid}
+               [shapes/shape->selected-svg (get page-shapes selected-uuid)]]))
          ]
         (if (:grid (:workspace @db))
           [grid viewport-width viewport-height document-start-x document-start-y zoom])

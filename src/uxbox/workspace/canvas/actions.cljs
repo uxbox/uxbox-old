@@ -1,5 +1,6 @@
 (ns uxbox.workspace.canvas.actions
-  (:require [uxbox.pubsub :as pubsub]
+  (:require [clojure.core.reducers :as r]
+            [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
             [uxbox.storage.api :as storage]
             [uxbox.shapes.core :as shapes]
@@ -102,43 +103,44 @@
           page-uuid (get-in state [:page :uuid])]
 
       (when selected-uuids
-
-         (storage/remove-shape project-uuid page-uuid selected-uuid))
+         (map #(storage/remove-shape project-uuid page-uuid %) selected-uuids))
 
       (if selected-uuids
-         (-> state
+         (r/reduce (fn [state selected-uuid]
+           (-> state
             (update-in [:groups] remove-element selected-uuid)
             (update-in [:shapes] dissoc selected-uuid)
-            (assoc-in [:page :selected] []))
+            (assoc-in [:page :selected] []))) state selected-uuids)
          state))))
 
 (pubsub/register-transition
  :viewport-mouse-down
  (fn [state]
-   (if-let [selected-uuid (get-in state [:page :selected])]
-     (let [coors {:x (get-in state [:shapes selected-uuid :x]) :y (get-in state [:shapes selected-uuid :y])}]
-       (-> state
-           (update-in [:shapes selected-uuid] assoc :dragging-coors coors)
-           (update-in [:shapes selected-uuid] assoc :dragging true)))
+   (if-let [selected-uuids (get-in state [:page :selected])]
+     (r/reduce (fn [state selected-uuid]
+       (let [coors {:x (get-in state [:shapes selected-uuid :x]) :y (get-in state [:shapes selected-uuid :y])}]
+         (-> state
+             (update-in [:shapes selected-uuid] assoc :dragging-coors coors)
+             (update-in [:shapes selected-uuid] assoc :dragging true)))) state selected-uuids)
      state)))
 
 (pubsub/register-transition
  :viewport-mouse-up
  (fn [state]
-   (if-let [selected-uuid (get-in state [:page :selected])]
-     (let [x (get-in state [:shapes selected-uuid :x])
-           y (get-in state [:shapes selected-uuid :y])
-           old-x (get-in state [:shapes selected-uuid :dragging-coors :x])
-           old-y (get-in state [:shapes selected-uuid :dragging-coors :y])
-           deltax (- x old-x)
-           deltay (- y old-y)
-           project-uuid (get-in state [:project :uuid])
-           page-uuid (get-in state [:page :uuid])]
-       (do
-         (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
+   (if-let [selected-uuids (get-in state [:page :selected])]
+     (r/reduce (fn [state selected-uuid]
+       (let [x (get-in state [:shapes selected-uuid :x])
+             y (get-in state [:shapes selected-uuid :y])
+             old-x (get-in state [:shapes selected-uuid :dragging-coors :x])
+             old-y (get-in state [:shapes selected-uuid :dragging-coors :y])
+             deltax (- x old-x)
+             deltay (- y old-y)
+             project-uuid (get-in state [:project :uuid])
+             page-uuid (get-in state [:page :uuid])]
+         (map #(storage/move-shape project-uuid page-uuid % deltax deltay) selected-uuids)
          (-> state
              (update-in [:shapes selected-uuid] dissoc :dragging-coors)
-             (update-in [:shapes selected-uuid] dissoc :dragging))))
+             (update-in [:shapes selected-uuid] dissoc :dragging)))) state selected-uuids)
      state)))
 
 (pubsub/register-transition
@@ -147,20 +149,20 @@
    (fn [state _]
      (let [[x y] (:mouse-position state)
            [old-x old-y] @last-event
-           selected-uuid (get-in state [:page :selected])]
+           selected-uuids (get-in state [:page :selected])]
        (reset! last-event [x y])
-       (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
+       (if (and selected-uuids (apply every? (map #(get-in state [:shapes % :dragging]) selected-uuids)))
          (let [deltax (- x old-x)
-               deltay (- y old-y)
-               selected-uuid (get-in state [:page :selected])]
-           (-> state
-               (update-in [:shapes selected-uuid] shapes/move-delta deltax deltay)))
+               deltay (- y old-y)]
+           (r/reduce (fn [state selected-uuid]
+             (-> state
+                 (update-in [:shapes selected-uuid] shapes/move-delta deltax deltay))) state selected-uuids))
          state)))))
 
 (pubsub/register-transition
  :move-layer-down
  (fn [state _]
-   (let [selected-uuid (get-in state [:page :selected])
+   (let [selected-uuids (get-in state [:page :selected])
          groups (:groups state)
          selected-group (first (filter #(some (fn [shape] (= shape selected-uuid)) (:shapes (nth % 1))) (seq groups)))
          previous-group (last (take-while #(not= (nth % 0) (nth selected-group 0)) (sort-by #(:order (nth % 1)) (seq groups))))
