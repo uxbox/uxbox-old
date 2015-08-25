@@ -117,5 +117,14 @@
 
     (assoc-in state [:page :drawing] (map->Line {:x1 x :y1 y :x2 x :y2 y}))))
 
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".") uxbox.shapes.line/map->Line)
-(pubsub/publish! [:register-shape {:shape Line :new new-line :drawing drawing-line :key :line :icon icons/line :text "Line (Ctrl + L)" :menu :tools :order 30}])
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".")
+                             uxbox.shapes.line/map->Line)
+
+(pubsub/publish! [:register-shape {:shape Line
+                                   :new new-line
+                                   :drawing drawing-line
+                                   :key :line
+                                   :icon icons/line
+                                   :text "Line (Ctrl + L)"
+                                   :menu :tools
+                                   :order 30}])

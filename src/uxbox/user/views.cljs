@@ -9,8 +9,10 @@
     [:div.user-zone {:on-mouse-enter #(swap! db assoc :user-menu-open? true)
                      :on-mouse-leave #(swap! db assoc :user-menu-open? false)}
      [:span (:fullname usr)]
-     [:img {:border "0", :src (:avatar usr)}]
-     [:ul.dropdown {:class (if (:user-menu-open? @db) "" "hide")}
+     [:img {:border "0"
+            :src (:avatar usr)}]
+     [:ul.dropdown {:class (when-not (:user-menu-open? @db)
+                             "hide")}
       [:li
        icons/page
        [:span "Page settings"]]
@@ -25,8 +27,7 @@
        [:span "Your account"]]
       [:li
        icons/exit
-       [:span "Save & Exit"]]
-      ]]))
+       [:span "Save & Exit"]]]]))
 
 (defn register-form
   [db]
@@ -40,11 +41,18 @@
       :placeholder "Email"
       :type "email"}]
    [:input.input-text
-    {:name "password", :placeholder "Password", :type "password"}]
+    {:name "password"
+     :placeholder "Password"
+     :type "password"}]
    [:input.btn-primary
-    {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
+    {:name "login"
+     :value "Continue"
+     :type "submit"
+     :on-click #(navigate! (dashboard-route))}]
    [:div.login-links
-    [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))} "You already have an account?"]]])
+    [:a
+     {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))}
+     "You already have an account?"]]])
 
 (defn recover-form
   [db]
@@ -54,10 +62,17 @@
       :placeholder "Email"
       :type "email"}]
    [:input.btn-primary
-    {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
+    {:name "login"
+     :value "Continue"
+     :type "submit"
+     :on-click #(navigate! (dashboard-route))}]
    [:div.login-links
-    [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))} "You have rememered your password?"]
-    [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :register)))} "Don't have an account?"]]])
+    [:a
+     {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))}
+     "You have rememered your password?"]
+    [:a
+     {:on-click #(swap! db (fn [current] (assoc current :login-form :register)))}
+     "Don't have an account?"]]])
 
 (defn login-form
   [db]
@@ -67,12 +82,18 @@
       :placeholder "Email"
       :type "email"}]
    [:input.input-text
-    {:name "password", :placeholder "Password", :type "password"}]
+    {:name "password"
+     :placeholder "Password"
+     :type "password"}]
    [:div.input-checkbox.check-primary
-    [:input#checkbox1 {:value "1", :type "checkbox"}]
+    [:input#checkbox1 {:value "1"
+                       :type "checkbox"}]
     [:label {:for "checkbox1"} "Keep Me Signed in"]]
    [:input.btn-primary
-    {:name "login", :value "Continue", :type "submit", :on-click #(navigate! (dashboard-route))}]
+    {:name "login"
+     :value "Continue"
+     :type "submit"
+     :on-click #(navigate! (dashboard-route))}]
    [:div.login-links
     [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :recover)))} "Forgot your password?"]
     [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :register)))} "Don't have an account?"]]])

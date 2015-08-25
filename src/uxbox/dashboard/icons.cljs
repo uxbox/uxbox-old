@@ -2,8 +2,8 @@
 
 (def search
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.36216)"}
@@ -13,8 +13,8 @@
 
 (def page
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.36216)"}
@@ -24,8 +24,8 @@
 
 (def trash
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.36216)"}

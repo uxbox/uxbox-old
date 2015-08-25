@@ -20,7 +20,8 @@
     [:div.activity-input
      {:key (:uuid item)}
      [:img.activity-author
-      {:border "0", :src "../../images/avatar.jpg"}]
+      {:border "0"
+       :src "../../images/avatar.jpg"}]
      (when (= (:type event) :create-page)
        [:div.activity-content
         [:span.bold (:name author)]

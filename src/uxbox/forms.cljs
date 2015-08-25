@@ -115,5 +115,9 @@
 
 ;; NOTE: alter-meta! does not work on vars http://dev.clojure.org/jira/browse/CLJS-1248
 (def lightbox
-  (with-meta lightbox* {:component-did-mount #(events/listen js/document EventType.KEYUP dismiss-lightbox)
-                        :component-will-unmount #(events/unlisten js/document EventType.KEYUP dismiss-lightbox)}))
+  (with-meta lightbox* {:component-did-mount #(events/listen js/document
+                                                             EventType.KEYUP
+                                                             dismiss-lightbox)
+                        :component-will-unmount #(events/unlisten js/document
+                                                                  EventType.KEYUP
+                                                                  dismiss-lightbox)}))

@@ -13,6 +13,4 @@
             [uxbox.icons-sets.material-design-navigation]
             [uxbox.icons-sets.material-design-notification]
             [uxbox.icons-sets.material-design-social]
-            [uxbox.icons-sets.material-design-toggle]
-            [uxbox.pubsub :as pubsub]))
-
+            [uxbox.icons-sets.material-design-toggle]))

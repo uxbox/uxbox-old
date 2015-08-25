@@ -2,8 +2,8 @@
 
 (def logo
   [:svg
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -13,8 +13,8 @@
 
 (def project-tree
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -22,14 +22,14 @@
 
 (def undo
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:use
-     {:height "100%",
-      :width "100%",
-      :y "0",
-      :x "0",
+     {:height "100%"
+      :width "100%"
+      :y "0"
+      :x "0"
       :transform
       "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)"}]
     [:path
@@ -38,14 +38,14 @@
 
 (def redo
   [:svg#svg2
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:use
-     {:height "100%",
-      :width "100%",
-      :y "0",
-      :x "0",
+     {:height "100%"
+      :width "100%"
+      :y "0"
+      :x "0"
       :transform
       "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)"}]
     [:path
@@ -54,8 +54,8 @@
 
 (def export
   [:svg#svg4946
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -65,8 +65,8 @@
 
 (def image
   [:svg#svg4946
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -79,8 +79,8 @@
 
 (def ruler
   [:svg
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -90,8 +90,8 @@
 
 (def grid
   [:svg
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -101,8 +101,8 @@
 
 (def alignment
   [:svg
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -112,8 +112,8 @@
 
 (def organize
   [:svg
-    {:viewBox "0 0 500 500.00001",
-     :height "500",
+    {:viewBox "0 0 500 500.00001"
+     :height "500"
      :width "500"}
     [:g
      {:transform "translate(0,-552.3622)"}
@@ -123,8 +123,8 @@
 
 (def window
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -132,8 +132,8 @@
 
 (def box
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -141,8 +141,8 @@
 
 (def circle
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -150,8 +150,8 @@
 
 (def line
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -159,8 +159,8 @@
 
 (def curve
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:g
      [:path
@@ -169,8 +169,8 @@
 
 (def text
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:g
      [:path
@@ -179,8 +179,8 @@
 
 (def arrow
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -188,8 +188,8 @@
 
 (def layers
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -197,16 +197,16 @@
 
 (def eye
   [:svg#svg2
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:use
-     {:height "100%",
-      :width "100%",
-      :y "0",
-      :x "0",
+     {:height "100%"
+      :width "100%"
+      :y "0"
+      :x "0"
       :transform
-      "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)",
+      "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)"
       :xlink:href "#symbol16714"}]
     [:path
      {:d
@@ -214,16 +214,16 @@
 
 (def lock
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:use
-     {:height "100%",
-      :width "100%",
-      :y "0",
-      :x "0",
+     {:height "100%"
+      :width "100%"
+      :y "0"
+      :x "0"
       :transform
-      "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)",
+      "matrix(0.48875855,0,0,0.48875855,266.5973,18.208584)"
       :xlink:href "#symbol16714"}]
     [:path
      {:d
@@ -231,8 +231,8 @@
 
 (def shapes
   [:svg#svg2
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -240,8 +240,8 @@
 
 (def puzzle
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d
@@ -249,8 +249,8 @@
 
 (def icon-set
   [:svg
-    {:viewBox "0 0 500.00001 500.00001",
-     :height "500",
+    {:viewBox "0 0 500.00001 500.00001"
+     :height "500"
      :width "500"}
     [:path
      {:d

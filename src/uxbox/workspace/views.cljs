@@ -51,10 +51,12 @@
      [:ul.options-btn
       [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
        icons/ruler]
-      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid? (:workspace @db))
-                                                                   "selected"
-                                                                   "")
-                                   :on-click #(actions/toggle-grid)} icons/grid]
+      [:li.tooltip.tooltip-bottom
+       {:alt "Grid (Ctrl + G)"
+        :class (when (:grid? (:workspace @db))
+                 "selected")
+        :on-click #(actions/toggle-grid)}
+       icons/grid]
       [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
        icons/alignment]
       [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
@@ -188,15 +190,32 @@
   [:div#tool-bar.tool-bar
     [:div.tool-bar-inside
      [:ul.main-tools
-      [:li.tooltip {:alt "Shapes (Ctrl + Shift + F)" :class (if (:tools (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/toggle-setting-box :tools)} icons/shapes]
-      [:li.tooltip {:alt "Components (Ctrl + Shift + C)" :class (if (:components (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/toggle-setting-box :components)} icons/puzzle]
-      [:li.tooltip {:alt "Icons (Ctrl + Shift + I)" :class (if (:icons (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/toggle-setting-box :icons)} icons/icon-set]
-      [:li.tooltip {:alt "Elements (Ctrl + Shift + L)" :class (if (:layers (:open-setting-boxes @db)) "current" "")
-            :on-click #(actions/toggle-setting-box :layers)} icons/layers]
-      [:li.tooltip {:alt "Feedback (Ctrl + Shift + M)"}
+      [:li.tooltip
+       {:alt "Shapes (Ctrl + Shift + F)"
+        :class (when (:tools (:open-setting-boxes @db))
+                 "current")
+        :on-click #(actions/toggle-setting-box :tools)}
+       icons/shapes]
+      [:li.tooltip
+       {:alt "Components (Ctrl + Shift + C)"
+        :class (when (:components (:open-setting-boxes @db))
+                 "current")
+        :on-click #(actions/toggle-setting-box :components)}
+       icons/puzzle]
+      [:li.tooltip
+       {:alt "Icons (Ctrl + Shift + I)"
+        :class (when (:icons (:open-setting-boxes @db))
+                 "current")
+        :on-click #(actions/toggle-setting-box :icons)}
+       icons/icon-set]
+      [:li.tooltip
+       {:alt "Elements (Ctrl + Shift + L)"
+        :class (when (:layers (:open-setting-boxes @db))
+                 "current")
+        :on-click #(actions/toggle-setting-box :layers)}
+       icons/layers]
+      [:li.tooltip
+       {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
 (defn project-pages

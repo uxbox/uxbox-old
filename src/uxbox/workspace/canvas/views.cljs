@@ -18,15 +18,42 @@
         vertical-lines (fn
           [position value padding]
           (if (< (mod value ticks-mod) step-size)
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.75}]
-             [:line {:key position :y1 padding :y2 width :x1 position :x2 position :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.25}]))
+             [:line {:key position
+                     :y1 padding
+                     :y2 width
+                     :x1 position
+                     :x2 position
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.75}]
+             [:line {:key position
+                     :y1 padding
+                     :y2 width
+                     :x1 position
+                     :x2 position
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.25}]))
 
         horizontal-lines (fn
           [position value padding]
           (if (< (mod value ticks-mod) step-size)
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.75}]
-             [:line {:key position :y1 position :y2 position :x1 padding :x2 height :stroke "blue" :stroke-width (/ 1 zoom) :opacity 0.25}]))
-        ]
+             [:line {:key position
+                     :y1 position
+                     :y2 position
+                     :x1 padding
+                     :x2 height
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.75}]
+             [:line {:key position
+                     :y1 position
+                     :y2 position
+                     :x1 padding
+                     :x2 height
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.25}]))]
     [:g.grid
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
@@ -35,7 +62,9 @@
 (defn debug-coordinates [db]
   (let [zoom (get-in @db [:workspace :zoom])
         [mouseX mouseY] (:mouse-position @db)]
-    [:div {:style #js {:position "absolute" :left "80px" :top "20px"}}
+    [:div {:style #js {:position "absolute"
+                       :left "80px"
+                       :top "20px"}}
      [:table
       [:tr [:td "X:"] [:td mouseX]]
       [:tr [:td "Y:"] [:td mouseY]]]]))
@@ -110,5 +139,4 @@
            [shapes/shape->selected-svg (get page-shapes selected-uuid)])
          ]
         (if (:grid? (:workspace @db))
-          [grid viewport-width viewport-height document-start-x document-start-y zoom])
-        ]]]))
+          [grid viewport-width viewport-height document-start-x document-start-y zoom])]]]))

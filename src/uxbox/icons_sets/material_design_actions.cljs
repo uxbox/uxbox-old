@@ -481,4 +481,6 @@
       :name "Work"
       :svg [:path {:xmlns "http://www.w3.org/2000/svg" :d "M40 12h-8v-4c0-2.21-1.79-4-4-4h-8c-2.21 0-4 1.79-4 4v4h-8c-2.21 0-3.98 1.79-3.98 4l-.02 22c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4v-22c0-2.21-1.79-4-4-4zm-12 0h-8v-4h8v4z" :style {:stroke nil}}]}))
 
-(pubsub/publish! [:register-icons-set {:key :material-design-actions :name "Material Design (Actions)" :icons material-design-actions}])
+(pubsub/publish! [:register-icons-set {:key :material-design-actions
+                                       :name "Material Design (Actions)"
+                                       :icons material-design-actions}])

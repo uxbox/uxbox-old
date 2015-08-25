@@ -4,7 +4,7 @@
             [secretary.core :as s :refer-macros [defroute]]
             [goog.events :as events])
   (:import [goog.history Html5History]
-           goog.history.EventType))
+            goog.history.EventType))
 
 ;; Routes
 

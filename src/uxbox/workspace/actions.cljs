@@ -1,7 +1,6 @@
 (ns uxbox.workspace.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.storage.api :as storage]
-            [uxbox.workspace.canvas.actions :refer [new-group]]
             [uxbox.shapes.core :refer [new-group]]))
 
 (defn change-shape-attr
@@ -150,5 +149,4 @@
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)
                     :project-bar-visible? false)
-       state
-       ))))
+       state))))

@@ -10,13 +10,14 @@
 (def circle-menu {:name "Size and position"
                   :icon icons/infocard
                   :key :options
-                  :options [{:name "Position" :inputs [{:name "X" :type :number :shape-key :cx :value-filter int}
-                                                       {:name "Y" :type :number :shape-key :cy :value-filter int}]}
-                            {:name "Radius" :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
+                  :options [{:name "Position"
+                             :inputs [{:name "X" :type :number :shape-key :cx :value-filter int}
+                                      {:name "Y" :type :number :shape-key :cy :value-filter int}]}
+                            {:name "Radius"
+                             :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
 
 (defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
-
   (intersect
     [{:keys [cx cy r]} px py]
     (let [distance (geo/distance-line-circle cx cy r px py)]
@@ -69,17 +70,16 @@
               dy (- (geo/distance cx cy 0 cy) r)
               r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)]
           [:circle {:cx cx :cy cy :r r
-                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]
-          ))))
+                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]))))
 
   (move-delta [{:keys [cx cy] :as shape} delta-x delta-y]
     (-> shape
         (assoc :cx (+ cx delta-x))
         (assoc :cy (+ cy delta-y))))
+
   (menu-info
     [shape]
-    [circle-menu stroke-menu fill-menu actions-menu])
-  )
+    [circle-menu stroke-menu fill-menu actions-menu]))
 
 (defn new-circle
   "Retrieves a circle with the default parameters"
@@ -110,5 +110,14 @@
 
     (assoc-in state [:page :drawing] (map->Circle {:cx x :cy y}))))
 
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".") uxbox.shapes.circle/map->Circle)
-(pubsub/publish! [:register-shape {:shape Circle :new new-circle :drawing drawing-circle :key :circle :icon icons/circle :text "Circle (Ctrl + E)" :menu :tools :order 20}])
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".")
+                             uxbox.shapes.circle/map->Circle)
+
+(pubsub/publish! [:register-shape {:shape Circle
+                                   :new new-circle
+                                   :drawing drawing-circle
+                                   :key :circle
+                                   :icon icons/circle
+                                   :text "Circle (Ctrl + E)"
+                                   :menu :tools
+                                   :order 20}])

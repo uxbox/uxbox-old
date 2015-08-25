@@ -17,7 +17,6 @@
 
 (defrecord Path [path icowidth icoheight x y width height fill fill-opacity rotate]
   Shape
-
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
          (<= px (+ x width))
@@ -36,11 +35,11 @@
            :x x
            :y y
            :preserveAspectRatio "none"}
-     [
-      :g {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
-       [:path {:d path
-               :fill fill
-               :fill-opacity fill-opacity}]]])
+     [:g
+      {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
+      [:path {:d path
+              :fill fill
+              :fill-opacity fill-opacity}]]])
 
   (shape->selected-svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
     [:g
@@ -77,8 +76,7 @@
 
   (menu-info
     [shape]
-    [path-menu fill-menu actions-menu])
-  )
+    [path-menu fill-menu actions-menu]))
 
 (defn new-path-shape
   "Retrieves a path with the default parameters"
@@ -103,4 +101,5 @@
 
    (assoc-in state [:page :drawing] (map->Path {:x x :y y}))))
 
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.path/Path) "/" ".") uxbox.shapes.path/map->Path)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.path/Path) "/" ".")
+                             uxbox.shapes.path/map->Path)
