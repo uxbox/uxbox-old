@@ -9,7 +9,7 @@
               [uxbox.user.views :refer [login]]
               [uxbox.icons-sets.core]
               [hodgepodge.core :refer [local-storage]]
-              [reagent.core :as reagent :refer [atom]]))
+              [reagent.core :as reagent]))
 
 (enable-console-print!)
 

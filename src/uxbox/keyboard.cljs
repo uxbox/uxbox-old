@@ -1,7 +1,6 @@
 (ns uxbox.keyboard
   (:require [uxbox.pubsub :as pubsub]
-            [goog.events :as events]
-            [goog.dom :as dom])
+            [goog.events :as events])
   (:import [goog.events EventType KeyCodes]
            [goog.ui KeyboardShortcutHandler]))
 
