@@ -81,7 +81,7 @@
 
         on-event (fn [event-type]
                    (fn [e]
-                     (let [coords (geo/clientcoord->viewportcord (.-clientX e) (.-clientY e))]
+                     (let [coords (geo/clientcoord->viewportcoord (.-clientX e) (.-clientY e))]
                        (pubsub/publish! [event-type coords])
                        (.preventDefault e))))
 

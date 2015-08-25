@@ -27,7 +27,7 @@
   (toolbar-coords [{:keys [x y width height]}]
     (let [vx (+ x width 50)
           vy y]
-      (geo/viewportcord->clientcoord vx vy)))
+      (geo/viewportcoord->clientcoord vx vy)))
 
   (shape->svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
     [:svg {:viewBox (str "0 0 " icowidth " " icoheight)

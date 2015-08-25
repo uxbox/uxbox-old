@@ -26,7 +26,7 @@
     [{:keys [cx cy r]}]
     (let [vx (+ cx r 20)
           vy (- cy r 40)]
-      (geo/viewportcord->clientcoord vx vy)))
+      (geo/viewportcoord->clientcoord vx vy)))
 
   (shape->svg [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:circle {:cx cx

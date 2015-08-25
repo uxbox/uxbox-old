@@ -29,7 +29,7 @@
           min-y (if (< y1 y2) y1 y2)
           vx (+ max-x 50)
           vy min-y]
-      (geo/viewportcord->clientcoord vx vy)))
+      (geo/viewportcoord->clientcoord vx vy)))
 
   (shape->svg
     [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]

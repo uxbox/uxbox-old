@@ -28,7 +28,7 @@
   (toolbar-coords [{:keys [x y width height]}]
     (let [vx (+ x width 50)
           vy (- y 50)]
-      (geo/viewportcord->clientcoord vx vy)))
+      (geo/viewportcoord->clientcoord vx vy)))
 
   (shape->svg [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
     [:rect
