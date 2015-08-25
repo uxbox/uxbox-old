@@ -3,8 +3,7 @@
             [uxbox.pubsub :as pubsub]
             [uxbox.icons :as icons]
             [uxbox.geometry :as geo]
-            [cljs.reader :as reader]
-            [reagent.core :refer [atom]]))
+            [cljs.reader :as reader]))
 
 (def path-menu {:name "Size and position"
                 :icon icons/infocard

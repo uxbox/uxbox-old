@@ -1,5 +1,6 @@
 (ns ^:figwheel-always uxbox.core
-    (:require [uxbox.db :as db]
+    (:require rum
+              [uxbox.db :as db]
               [uxbox.navigation :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.storage.core :refer [start-storage!]]
@@ -8,29 +9,28 @@
               [uxbox.forms :refer [lightbox]]
               [uxbox.user.views :refer [login]]
               [uxbox.icons-sets.core]
-              [hodgepodge.core :refer [local-storage]]
-              [reagent.core :as reagent]))
+              [hodgepodge.core :refer [local-storage]]))
 
 (enable-console-print!)
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
-
-(defn ui [db]
+(rum/defc ui
+  [db]
   (let [[page params] (:location @db)]
     (case page
       :dashboard [:div
-                  [dashboard db]
-                  [lightbox db]]
-      :login [login db]
-      :workspace [workspace db])))
+                  (dashboard db)
+                  (lightbox db)]
+      :login (login db)
+      :workspace (workspace db))))
 
 (defn render!
   [app-state element]
-  (reagent/render-component [ui app-state] element))
+  (let [component
+        (rum/mount (ui app-state) element)]
+    (add-watch app-state
+               :render
+               (fn [_ _ _ _]
+                 (rum/request-render component)))))
 
 (def $el (.getElementById js/document "app"))
 

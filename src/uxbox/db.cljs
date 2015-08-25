@@ -1,5 +1,4 @@
-(ns uxbox.db
-  (:require [reagent.core :as reagent :refer [atom]]))
+(ns uxbox.db)
 
 (def initial-state {;; Location
                     :location [:login]
@@ -45,7 +44,7 @@
                     :user-menu-open? false
 
                     ;; Forms
-                    :login-form :login
+                    :user-form :login
 
                     ;; Lightbox
                     :lightbox nil

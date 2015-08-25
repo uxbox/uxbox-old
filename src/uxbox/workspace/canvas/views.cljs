@@ -1,12 +1,13 @@
 (ns uxbox.workspace.canvas.views
-  (:require  [uxbox.pubsub :as pubsub]
-             [uxbox.workspace.canvas.actions :as actions]
-             [uxbox.geometry :as geo]
-             [reagent.core :refer [atom]]
-             [cuerdas.core :as str]
-             [uxbox.shapes.core :as shapes]))
+  (:require
+   rum
+   [uxbox.pubsub :as pubsub]
+   [uxbox.workspace.canvas.actions :as actions]
+   [uxbox.geometry :as geo]
+   [cuerdas.core :as str]
+   [uxbox.shapes.core :as shapes]))
 
-(defn grid
+(rum/defc grid < rum/static
   [width height start-width start-height zoom]
   (let [padding (* 20 zoom)
         ticks-mod (/ 100 zoom)
@@ -59,17 +60,22 @@
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
 
-(defn debug-coordinates [db]
-  (let [zoom (get-in @db [:workspace :zoom])
-        [mouseX mouseY] (:mouse-position @db)]
-    [:div {:style #js {:position "absolute"
-                       :left "80px"
-                       :top "20px"}}
-     [:table
-      [:tr [:td "X:"] [:td mouseX]]
-      [:tr [:td "Y:"] [:td mouseY]]]]))
+(rum/defc debug-coordinates < rum/static
+  [zoom [mouse-x mouse-y]]
+  [:div
+   {:style #js {:position "absolute"
+                :left "80px"
+                :top "20px"}}
+   [:table
+    [:tr
+     [:td "X:"]
+     [:td mouse-x]]
+    [:tr
+     [:td "Y:"]
+     [:td mouse-y]]]])
 
-(defn canvas [db]
+(rum/defc canvas
+  [db]
   (let [viewport-height 3000
         viewport-width 3000
         page (:page @db)
@@ -127,16 +133,19 @@
            :on-mouse-down (on-event :viewport-mouse-down)
            :on-mouse-up (on-event :viewport-mouse-up)
            :on-wheel (on-wheel-event :zoom-wheel)}
-     [debug-coordinates db]
+     (debug-coordinates (:zoom @db) (:mouse-position @db))
      [:svg#viewport {:width viewport-height :height viewport-width}
       [:g.zoom {:transform (str "scale(" zoom " " zoom ")")}
-        [:svg#page-canvas  {:x document-start-x :y document-start-y :width page-width :height page-height};; Document
+        [:svg#page-canvas
+         {:x document-start-x
+          :y document-start-y
+          :width page-width
+          :height page-height}
          [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
          (apply vector :svg#page-layout shapes-svg)
          (when-let [shape (get page :drawing)]
-           [shapes/shape->drawing-svg shape])
+           (shapes/shape->drawing-svg shape))
          (when-let [selected-uuid (get page :selected)]
-           [shapes/shape->selected-svg (get page-shapes selected-uuid)])
-         ]
+           (shapes/shape->selected-svg (get page-shapes selected-uuid)))]
         (if (:grid? (:workspace @db))
-          [grid viewport-width viewport-height document-start-x document-start-y zoom])]]]))
+          (grid viewport-width viewport-height document-start-x document-start-y zoom))]]]))

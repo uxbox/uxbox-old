@@ -5,8 +5,8 @@
             :url ""}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "0.0-3308"]
-                 [reagent "0.5.0"]
+                 [org.clojure/clojurescript "1.7.48"]
+                 [rum "0.3.0"]
                  [cljsjs/moment "2.9.0-0"]
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
@@ -31,7 +31,8 @@
                          :asset-path "/js/compiled/out"
                          :output-to "resources/public/js/compiled/uxbox.js"
                          :output-dir "resources/public/js/compiled/out"
-                         :source-map-timestamp true }}
+                         :source-map-timestamp true
+                         :warnings {:single-segment-namespace false}}}
 
              {:id "test"
               :source-paths ["src" "test"]
@@ -44,14 +45,16 @@
                           :main uxbox.runner
                           :optimizations :none
                           :target :nodejs
-                          :pretty-print true}}
+                          :pretty-print true
+                          :warnings {:single-segment-namespace false}}}
 
              {:id "min"
               :source-paths ["src"]
               :compiler {:output-to "resources/public/js/compiled/uxbox.js"
                          :main uxbox.core
                          :optimizations :advanced
-                         :pretty-print false}}]}
+                         :pretty-print false
+                         :warnings {:single-segment-namespace false}}}]}
 
   :figwheel {
              ;; :http-server-root "public" ;; default and assumes "resources"

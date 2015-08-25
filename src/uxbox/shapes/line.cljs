@@ -4,8 +4,7 @@
             [uxbox.icons :as icons]
             [uxbox.geometry :as geo]
             [uxbox.icons :as icons]
-            [cljs.reader :as reader]
-            [reagent.core :refer [atom]]))
+            [cljs.reader :as reader]))
 
 (def line-menu {:name "Position"
                 :icon icons/infocard

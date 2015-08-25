@@ -24,7 +24,7 @@
         (do
           (if-let [new-state (cb @db/app-state (second v))]
             (reset! db/app-state new-state)
-            (.error js/console "The" key "handler didn't return a new version of the state but" (pr new-state)))
+            (.error js/console "The" key "handler didn't return a new version of the state"))
           (recur (async/<! ch)))))))
 
 (defn register-effect
