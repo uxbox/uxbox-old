@@ -1,6 +1,5 @@
 (ns uxbox.navigation
-  (:require [uxbox.db :as db]
-            [uxbox.pubsub :refer [publish! register-transition]]
+  (:require [uxbox.pubsub :refer [publish! register-transition]]
             [uxbox.storage.api :as storage]
             [secretary.core :as s :refer-macros [defroute]]
             [goog.events :as events])
