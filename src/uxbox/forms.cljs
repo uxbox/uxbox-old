@@ -93,7 +93,7 @@
             :on-change #(swap! db assoc-in [:new-project :height] (.-value (.-target %)))}]]
         (vec (cons :div.input-radio.radio-primary (mapcat #(generate-layout-input db %) layouts)))
 
-        (when (not (empty? (trim project-name)))
+        (when-not (empty? (trim project-name))
           [:input#project-btn.btn-primary
             {:value "Go go go!"
              :type "button"
