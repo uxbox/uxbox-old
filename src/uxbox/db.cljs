@@ -1,8 +1,6 @@
 (ns uxbox.db
   (:require [reagent.core :as reagent :refer [atom]]))
 
-(defonce a-project-id (random-uuid))
-(defonce another-project-id (random-uuid))
 
 (def initial-state {:location [:login]
                     :login-form :login
