@@ -110,7 +110,7 @@
 (pubsub/register-transition
  :toggle-grid
  (fn [state _]
-   (update-in state [:workspace :grid] not)))
+   (update-in state [:workspace :grid?] not)))
 
 (pubsub/register-transition
  :toggle-select-group
@@ -149,6 +149,6 @@
                     :shapes (storage/get-shapes project-uuid page-uuid)
                     :workspace (:workspace-defaults state)
                     :open-setting-boxes (:default-open-setting-boxes state)
-                    :visible-project-bar false)
+                    :project-bar-visible? false)
        state
        ))))

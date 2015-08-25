@@ -109,6 +109,6 @@
          (when-let [selected-uuid (get page :selected)]
            [shapes/shape->selected-svg (get page-shapes selected-uuid)])
          ]
-        (if (:grid (:workspace @db))
+        (if (:grid? (:workspace @db))
           [grid viewport-width viewport-height document-start-x document-start-y zoom])
         ]]]))

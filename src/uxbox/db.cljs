@@ -1,16 +1,15 @@
 (ns uxbox.db
   (:require [reagent.core :as reagent :refer [atom]]))
 
+(def initial-state {;; Location
+                    :location [:login]
 
-(def initial-state {:location [:login]
-                    :login-form :login
-                    :lightbox nil
-                    :default-open-setting-boxes #{:tools :layers}
-                    :open-setting-boxes #{:tools :layers}
-                    :open-user-menu false
+                    ;; User
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
-                    :activity []
+
+                    ;; Projects
+                    :project nil
                     :project-sort-order :name
                     :project-orderings {
                       :name "name"
@@ -30,28 +29,43 @@
                       :height 1080
                       :layout :desktop
                     }
-                    :visible-project-bar false
                     :new-project-name ""
-                    :editing-pages {}
+                    :project-bar-visible? false
+
+                    ;; Pages
+                    :page nil
                     :new-page-name ""
-                    :adding-new-page false
+                    :editing-pages {}
+                    :adding-new-page? false
+
+                    ;; Activity
+                    :activity []
+
+                    ;; Header
+                    :user-menu-open? false
+
+                    ;; Forms
+                    :login-form :login
+
+                    ;; Lightbox
+                    :lightbox nil
+
+                    ;; Workspace
                     :workspace-defaults {:selected-tool nil
                                          :selected-element 0
-                                         :grid false
+                                         :grid? false
                                          :zoom 1}
                     :workspace {:selected-tool nil
                                 :selected-groups #{}
                                 :selected-element 0
-                                :grid false
+                                :grid? false
                                 :zoom 1}
 
-                    ;; Rectangles: http://www.w3.org/TR/SVG/shapes.html#RectElement
-                    ;; Lines: http://www.w3.org/TR/SVG/shapes.html#LineElement
-                    ;; Style properties http://www.w3.org/TR/SVG/propidx.html
                     :current-icons-set :material-design-actions
-                    :scroll {:top 0 :left 0}
+                    :default-open-setting-boxes #{:tools :layers}
+                    :open-setting-boxes #{:tools :layers}
 
-                    :project nil
-                    :page nil})
+                    ;; Browser
+                    :scroll {:top 0 :left 0}})
 
 (defonce app-state (atom initial-state))

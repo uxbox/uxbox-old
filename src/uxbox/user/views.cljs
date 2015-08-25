@@ -6,10 +6,11 @@
 (defn user
   [db]
   (let [usr (:user @db)]
-    [:div.user-zone {:on-mouse-enter #(swap! db assoc :open-user-menu true) :on-mouse-leave #(swap! db assoc :open-user-menu false)}
+    [:div.user-zone {:on-mouse-enter #(swap! db assoc :user-menu-open? true)
+                     :on-mouse-leave #(swap! db assoc :user-menu-open? false)}
      [:span (:fullname usr)]
      [:img {:border "0", :src (:avatar usr)}]
-     [:ul.dropdown {:class (if (:open-user-menu @db) "" "hide")}
+     [:ul.dropdown {:class (if (:user-menu-open? @db) "" "hide")}
       [:li
        icons/page
        [:span "Page settings"]]
@@ -85,4 +86,3 @@
        :login [login-form db]
        :register [register-form db]
        :recover [recover-form db])]])
-

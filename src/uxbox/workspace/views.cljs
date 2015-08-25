@@ -16,7 +16,7 @@
   [db]
   (let [title (get-in @db [:page :title])]
     [:div.project-tree-btn
-     {:on-click #(swap! db update :visible-project-bar not)}
+     {:on-click #(swap! db update :project-bar-visible? not)}
      icons/project-tree
      [:span title]]))
 
@@ -51,7 +51,10 @@
      [:ul.options-btn
       [:li.tooltip.tooltip-bottom {:alt "Ruler (Ctrl + R)"}
        icons/ruler]
-      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid (:workspace @db)) "selected" "") :on-click #(actions/toggle-grid)} icons/grid]
+      [:li.tooltip.tooltip-bottom {:alt "Grid (Ctrl + G)" :class (if (:grid? (:workspace @db))
+                                                                   "selected"
+                                                                   "")
+                                   :on-click #(actions/toggle-grid)} icons/grid]
       [:li.tooltip.tooltip-bottom {:alt "Align (Ctrl + A)"}
        icons/alignment]
       [:li.tooltip.tooltip-bottom {:alt "Organize (Ctrl + O)"}
@@ -235,12 +238,12 @@
 
 (defn clean-new-page!
   [db]
-  (swap! db assoc :adding-new-page false
+  (swap! db assoc :adding-new-page? false
                   :new-page-title ""))
 
 (defn new-page
   [db project]
-  (if (:adding-new-page @db)
+  (if (:adding-new-page? @db)
     [:input.input-text
      {:title "page-title"
       :auto-focus true
@@ -256,7 +259,7 @@
                     (= (.-keyCode %) 27)
                     (clean-new-page! db))}]
     [:button.btn-primary.btn-small
-     {:on-click #(swap! db assoc :adding-new-page true)}
+     {:on-click #(swap! db assoc :adding-new-page? true)}
      "+ Add new page"]))
 
 (defn projectbar
@@ -265,7 +268,7 @@
         project-name (:name project)
         pages (:project-pages @db)]
     [:div#project-bar.project-bar
-     (when (not (:visible-project-bar @db))
+     (when-not (:project-bar-visible? @db)
        {:class "toggle"})
      [:div.project-bar-inside
       [:span.project-name project-name]
