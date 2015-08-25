@@ -1,7 +1,7 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
               [uxbox.db :as db]
-              [uxbox.navigation :refer [start-history!]]
+              [uxbox.navigation :refer [start-history! location]]
               [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
@@ -13,9 +13,9 @@
 
 (enable-console-print!)
 
-(rum/defc ui
-  [db]
-  (let [[page params] (:location @db)]
+(rum/defc ui < rum/cursored-watch
+  [db location]
+  (let [[page params] @location]
     (case page
       :dashboard [:div
                   (dashboard db)
@@ -25,12 +25,7 @@
 
 (defn render!
   [app-state element]
-  (let [component
-        (rum/mount (ui app-state) element)]
-    (add-watch app-state
-               :render
-               (fn [_ _ _ _]
-                 (rum/request-render component)))))
+  (rum/mount (ui app-state location) element))
 
 (def $el (.getElementById js/document "app"))
 

@@ -1,9 +1,8 @@
 (ns uxbox.db)
 
-(def initial-state {;; Location
-                    :location [:login]
 
-                    ;; User
+
+(def initial-state {;; User
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
 
