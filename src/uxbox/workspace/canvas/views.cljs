@@ -1,8 +1,10 @@
 (ns uxbox.workspace.canvas.views
   (:require
    rum
+   [jamesmacaulay.zelkova.signal :as z]
    [uxbox.pubsub :as pubsub]
    [uxbox.workspace.canvas.actions :as actions]
+   [uxbox.workspace.canvas.signals :as signals]
    [uxbox.geometry :as geo]
    [cuerdas.core :as str]
    [uxbox.shapes.core :as shapes]))
@@ -60,19 +62,22 @@
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
 
-(rum/defc debug-coordinates < rum/static
-  [zoom [mouse-x mouse-y]]
-  [:div
-   {:style #js {:position "absolute"
-                :left "80px"
-                :top "20px"}}
-   [:table
-    [:tr
-     [:td "X:"]
-     [:td mouse-x]]
-    [:tr
-     [:td "Y:"]
-     [:td mouse-y]]]])
+(defonce canvas-coordinates (z/pipe-to-atom signals/canvas-coordinates))
+
+(rum/defc debug-coordinates < rum/reactive
+  []
+  (let [[x y] (rum/react canvas-coordinates)]
+    [:div
+     {:style #js {:position "absolute"
+                  :left "80px"
+                  :top "20px"}}
+     [:table
+      [:tr
+       [:td "X:"]
+       [:td x]]
+      [:tr
+       [:td "Y:"]
+       [:td y]]]]))
 
 (rum/defc canvas
   [db]
@@ -116,7 +121,7 @@
 
         on-event (fn [event-type]
                    (fn [e]
-                     (let [coords (geo/clientcoord->viewportcoord (.-clientX e) (.-clientY e))]
+                     (let [coords (geo/client-coords->canvas-coords (.-clientX e) (.-clientY e))]
                        (pubsub/publish! [event-type coords])
                        (.preventDefault e))))
 
@@ -133,7 +138,7 @@
            :on-mouse-down (on-event :viewport-mouse-down)
            :on-mouse-up (on-event :viewport-mouse-up)
            :on-wheel (on-wheel-event :zoom-wheel)}
-     (debug-coordinates (:zoom @db) (:mouse-position @db))
+     (debug-coordinates)
      [:svg#viewport {:width viewport-height :height viewport-width}
       [:g.zoom {:transform (str "scale(" zoom " " zoom ")")}
         [:svg#page-canvas

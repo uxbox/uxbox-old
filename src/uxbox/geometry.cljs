@@ -10,7 +10,7 @@
         rect-height (if (> y1 y2) (- y1 y2) (- y2 y1))]
     [rect-x rect-y rect-width rect-height]))
 
-(defn clientcoord->viewportcoord
+(defn client-coords->canvas-coords
   [client-x client-y]
   (if-let [canvas-element (.getElementById js/document "page-canvas")]
     (let [bounding-rect (.getBoundingClientRect canvas-element)
