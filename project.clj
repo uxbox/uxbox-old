@@ -6,11 +6,19 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.48"]
+                 ;; Rendering
                  [rum "0.3.0"]
+                 ;; Compositional Event Streams
+                 [jamesmacaulay/zelkova "0.4.0"]
+                 ;; Datetime
                  [cljsjs/moment "2.9.0-0"]
+                 ;; Routing
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
+                 ;; Asynchrony & Communication
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 ;; Persistence
                  [funcool/hodgepodge "0.1.4"]
+                 ;; String
                  [funcool/cuerdas "0.5.0"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
