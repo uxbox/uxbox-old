@@ -1,18 +1,37 @@
 (ns uxbox.shapes.path
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation actions-menu fill-menu new-group]]
-            [uxbox.pubsub :as pubsub]
-            [uxbox.icons :as icons]
-            [uxbox.geometry :as geo]
-            [cljs.reader :as reader]))
+  (:require
+   rum
+   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
+   [uxbox.shapes.core :refer [Shape generate-transformation actions-menu fill-menu new-group]]
+   [uxbox.pubsub :as pubsub]
+   [uxbox.icons :as icons]
+   [uxbox.geometry :as geo]
+   [cljs.reader :as reader]))
 
 (def path-menu {:name "Size and position"
                 :icon icons/infocard
                 :key :options
-                :options [{:name "Position" :inputs [{:name "X" :type :number :shape-key :x :value-filter int}
-                                                     {:name "Y" :type :number :shape-key :y :value-filter int}]}
-                          {:name "Size" :inputs [{:name "Width" :type :number :shape-key :width :value-filter int}
-                                                 {:name "lock" :type :lock}
-                                                 {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
+                :options [{:name "Position"
+                           :inputs [{:name "X" :type :number :shape-key :x :value-filter int}
+                                    {:name "Y" :type :number :shape-key :y :value-filter int}]}
+                          {:name "Size"
+                           :inputs [{:name "Width" :type :number :shape-key :width :value-filter int}
+                                    {:name "lock" :type :lock}
+                                    {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
+
+(rum/defc drawing-pathc < rum/reactive
+  [x y]
+  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)
+        [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouse-x mouse-y)]
+    (when (and (> rect-width 0) (> rect-height 0))
+      [:rect
+       {:x rect-x
+        :y rect-y
+        :width rect-width
+        :height rect-height
+        :style #js {:fill "transparent"
+                    :stroke "gray"
+                    :strokeDasharray "5,5"}}])))
 
 (defrecord Path [path icowidth icoheight x y width height fill fill-opacity rotate]
   Shape
@@ -57,16 +76,7 @@
       [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
   (shape->drawing-svg [{:keys [x y]}]
-    (let [coordinates (atom [[x y]])
-          viewport-move (fn [state coord]
-                          (reset! coordinates coord))]
-      (pubsub/register-event :viewport-mouse-move viewport-move)
-      (fn []
-        (let [[mouseX mouseY] @coordinates
-              [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouseX mouseY)]
-          (if (and (> rect-width 0) (> rect-height 0))
-            [:rect {:x rect-x :y rect-y :width rect-width :height rect-height
-                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}])))))
+    (drawing-pathc x y))
 
   (move-delta [{:keys [x y] :as shape} delta-x delta-y]
     (-> shape
