@@ -7,7 +7,9 @@
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
-              [uxbox.user.views :refer [login]]
+              [uxbox.user.views :refer [login
+                                        register
+                                        recover-password]]
               [uxbox.icons-sets.core]
               [hodgepodge.core :refer [local-storage]]))
 
@@ -17,10 +19,15 @@
   [db location]
   (let [[page params] @location]
     (case page
+      ;; User
+      :login (login)
+      :register (register)
+      :recover-password (recover-password)
+      ;; Home
       :dashboard [:div
                   (dashboard db)
                   (lightbox db)]
-      :login (login db)
+      ;; Workspace
       :workspace (workspace db))))
 
 (defn render!

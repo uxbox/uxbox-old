@@ -42,9 +42,6 @@
                     ;; Header
                     :user-menu-open? false
 
-                    ;; Forms
-                    :user-form :login
-
                     ;; Lightbox
                     :lightbox nil
 
