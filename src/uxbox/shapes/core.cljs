@@ -30,7 +30,7 @@
 (defn generate-transformation
   [{:keys [rotate center]}]
   (let [x (:x center) y (:y center)]
-    (str "translate( " x " " y ") rotate(" rotate ") translate( -" x " -" y ")")))
+    (str "translate( " x "," y ") rotate(" rotate ") translate( -" x ", -" y ")")))
 
 (defn new-group [name order shape-uuid]
   {:name name
