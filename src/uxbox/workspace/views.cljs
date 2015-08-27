@@ -68,54 +68,53 @@
        icons/organize]]]
    (user (:user @db))])
 
-(rum/defc icons-sets
-  [db]
-  (let [{:keys [workspace current-icons-set components]} @db]
-   [:div#form-figures.tool-window
-     [:div.tool-window-bar
-      [:div.tool-window-icon
-       icons/window]
-      [:span "Figures"]
-      [:div.tool-window-close
-       {:on-click #(actions/close-setting-box :icons-sets)}
-       icons/close]]
-     [:div.tool-window-content
-      [:div.figures-catalog
-       [:select.input-select.small
-        {:on-change #(actions/set-icons-set (keyword (.-value (.-target %))))}
-        (for [[icons-set-key icons-set] (seq (:icons-sets components))]
-          [:option
-           {:key icons-set-key
-            :value icons-set-key}
-           (:name icons-set)])]]
-      (for [[icon-key icon] (seq (get-in components [:icons-sets current-icons-set :icons]))]
-        [:div.figure-btn
-         {:key icon-key
-          :class (when (= (:selected-tool workspace)
-                          [:icon current-icons-set icon-key])
-                   "selected")
-          :on-click #(actions/set-tool [:icon current-icons-set icon-key])}
-          [:svg (:svg icon)]])]]))
+(rum/defc icons-sets < rum/cursored
+  [selected-tool current-icons-set components]
+  [:div#form-figures.tool-window
+   [:div.tool-window-bar
+    [:div.tool-window-icon
+     icons/window]
+    [:span "Figures"]
+    [:div.tool-window-close
+     {:on-click #(actions/close-setting-box :icons-sets)}
+     icons/close]]
+   [:div.tool-window-content
+    [:div.figures-catalog
+     [:select.input-select.small
+      {:on-change #(actions/set-icons-set (keyword (.-value (.-target %))))}
+      (for [[icons-set-key icons-set] (seq (:icons-sets @components))]
+        [:option
+         {:key icons-set-key
+          :value icons-set-key}
+         (:name icons-set)])]]
+    (for [[icon-key icon] (seq (get-in @components [:icons-sets @current-icons-set :icons]))]
+      [:div.figure-btn
+       {:key icon-key
+        :class (when (= @selected-tool
+                        [:icon @current-icons-set icon-key])
+                 "selected")
+        :on-click #(actions/set-tool [:icon @current-icons-set icon-key])}
+       [:svg (:svg icon)]])]])
 
-(rum/defc components
-  [db]
-  (let [{:keys [workspace]} @db]
-    [:div#form-components.tool-window
-      [:div.tool-window-bar
-       [:div.tool-window-icon
-        icons/window]
-       [:span "Components"]
-       [:div.tool-window-close
-        {:on-click #(actions/close-setting-box :components)}
-        icons/close]]
-     [:div.tool-window-content
-      (for [tool (sort :order (vals (get-in @db [:components :components])))]
-        [:div.tool-btn.tooltip.tooltip-hover
-         {:alt (:text tool)
-          :class (when (= (:selected-tool workspace) (:key tool))
-                   "selected")
-          :key (:key tool)
-          :on-click #(actions/set-tool (:key tool))} (:icon tool)])]]))
+(rum/defc components < rum/cursored
+  [selected-tool comps]
+  [:div#form-components.tool-window
+    [:div.tool-window-bar
+     [:div.tool-window-icon
+      icons/window]
+     [:span "Components"]
+     [:div.tool-window-close
+      {:on-click #(actions/close-setting-box :components)}
+      icons/close]]
+   [:div.tool-window-content
+    (for [tool (sort :order (vals (:components @comps)))]
+      [:div.tool-btn.tooltip.tooltip-hover
+       {:alt (:text tool)
+        :class (when (= @selected-tool
+                        (:key tool))
+                 "selected")
+        :key (:key tool)
+        :on-click #(actions/set-tool (:key tool))} (:icon tool)])]])
 
 ;; FIXME: should start with `:options` always
 (rum/defcs element-options < (rum/local :options)
@@ -171,54 +170,54 @@
                   {:key (str (:key menu) "-" (:name option) "-lock")}
                   icons/lock]))]])]])]))
 
-(rum/defc tools
-  [db]
-  (let [{:keys [workspace]} @db]
-   [:div#form-tools.tool-window
-     [:div.tool-window-bar
-      [:div.tool-window-icon
-       icons/window]
-      [:span "Tools"]
-      [:div.tool-window-close {:on-click #(actions/close-setting-box :tools)}
-       icons/close]]
-     [:div.tool-window-content
-      (for [tool (sort :order (vals (get-in @db [:components :tools])))]
-        [:div.tool-btn.tooltip.tooltip-hover
-         {:alt (:text tool)
-          :class (when (= (:selected-tool workspace) (:key tool))
-                   "selected")
-          :key (:key tool)
-          :on-click #(actions/set-tool (:key tool))}
-         (:icon tool)])]]))
+(rum/defc tools < rum/cursored
+  [selected-tool available-tools]
+  [:div#form-tools.tool-window
+    [:div.tool-window-bar
+     [:div.tool-window-icon
+      icons/window]
+     [:span "Tools"]
+     [:div.tool-window-close
+      {:on-click #(actions/close-setting-box :tools)}
+      icons/close]]
+    [:div.tool-window-content
+     (for [tool (sort :order (vals @available-tools))]
+       [:div.tool-btn.tooltip.tooltip-hover
+        {:alt (:text tool)
+         :class (when (= @selected-tool (:key tool))
+                  "selected")
+         :key (:key tool)
+         :on-click #(actions/set-tool (:key tool))}
+        (:icon tool)])]])
 
-(rum/defc layers
-  [db]
-  (let [{:keys [page workspace groups]} @db]
-   [:div#layers.tool-window
-     [:div.tool-window-bar
-      [:div.tool-window-icon
-       icons/layers]
-      [:span "Elements"]
-      [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
-       icons/close]]
-     [:div.tool-window-content
-      [:ul.element-list
-       (for [[group-id group] (sort-by #(:order (second %)) (seq groups))]
-           [:li {:key group-id
-                 :class (if (contains? (:selected-groups workspace) group-id) "selected" "")}
-            [:div.toggle-element {:class (if (:visible group) "selected" "")
-                                  :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
-            [:div.block-element {:class (if (:locked group) "selected" "")
-                                 :on-click #(actions/toggle-group-lock group-id)} icons/lock]
-            [:div.element-icon
-             (cond
-              (= (:icon group) :square) icons/box
-              (= (:icon group) :circle) icons/circle
-              (= (:icon group) :line) icons/line
-              (= (:icon group) :text) icons/text
-              (= (:icon group) :arrow) icons/arrow
-              (= (:icon group) :curve) icons/curve)]
-            [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])]]]))
+(rum/defc layers < rum/cursored
+  [groups selected-groups]
+  [:div#layers.tool-window
+    [:div.tool-window-bar
+     [:div.tool-window-icon
+      icons/layers]
+     [:span "Elements"]
+     [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
+      icons/close]]
+    [:div.tool-window-content
+     [:ul.element-list
+      (for [[group-id group] (sort-by #(:order (second %)) @groups)]
+          [:li {:key group-id
+                :class (when (contains? @selected-groups group-id)
+                         "selected")}
+           [:div.toggle-element {:class (if (:visible group) "selected" "")
+                                 :on-click #(actions/toggle-group-visibility group-id)} icons/eye]
+           [:div.block-element {:class (if (:locked group) "selected" "")
+                                :on-click #(actions/toggle-group-lock group-id)} icons/lock]
+           [:div.element-icon
+            (cond
+             (= (:icon group) :square) icons/box
+             (= (:icon group) :circle) icons/circle
+             (= (:icon group) :line) icons/line
+             (= (:icon group) :text) icons/text
+             (= (:icon group) :arrow) icons/arrow
+             (= (:icon group) :curve) icons/curve)]
+           [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])]]])
 
 (rum/defc toolbar < rum/static
   [open-setting-boxes]
@@ -329,19 +328,29 @@
       (project-pages db pages)
       (new-page db project)]]))
 
-(rum/defc settings
+(rum/defc aside
   [db]
   (let [open-setting-boxes (:open-setting-boxes @db)]
-    [:aside#settings-bar.settings-bar
-     [:div.settings-bar-inside
-      (when (:tools open-setting-boxes)
-        (tools db))
-      (when (:icons open-setting-boxes)
-        (icons-sets db))
-      (when (:components open-setting-boxes)
-        (components db))
-      (when (:layers open-setting-boxes)
-        (layers db))]]))
+    (when (not (empty? open-setting-boxes))
+      (let [components-cursor (rum/cursor db [:components])
+            component-tools (rum/cursor components-cursor [:tools])
+            current-icons-set (rum/cursor db [:current-icons-set])
+
+            workspace (rum/cursor db [:workspace])
+            selected-tool (rum/cursor workspace [:selected-tool])
+            selected-groups (rum/cursor workspace [:selected-groups])
+
+            groups (rum/cursor db [:groups])]
+        [:aside#settings-bar.settings-bar
+         [:div.settings-bar-inside
+          (when (:tools open-setting-boxes)
+            (tools selected-tool component-tools))
+          (when (:icons open-setting-boxes)
+            (icons-sets selected-tool current-icons-set components-cursor))
+          (when (:components open-setting-boxes)
+            (components selected-tool components-cursor))
+          (when (:layers open-setting-boxes)
+            (layers groups selected-groups))]]))))
 
 (rum/defc vertical-rule < rum/static
   [top height start-height zoom]
@@ -470,7 +479,10 @@
 (rum/defc workspace
   [db]
   (let [zoom (get-in @db [:workspace :zoom])
-        open-setting-boxes (:open-setting-boxes @db)]
+        open-setting-boxes (:open-setting-boxes @db)
+        workspace (:workspace @db)
+        components (:components @db)
+        tools (:tools @db)]
     [:div
      (header db)
      [:main.main-content
@@ -484,5 +496,5 @@
        (vertical-rule (get-in @db [:scroll :top]) 3000 50 zoom)
        ;; Working area
        (working-area db)
-      (if (not (empty? open-setting-boxes))
-       (settings db))]]]))
+       ;; Aside
+       (aside db)]]]))

@@ -8,6 +8,7 @@
                  [org.clojure/clojurescript "1.7.48"]
                  ;; Rendering
                  [rum "0.3.0"]
+                 [cljsjs/react-with-addons "0.13.3-0"]
                  ;; Compositional Event Streams
                  [jamesmacaulay/zelkova "0.4.0"]
                  ;; Datetime
