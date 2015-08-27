@@ -70,18 +70,10 @@
 
 (pubsub/register-event
   :viewport-mouse-click
-  (fn [state]
-    (let [coords (:mouse-position state)]
-      (if (get-in state [:workspace :selected-tool])
-        (drawing-shape coords)
-        (select-shape coords)))))
-
-(pubsub/register-transition
- :viewport-mouse-drag
- (fn [state _]
-   (if (get-in state [:page :selected])
-     state
-     state)))
+  (fn [state coords]
+    (if (get-in state [:workspace :selected-tool])
+      (drawing-shape coords)
+      (select-shape coords))))
 
 (defn remove-element [groups-entry element-uuid]
   (let [in? (fn [seq elm] (some #(= elm %) seq))
