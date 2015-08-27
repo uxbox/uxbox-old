@@ -9,23 +9,25 @@
             [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
             [uxbox.time :refer [ago]]))
 
-(defn header
-  [db]
+(rum/defc header < rum/cursored
+  [user-cursor]
   [:header#main-bar.main-bar
    [:div.main-logo
     (link "/" logo)]
-   (user db)])
+   (user @user-cursor)])
 
 (rum/defc project-count < rum/static
   [n]
   [:span.dashboard-projects n " projects"])
 
-(rum/defc dashboard-info
-  [db]
-  (let [projects (vals (:projects-list @db))
-        sort-order (:project-sort-order @db)
-        orderings (:project-orderings @db)
-        name->order (into {} (for [[k v] orderings] [v k]))
+
+(defn reverse-associative
+  [m]
+  (into (empty m) (for [[k v] m] [v k])))
+
+(rum/defc dashboard-info < rum/static
+  [projects sort-order orderings]
+  (let [name->order (reverse-associative orderings)
         sort-name (get orderings sort-order)]
     [:div.dashboard-info
      (project-count (count projects))
@@ -37,10 +39,27 @@
             :let [name (get orderings order)]]
         [:option {:key name} name])]]))
 
-(rum/defc dashboard-bar
-  [db]
+(rum/defc project-sort-selector < rum/static
+  [sort-order orderings]
+  (let [sort-name (get orderings sort-order)
+        name->order (reverse-associative orderings)]
+    [:select.input-select
+     {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))
+      :value sort-name}
+     (for [order (keys orderings)
+           :let [name (get orderings order)]]
+       [:option {:key name} name])]))
+
+(rum/defc dashboard-bar < rum/cursored
+  [projects-cursor
+   sort-order-cursor
+   orderings-cursor]
   [:section#dashboard-bar.dashboard-bar
-    (dashboard-info db)
+    [:div.dashboard-info
+     (project-count (count @projects-cursor))
+     [:span "Sort by"]
+     (project-sort-selector @sort-order-cursor
+                            @orderings-cursor)]
     [:div.dashboard-search
      icons/search]])
 
@@ -75,22 +94,23 @@
       project-cards
       (reverse project-cards))))
 
-(rum/defc dashboard-grid
-  [db]
+(rum/defc dashboard-grid < rum/cursored
+  [projects-cursor sort-order-cursor]
   [:section.dashboard-grid
     [:h2 "Your projects"]
+   [:div.dashboard-grid-content
     (vec
-     (concat
-      [:div.dashboard-grid-content
-       new-project]
-      (let [projects (vals (:projects-list @db))
-            sort-order (:project-sort-order @db)]
-        (sorted-projects projects sort-order))))])
+     (concat [:div.dashboard-grid-content new-project]
+             (sorted-projects (vals @projects-cursor)
+                              @sort-order-cursor)))]])
 
 (rum/defc dashboard [db]
   [:main.dashboard-main
-    (header db)
+    (header (rum/cursor db [:user]))
     [:section.dashboard-content
-     (dashboard-bar db)
-     (dashboard-grid db)]
+     (dashboard-bar (rum/cursor db [:projects])
+                    (rum/cursor db [:project-sort-order])
+                    (rum/cursor db [:project-orderings]))
+     (dashboard-grid (rum/cursor db [:projects])
+                     (rum/cursor db [:project-sort-order]))]
     (activity-timeline db)])

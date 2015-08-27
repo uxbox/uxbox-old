@@ -20,7 +20,7 @@
                       :notebook {:name "Notebook" :width 1366 :height 768}
                       :desktop {:name "Desktop" :width 1920 :height 1080}
                     }
-                    :projects-list {}
+                    :projects {}
                     :new-project-defaults {
                       :name ""
                       :width 1920

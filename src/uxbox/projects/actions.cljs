@@ -34,7 +34,7 @@
 (pubsub/register-transition
  :delete-project
  (fn [state uuid]
-   (update state :projects-list #(dissoc % uuid))))
+   (update state :projects #(dissoc % uuid))))
 
 (pubsub/register-transition
  :create-project
@@ -46,7 +46,7 @@
                    :datetime now
                    :event {:type :create-project :text "Create new project"}}]
      (-> state
-       (update :projects-list assoc (:uuid project) project)
+       (update :projects assoc (:uuid project) project)
        (update :activity #(into [activity] %))))))
 
 (pubsub/register-transition
