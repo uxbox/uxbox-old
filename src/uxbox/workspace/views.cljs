@@ -66,7 +66,7 @@
       [:li.tooltip.tooltip-bottom
        {:alt "Organize (Ctrl + O)"}
        icons/organize]]]
-   (user db)])
+   (user (:user @db))])
 
 (rum/defc icons-sets
   [db]
