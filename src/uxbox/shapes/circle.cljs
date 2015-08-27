@@ -1,10 +1,15 @@
 (ns uxbox.shapes.circle
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
-            [uxbox.pubsub :as pubsub]
-            [uxbox.icons :as icons]
-            [uxbox.geometry :as geo]
-            [uxbox.icons :as icons]
-            [cljs.reader :as reader]))
+  (:require
+   rum
+   [jamesmacaulay.zelkova.signal :as z]
+   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
+   [uxbox.mouse :as mouse]
+   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
+   [uxbox.pubsub :as pubsub]
+   [uxbox.icons :as icons]
+   [uxbox.geometry :as geo]
+   [uxbox.icons :as icons]
+   [cljs.reader :as reader]))
 
 (def circle-menu {:name "Size and position"
                   :icon icons/infocard
@@ -14,6 +19,25 @@
                                       {:name "Y" :type :number :shape-key :cy :value-filter int}]}
                             {:name "Radius"
                              :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
+
+
+(rum/defc drawing-circlec < rum/reactive
+  [cx cy]
+  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)
+         r (geo/distance cx cy mouse-x mouse-y)
+         r (if (js/isNaN r) 0 r)
+         dx (- (geo/distance cx cy cx 0) r)
+         dy (- (geo/distance cx cy 0 cy) r)
+         r (if (or (< dx 0)
+                   (< dy 0))
+             (- r (Math/abs (min dx dy)))
+             r)]
+    [:circle {:cx cx
+              :cy cy
+              :r r
+              :style #js {:fill "transparent"
+                          :stroke "gray"
+                          :strokeDasharray "5,5"}}]))
 
 (defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]
   Shape
@@ -56,20 +80,8 @@
       [:rect {:x (+ cx r) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
       [:rect {:x (- cx r 8) :y (+ cy r) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
-  (shape->drawing-svg [{:keys [cx cy r]}]
-    (let [coordinates (atom [[cx cy]])
-          viewport-move (fn [state coord]
-                          (reset! coordinates coord))]
-      (pubsub/register-event :viewport-mouse-move viewport-move)
-      (fn []
-        (let [[mouseX mouseY] @coordinates
-              r (geo/distance cx cy mouseX mouseY)
-              r (if (js/isNaN r) 0 r)
-              dx (- (geo/distance cx cy cx 0) r)
-              dy (- (geo/distance cx cy 0 cy) r)
-              r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)]
-          [:circle {:cx cx :cy cy :r r
-                    :style #js {:fill "transparent" :stroke "gray" :strokeDasharray "5,5"}}]))))
+  (shape->drawing-svg [{:keys [cx cy]}]
+    (drawing-circlec cx cy))
 
   (move-delta [{:keys [cx cy] :as shape} delta-x delta-y]
     (-> shape

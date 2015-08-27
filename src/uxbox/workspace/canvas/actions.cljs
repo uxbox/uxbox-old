@@ -148,7 +148,8 @@
            [old-x old-y] @last-event
            selected-uuid (get-in state [:page :selected])]
        (reset! last-event [x y])
-       (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
+       (if (and selected-uuid
+                (get-in state [:shapes selected-uuid :dragging]))
          (let [deltax (- x old-x)
                deltay (- y old-y)
                selected-uuid (get-in state [:page :selected])]

@@ -11,7 +11,7 @@
     [rect-x rect-y rect-width rect-height]))
 
 (defn client-coords->canvas-coords
-  [client-x client-y]
+  [[client-x client-y]]
   (if-let [canvas-element (.getElementById js/document "page-canvas")]
     (let [bounding-rect (.getBoundingClientRect canvas-element)
           offset-x (.-left bounding-rect)

@@ -1,18 +1,35 @@
 (ns uxbox.shapes.line
-  (:require [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
-            [uxbox.pubsub :as pubsub]
-            [uxbox.icons :as icons]
-            [uxbox.geometry :as geo]
-            [uxbox.icons :as icons]
-            [cljs.reader :as reader]))
+  (:require
+   rum
+   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
+   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
+   [uxbox.pubsub :as pubsub]
+   [uxbox.icons :as icons]
+   [uxbox.geometry :as geo]
+   [uxbox.icons :as icons]
+   [cljs.reader :as reader]))
 
 (def line-menu {:name "Position"
                 :icon icons/infocard
                 :key :options
-                :options [{:name "Start" :inputs [{:name "X" :type :number :shape-key :x1 :value-filter int}
-                                                  {:name "Y" :type :number :shape-key :y1 :value-filter int}]}
-                          {:name "End" :inputs [{:name "X" :type :number :shape-key :x2 :value-filter int}
-                                                {:name "Y" :type :number :shape-key :y2 :value-filter int}]}]})
+                :options [{:name "Start"
+                           :inputs [{:name "X" :type :number :shape-key :x1 :value-filter int}
+                                    {:name "Y" :type :number :shape-key :y1 :value-filter int}]}
+                          {:name "End"
+                           :inputs [{:name "X" :type :number :shape-key :x2 :value-filter int}
+                                    {:name "Y" :type :number :shape-key :y2 :value-filter int}]}]})
+
+(rum/defc drawing-linec < rum/reactive
+  [x y]
+  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)]
+    [:line {:x1 x
+            :y1 y
+            :x2 mouse-x
+            :y2 mouse-y
+            :style #js {:fill "transparent"
+                        :stroke "gray"
+                        :strokeWidth 2
+                        :strokeDasharray "5,5"}}]))
 
 (defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]
   Shape
@@ -71,15 +88,7 @@
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
-    (let [coordinates1 (atom [x1 y1])
-          coordinates2 (atom [x2 y2])
-          viewport-move (fn [state coords]
-                          (reset! coordinates2 coords))]
-      (pubsub/register-event :viewport-mouse-move viewport-move)
-      (fn []
-        (let [[mouseX mouseY] @coordinates2]
-          [:line {:x1 x1 :y1 y1 :x2 mouseX :y2 mouseY
-                  :style #js {:fill "transparent" :stroke "gray" :strokeWidth 2 :strokeDasharray "5,5"}}]))))
+    (drawing-linec x1 y1))
 
   (move-delta
     [{:keys [x1 y1 x2 y2] :as shape} delta-x delta-y]

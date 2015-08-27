@@ -1,7 +1,7 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
               [uxbox.db :as db]
-              [uxbox.navigation :refer [start-history! location]]
+              [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
@@ -30,17 +30,13 @@
       ;; Workspace
       :workspace (workspace db))))
 
-(defn render!
-  [app-state element]
-  (rum/mount (ui app-state location) element))
-
 (def $el (.getElementById js/document "app"))
 
 (defn start!
-  [app-state]
+  [app-state location]
   (start-storage! local-storage)
   (start-history!)
   (start-keyboard!)
-  (render! app-state $el))
+  (rum/mount (ui app-state location) $el))
 
-(start! db/app-state)
+(start! db/app-state nav/location)

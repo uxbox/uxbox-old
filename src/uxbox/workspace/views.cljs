@@ -6,7 +6,7 @@
             [uxbox.navigation :refer [link workspace-page-route navigate!]]
             [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
-            [uxbox.workspace.canvas.views :refer [canvas]]
+            [uxbox.workspace.canvas.views :refer [canvas grid debug-coordinates]]
             [uxbox.geometry :as geo]
             [uxbox.shapes.core :as shapes]
             [uxbox.pubsub :as pubsub]))
@@ -134,7 +134,7 @@
      [:ul.element-icons
       (for [menu (shapes/menu-info selected-shape)]
         [:li#e-info
-         {:on-click #(reset! show-element (:key menu))
+         {:on-click #(do (.stopPropagation %) (reset! show-element (:key menu)))
           :key (str "menu-" (:key menu))
           :class (when (= show-element-value (:key menu))
                    "selected")}
@@ -405,28 +405,84 @@
                :fill "#bab7b7"}]
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
 
+(def viewport-height  3000)
+(def viewport-width 3000)
+
+(def document-start-x 50)
+(def document-start-y 50)
+
+(defn on-event [event-type]
+  (fn [e]
+    (let [coords (geo/client-coords->canvas-coords [(.-clientX e) (.-clientY e)])]
+      (pubsub/publish! [event-type coords])
+      (.preventDefault e))))
+
+(defn on-wheel-event [event-type]
+  (fn [e]
+    (when (.-altKey e)
+      (do (if (> (.-deltaY e) 0)
+            (pubsub/publish! [event-type 5])
+            (pubsub/publish! [event-type -5]))
+          (.preventDefault e)))))
+
+(rum/defc viewport < rum/cursored
+  [page groups shapes zoom grid?]
+  [:svg#viewport
+   {:width viewport-height
+    :height viewport-width}
+   [:g.zoom
+    {:transform (str "scale(" zoom " " zoom ")")}
+    (canvas @page
+            @groups
+            @shapes
+            {:viewport-height viewport-height
+             :viewport-width viewport-width
+             :document-start-x document-start-x
+             :document-start-y document-start-y})
+    (when grid?
+      (grid viewport-width
+            viewport-height
+            document-start-x
+            document-start-y
+            zoom))]])
+
+(rum/defc working-area
+  [db]
+  (let [zoom (get-in @db [:workspace :zoom])]
+    [:div
+     {:on-mouse-move (on-event :viewport-mouse-move)
+      :on-click (on-event :viewport-mouse-click)
+      :on-mouse-down (on-event :viewport-mouse-down)
+      :on-mouse-up (on-event :viewport-mouse-up)
+      :on-wheel (on-wheel-event :zoom-wheel)}
+     [:section.workspace-canvas
+      {:class (when (empty? (:open-setting-boxes @db))
+                "no-tool-bar")}
+      (when (get-in @db [:page :selected])
+        (element-options db))
+      (debug-coordinates)
+      (viewport (rum/cursor db [:page])
+                (rum/cursor db [:groups])
+                (rum/cursor db [:shapes])
+                zoom
+                (get-in @db [:workspace :grid?]))]]))
+
 (rum/defc workspace
   [db]
   (let [zoom (get-in @db [:workspace :zoom])
-        open-setting-boxes (:open-setting-boxes @db)
-        on-event (fn [event-type]
-         (fn [e]
-           (pubsub/publish! [event-type {:top (.-scrollTop (.-target e)) :left (.-scrollLeft (.-target e))}])
-           (.preventDefault e)))]
+        open-setting-boxes (:open-setting-boxes @db)]
     [:div
      (header db)
      [:main.main-content
       [:section.workspace-content
+       ;; Toolbar
        (toolbar open-setting-boxes)
+       ;; Project bar
        (project-bar db)
+       ;; Rules
        (horizontal-rule (get-in @db [:scroll :left]) 3000 50 zoom)
        (vertical-rule (get-in @db [:scroll :top]) 3000 50 zoom)
-       [:section.workspace-canvas
-        {:class (when (empty? (:open-setting-boxes @db))
-                  "no-tool-bar")
-         :on-scroll (on-event :viewport-scroll)}
-        (when (get-in @db [:page :selected])
-          (element-options db))
-        (canvas db)]
+       ;; Working area
+       (working-area db)
       (if (not (empty? open-setting-boxes))
        (settings db))]]]))
