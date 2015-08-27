@@ -21,7 +21,7 @@
 
 (def ^{:doc "A signal of client mouse coordinates as `[x y]` vectors. Initial value is `[0 0]`."}
   client-position
-  (z/input [0 0] ::client-position client-position-channel))
+  (z/drop-repeats (z/input [0 0] ::client-position client-position-channel)))
 
 (def delta
   (->> (z/reductions (fn [[_ old] new]
