@@ -220,32 +220,32 @@
               (= (:icon group) :curve) icons/curve)]
             [:span {:on-click #(actions/toggle-select-group group-id)} (:name group)]])]]]))
 
-(rum/defc toolbar
-  [db]
+(rum/defc toolbar < rum/static
+  [open-setting-boxes]
   [:div#tool-bar.tool-bar
     [:div.tool-bar-inside
      [:ul.main-tools
       [:li.tooltip
        {:alt "Shapes (Ctrl + Shift + F)"
-        :class (when (:tools (:open-setting-boxes @db))
+        :class (when (:tools open-setting-boxes)
                  "current")
         :on-click #(actions/toggle-setting-box :tools)}
        icons/shapes]
       [:li.tooltip
        {:alt "Components (Ctrl + Shift + C)"
-        :class (when (:components (:open-setting-boxes @db))
+        :class (when (:components open-setting-boxes)
                  "current")
         :on-click #(actions/toggle-setting-box :components)}
        icons/puzzle]
       [:li.tooltip
        {:alt "Icons (Ctrl + Shift + I)"
-        :class (when (:icons (:open-setting-boxes @db))
+        :class (when (:icons open-setting-boxes)
                  "current")
         :on-click #(actions/toggle-setting-box :icons)}
        icons/icon-set]
       [:li.tooltip
        {:alt "Elements (Ctrl + Shift + L)"
-        :class (when (:layers (:open-setting-boxes @db))
+        :class (when (:layers open-setting-boxes)
                  "current")
         :on-click #(actions/toggle-setting-box :layers)}
        icons/layers]
@@ -408,6 +408,7 @@
 (rum/defc workspace
   [db]
   (let [zoom (get-in @db [:workspace :zoom])
+        open-setting-boxes (:open-setting-boxes @db)
         on-event (fn [event-type]
          (fn [e]
            (pubsub/publish! [event-type {:top (.-scrollTop (.-target e)) :left (.-scrollLeft (.-target e))}])
@@ -416,7 +417,7 @@
      (header db)
      [:main.main-content
       [:section.workspace-content
-       (toolbar db)
+       (toolbar open-setting-boxes)
        (project-bar db)
        (horizontal-rule (get-in @db [:scroll :left]) 3000 50 zoom)
        (vertical-rule (get-in @db [:scroll :top]) 3000 50 zoom)
@@ -427,5 +428,5 @@
         (when (get-in @db [:page :selected])
           (element-options db))
         (canvas db)]
-      (if (not (empty? (:open-setting-boxes @db)))
+      (if (not (empty? open-setting-boxes))
        (settings db))]]]))
