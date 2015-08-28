@@ -39,11 +39,12 @@
   (get @shapes-view shape-uuid))
 
 (defn create-project [project]
-    (insert-event {:type :create-project :data project}))
+  (insert-event {:type :create-project :data project}))
 
 (defn create-page
-    [page]
-    (insert-event {:type :create-page :data page}))
+  [page]
+  (insert-event {:type :create-page
+                 :data page}))
 
 (defn change-page-title
   [project-uuid page title]

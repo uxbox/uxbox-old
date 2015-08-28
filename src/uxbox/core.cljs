@@ -1,6 +1,9 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
+              [datascript :as d]
               [uxbox.db :as db]
+              [uxbox.data.db :refer [conn]]
+              [uxbox.data.projects :as proj]
               [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.storage.core :refer [start-storage!]]

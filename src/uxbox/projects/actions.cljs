@@ -36,6 +36,24 @@
  (fn [state uuid]
    (update state :projects #(dissoc % uuid))))
 
+;; TODO: writes
+;; - create project
+;; - delete project
+
+;; - create page
+;; - change page title
+;; - delete page
+
+;; TODO: is this only related to UI? seems like local state
+;; - create group
+;; - toggle-group-visibility
+;; - toggle group-lock
+;; - delete group
+
+;; - create comment
+;; - delete comment
+
+
 (pubsub/register-transition
  :create-project
  (fn [state project]
@@ -45,7 +63,8 @@
                    :project {:uuid (:uuid project)
                              :name (:name project)}
                    :datetime now
-                   :event {:type :create-project :text "Create new project"}}]
+                   :event {:type :create-project
+                           :text "Create new project"}}]
      (-> state
        (update :projects assoc (:uuid project) project)
        (update :activity #(into [activity] %))))))

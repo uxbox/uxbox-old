@@ -6,6 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.48"]
+                 ;; String
+                 [funcool/cuerdas "0.5.0"]
                  ;; Rendering
                  [rum "0.3.0"]
                  [cljsjs/react-with-addons "0.13.3-0"]
@@ -17,10 +19,10 @@
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
                  ;; Asynchrony & Communication
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 ;; Storage and Querying
+                 [datascript "0.11.6"]
                  ;; Persistence
-                 [funcool/hodgepodge "0.1.4"]
-                 ;; String
-                 [funcool/cuerdas "0.5.0"]]
+                 [funcool/hodgepodge "0.1.4"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-figwheel "0.3.3"]

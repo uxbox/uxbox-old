@@ -16,17 +16,19 @@
   [coordinates]
   (pubsub/publish! [:select-shape coordinates]))
 
+
+
 (pubsub/register-transition
  :select-shape
  (fn [state [x y]]
-   (let [selected-uuid
+   (let [selected-uuid ;; find the uuid of selected shape by intersection
          (->> state
               :page :root
               (filter #(not (nil? (get-in state [:shapes %]))))
               (filter #(get-in state [:shapes % :visible]))
               (filter #(shapes/intersect (get-in state [:shapes %]) x y))
               first)]
-     (assoc-in state [:page :selected] selected-uuid)) ))
+     (assoc-in state [:page :selected] selected-uuid))))
 
 (pubsub/register-transition
   :drawing-shape
