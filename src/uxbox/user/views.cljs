@@ -8,7 +8,6 @@
   [open?]
   [:ul.dropdown {:class (when-not open?
                           "hide")}
-      ;; FIXME: keys
       [:li
        icons/page
        [:span "Page settings"]]

@@ -117,7 +117,7 @@
         :key (:key tool)
         :on-click #(actions/set-tool (:key tool))} (:icon tool)])]])
 
-;; FIXME: should start with `:options` always
+
 (rum/defcs element-options < (rum/local :options) rum/cursored
   [state page project zoom shapes]
   (let [show-element (:rum/local state)
