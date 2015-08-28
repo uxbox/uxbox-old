@@ -113,4 +113,4 @@
                     (rum/cursor db [:project-orderings]))
      (dashboard-grid (rum/cursor db [:projects])
                      (rum/cursor db [:project-sort-order]))]
-    (activity-timeline db)])
+    (activity-timeline (rum/cursor db [:activity]))])

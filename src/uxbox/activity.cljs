@@ -50,18 +50,14 @@
        (take 15)
        (group-by activity-date)))
 
-(rum/defc activities < rum/static
+(rum/defc activity-timeline < rum/cursored
   [activities]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
     [:h4 "ACTIVITY"]
-     (for [[date items] (activities-by-date activities)]
+     (for [[date items] (activities-by-date @activities)]
        (concat
         [[:span.date-ribbon
           {:key date}
           (.calendar (js/moment. date))]]
         (map activity-item items)))]])
-
-(rum/defc activity-timeline
-  [db]
-  (activities (:activity @db)))
