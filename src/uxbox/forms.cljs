@@ -1,9 +1,11 @@
 (ns uxbox.forms
-  (:require [uxbox.projects.actions :refer [create-project]]
-            [uxbox.icons :as icons]
-            [uxbox.pubsub :as pubsub]
-            [goog.events :as events]
-            [cuerdas.core :refer [trim]])
+  (:require
+   rum
+   [uxbox.projects.actions :refer [create-project]]
+   [uxbox.icons :as icons]
+   [uxbox.pubsub :as pubsub]
+   [cuerdas.core :refer [trim]]
+   [goog.events :as events])
   (:import goog.events.EventType))
 
 (defn close-lightbox
@@ -45,6 +47,7 @@
     [
       [tag
        {:type "radio"
+        :key name
         :name "project-layout"
         :value name
         :checked (= layout (get-in @db [:new-project :layout]))
@@ -54,7 +57,24 @@
          :for id}
          human-name]]))
 
-(defn lightbox*
+(defn dismiss-lightbox-on-esc
+  [e]
+  (when (= (.-keyCode e) 27)
+    (close-lightbox)))
+
+(def dismiss-on-esc
+ {:did-mount (fn [state]
+               (events/listen js/document
+                              EventType.KEYUP
+                              dismiss-lightbox-on-esc)
+               state)
+  :wil-unmount (fn [state]
+                 (events/unlisten js/document
+                                  EventType.KEYUP
+                                  dismiss-lightbox-on-esc)
+                 state)})
+
+(rum/defc lightbox < dismiss-on-esc
   [db]
   (let [tag (if (:lightbox @db) ;; TODO: select lightbox form depending on this value
               :div.lightbox
@@ -107,17 +127,3 @@
          {:href "#"
           :on-click #(close-lightbox)}
          icons/close]]]))
-
-(defn dismiss-lightbox
-  [e]
-  (when (= (.-keyCode e) 27)
-    (close-lightbox)))
-
-;; NOTE: alter-meta! does not work on vars http://dev.clojure.org/jira/browse/CLJS-1248
-(def lightbox
-  (with-meta lightbox* {:component-did-mount #(events/listen js/document
-                                                             EventType.KEYUP
-                                                             dismiss-lightbox)
-                        :component-will-unmount #(events/unlisten js/document
-                                                                  EventType.KEYUP
-                                                                  dismiss-lightbox)}))

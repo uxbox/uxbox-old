@@ -1,18 +1,13 @@
 (ns uxbox.user.views
-  (:require [uxbox.icons :refer [logo]]
+  (:require rum
+            [uxbox.icons :refer [logo]]
             [uxbox.icons :as icons]
-            [uxbox.navigation :refer [link navigate! dashboard-route]]))
+            [uxbox.navigation :as nav :refer [link navigate!]]))
 
-(defn user
-  [db]
-  (let [usr (:user @db)]
-    [:div.user-zone {:on-mouse-enter #(swap! db assoc :user-menu-open? true)
-                     :on-mouse-leave #(swap! db assoc :user-menu-open? false)}
-     [:span (:fullname usr)]
-     [:img {:border "0"
-            :src (:avatar usr)}]
-     [:ul.dropdown {:class (when-not (:user-menu-open? @db)
-                             "hide")}
+(rum/defc user-menu < rum/static
+  [open?]
+  [:ul.dropdown {:class (when-not open?
+                          "hide")}
       [:li
        icons/page
        [:span "Page settings"]]
@@ -27,10 +22,20 @@
        [:span "Your account"]]
       [:li
        icons/exit
-       [:span "Save & Exit"]]]]))
+       [:span "Save & Exit"]]])
 
-(defn register-form
-  [db]
+(rum/defcs user < (rum/local false)
+  [state usr]
+  (let [menu-open? (:rum/local state)]
+    [:div.user-zone {:on-mouse-enter #(reset! menu-open? true)
+                     :on-mouse-leave #(reset! menu-open? false)}
+     [:span (:fullname usr)]
+     [:img {:border "0"
+            :src (:avatar usr)}]
+     (user-menu @menu-open?)]))
+
+(rum/defc register-form < rum/static
+  []
   [:div.login-content
    [:input.input-text
      {:name "name"
@@ -48,14 +53,21 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (dashboard-route))}]
+     :on-click #(navigate! (nav/dashboard-route))}]
    [:div.login-links
     [:a
-     {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))}
+     {:on-click #(navigate! (nav/login-route))}
      "You already have an account?"]]])
 
-(defn recover-form
-  [db]
+(rum/defc register < rum/static
+  []
+  [:div.login
+   [:div.login-body
+    [:a logo]
+    (register-form)]])
+
+(rum/defc recover-password-form < rum/static
+  []
   [:div.login-content
    [:input.input-text
      {:name "email"
@@ -65,17 +77,24 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (dashboard-route))}]
+     :on-click #(navigate! (nav/dashboard-route))}]
    [:div.login-links
     [:a
-     {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))}
+     {:on-click #(navigate! (nav/login-route))}
      "You have rememered your password?"]
     [:a
-     {:on-click #(swap! db (fn [current] (assoc current :login-form :register)))}
+     {:on-click #(navigate! (nav/register-route))}
      "Don't have an account?"]]])
 
-(defn login-form
-  [db]
+(rum/defc recover-password < rum/static
+  []
+  [:div.login
+    [:div.login-body
+     [:a logo]
+     (recover-password-form)]])
+
+(rum/defc login-form < rum/static
+  []
   [:div.login-content
    [:input.input-text
      {:name "email"
@@ -93,17 +112,14 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (dashboard-route))}]
+     :on-click #(navigate! (nav/dashboard-route))}]
    [:div.login-links
-    [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :recover)))} "Forgot your password?"]
-    [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :register)))} "Don't have an account?"]]])
+    [:a {:on-click #(navigate! (nav/recover-password-route))} "Forgot your password?"]
+    [:a {:on-click #(navigate! (nav/register-route))} "Don't have an account?"]]])
 
-(defn login
-  [db]
+(rum/defc login
+  []
   [:div.login
     [:div.login-body
-     [:a {:on-click #(swap! db (fn [current] (assoc current :login-form :login)))} logo]
-     (case (:login-form @db)
-       :login [login-form db]
-       :register [register-form db]
-       :recover [recover-form db])]])
+     [:a logo]
+     (login-form)]])

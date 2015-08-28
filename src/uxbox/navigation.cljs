@@ -1,34 +1,13 @@
 (ns uxbox.navigation
-  (:require [uxbox.pubsub :refer [publish! register-transition]]
-            [uxbox.storage.api :as storage]
-            [secretary.core :as s :refer-macros [defroute]]
-            [goog.events :as events])
+  (:require
+   [uxbox.pubsub :refer [publish!]]
+   [uxbox.storage.api :as storage]
+   [secretary.core :as s :refer-macros [defroute]]
+   [goog.events :as events])
   (:import [goog.history Html5History]
             goog.history.EventType))
 
-;; Routes
-
-(defn- set-location!
-  [location]
-  (publish! [:location location]))
-
-(defroute login-route "/" []
-  (set-location! [:login]))
-
-(defroute register-route "/register" []
-  (set-location! [:register]))
-
-(defroute recover-password-route "/recover-password" []
-  (set-location! [:recover-password]))
-
-(defroute dashboard-route "/dashboard" []
-  (set-location! [:dashboard]))
-
-(defroute workspace-page-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
-  (set-location! [:workspace (uuid project-uuid) (uuid page-uuid)]))
-
-(defroute workspace-route "/workspace/:project-uuid" [project-uuid]
-  (set-location! [:workspace (uuid project-uuid) (:uuid (storage/get-first-page project-uuid))]))
+(defonce location (atom [:login]))
 
 ;; History
 
@@ -40,18 +19,32 @@
   [u]
   (s/dispatch! (.-token u)))
 
-(defn start-history!
-  []
-  (events/listen history EventType.NAVIGATE dispatch-uri)
-  (.setEnabled history true)
-  (register-transition
-   :location
-   (fn [state location]
-     (assoc state :location location))))
-
 (defn navigate!
   [uri]
   (.setToken history uri))
+
+;; Routes
+
+(defroute login-route "/" []
+  (reset! location [:login]))
+
+(defroute register-route "/register" []
+  (reset! location [:register]))
+
+(defroute recover-password-route "/recover-password" []
+  (reset! location [:recover-password]))
+
+(defroute dashboard-route "/dashboard" []
+  (reset! location [:dashboard]))
+
+(defroute workspace-page-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
+  (reset! location [:workspace [(uuid project-uuid)
+                                (uuid page-uuid)]]))
+
+(defroute workspace-route "/workspace/:project-uuid" [project-uuid]
+  (let [puuid (uuid project-uuid)]
+    (reset! location [:workspace [puuid
+                                  (:uuid (storage/get-first-page puuid))]])))
 
 ;; Components
 
@@ -61,3 +54,18 @@
    {:href href
     :on-click #(do (.preventDefault %) (navigate! href))}
    component])
+
+;;
+
+(defn start-history!
+  []
+  (events/listen history EventType.NAVIGATE dispatch-uri)
+  (.setEnabled history true)
+
+  ;; FIXME: remove as soon as we can query the data and not put it in a place
+  (add-watch location
+             :history
+             (fn [_ _ _ new-location]
+               (publish! [:location new-location])))
+
+  (s/dispatch! js/window.location.href))

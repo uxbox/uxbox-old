@@ -1,44 +1,42 @@
 (ns ^:figwheel-always uxbox.core
-    (:require [uxbox.db :as db]
-              [uxbox.navigation :refer [start-history!]]
+    (:require rum
+              [uxbox.db :as db]
+              [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
-              [uxbox.user.views :refer [login]]
+              [uxbox.user.views :refer [login
+                                        register
+                                        recover-password]]
               [uxbox.icons-sets.core]
-              [hodgepodge.core :refer [local-storage]]
-              [reagent.core :as reagent]))
+              [hodgepodge.core :refer [local-storage]]))
 
 (enable-console-print!)
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
-
-(defn ui [db]
-  (let [[page params] (:location @db)]
+(rum/defc ui < rum/cursored-watch
+  [app-state location]
+  (let [[page params] @location]
     (case page
+      ;; User
+      :login (login)
+      :register (register)
+      :recover-password (recover-password)
+      ;; Home
       :dashboard [:div
-                  [dashboard db]
-                  [lightbox db]]
-      :login [login db]
-      :workspace [workspace db])))
-
-(defn render!
-  [app-state element]
-  (reagent/render-component [ui app-state] element))
+                  (dashboard app-state)
+                  (lightbox app-state)]
+      ;; Workspace
+      :workspace (workspace app-state))))
 
 (def $el (.getElementById js/document "app"))
 
 (defn start!
-  [app-state]
+  [app-state location]
   (start-storage! local-storage)
   (start-history!)
   (start-keyboard!)
-  (render! app-state $el))
+  (rum/mount (ui app-state location) $el))
 
-(start! db/app-state)
+(start! db/app-state nav/location)

@@ -1,10 +1,8 @@
-(ns uxbox.db
-  (:require [reagent.core :as reagent :refer [atom]]))
+(ns uxbox.db)
 
-(def initial-state {;; Location
-                    :location [:login]
 
-                    ;; User
+
+(def initial-state {;; User
                     :user {:fullname "Michael Buchannon"
                            :avatar "/images/avatar.jpg"}
 
@@ -22,7 +20,7 @@
                       :notebook {:name "Notebook" :width 1366 :height 768}
                       :desktop {:name "Desktop" :width 1920 :height 1080}
                     }
-                    :projects-list {}
+                    :projects {}
                     :new-project-defaults {
                       :name ""
                       :width 1920
@@ -43,9 +41,6 @@
 
                     ;; Header
                     :user-menu-open? false
-
-                    ;; Forms
-                    :login-form :login
 
                     ;; Lightbox
                     :lightbox nil

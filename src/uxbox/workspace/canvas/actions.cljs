@@ -69,19 +69,11 @@
      (storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
 
 (pubsub/register-event
-  :viewport-mouse-click
-  (fn [state]
-    (let [coords (:mouse-position state)]
-      (if (get-in state [:workspace :selected-tool])
-        (drawing-shape coords)
-        (select-shape coords)))))
-
-(pubsub/register-transition
- :viewport-mouse-drag
- (fn [state _]
-   (if (get-in state [:page :selected])
-     state
-     state)))
+  :canvas-mouse-click
+  (fn [state coords]
+    (if (get-in state [:workspace :selected-tool])
+      (drawing-shape coords)
+      (select-shape coords))))
 
 (defn remove-element [groups-entry element-uuid]
   (let [in? (fn [seq elm] (some #(= elm %) seq))
@@ -112,7 +104,7 @@
          state))))
 
 (pubsub/register-transition
- :viewport-mouse-down
+ :canvas-mouse-down
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (let [coors {:x (get-in state [:shapes selected-uuid :x]) :y (get-in state [:shapes selected-uuid :y])}]
@@ -122,7 +114,7 @@
      state)))
 
 (pubsub/register-transition
- :viewport-mouse-up
+ :canvas-mouse-up
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (let [x (get-in state [:shapes selected-uuid :x])
@@ -141,14 +133,15 @@
      state)))
 
 (pubsub/register-transition
- :viewport-mouse-move
+ :canvas-mouse-move
  (let [last-event (atom [0 0])]
    (fn [state _]
      (let [[x y] (:mouse-position state)
            [old-x old-y] @last-event
            selected-uuid (get-in state [:page :selected])]
        (reset! last-event [x y])
-       (if (and selected-uuid (get-in state [:shapes selected-uuid :dragging]))
+       (if (and selected-uuid
+                (get-in state [:shapes selected-uuid :dragging]))
          (let [deltax (- x old-x)
                deltay (- y old-y)
                selected-uuid (get-in state [:page :selected])]
@@ -230,13 +223,14 @@
   (fn [state delta]
     (update-in state [:workspace :zoom] #(max 0.01 (+ % (* % 0.015 delta))))))
 
+
 (pubsub/register-transition
  :viewport-scroll
  (fn [state data]
    (assoc state :scroll data)))
 
 (pubsub/register-transition
- :viewport-mouse-move
+ :canvas-mouse-move
  (fn [state data]
    (let [zoom (get-in state [:workspace :zoom])]
      (assoc state :mouse-position [(int (/ (first data) zoom)) (int (/ (second data) zoom))]))))
