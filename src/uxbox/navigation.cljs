@@ -9,6 +9,20 @@
 
 (defonce location (atom [:login]))
 
+;; History
+
+(def history (doto (Html5History.)
+               (.setUseFragment false)
+               (.setPathPrefix "")))
+
+(defn- dispatch-uri
+  [u]
+  (s/dispatch! (.-token u)))
+
+(defn navigate!
+  [uri]
+  (.setToken history uri))
+
 ;; Routes
 
 (defroute login-route "/" []
@@ -24,20 +38,24 @@
   (reset! location [:dashboard]))
 
 (defroute workspace-page-route "/workspace/:project-uuid/:page-uuid" [project-uuid page-uuid]
-  (reset! location [:workspace (uuid project-uuid) (uuid page-uuid)]))
+  (reset! location [:workspace [(uuid project-uuid)
+                                (uuid page-uuid)]]))
 
 (defroute workspace-route "/workspace/:project-uuid" [project-uuid]
-  (reset! location [:workspace (uuid project-uuid) (:uuid (storage/get-first-page project-uuid))]))
+  (let [puuid (uuid project-uuid)]
+    (reset! location [:workspace [puuid
+                                  (:uuid (storage/get-first-page puuid))]])))
 
-;; History
+;; Components
 
-(def history (doto (Html5History.)
-               (.setUseFragment false)
-               (.setPathPrefix "")))
+(defn link
+  [href component]
+  [:a
+   {:href href
+    :on-click #(do (.preventDefault %) (navigate! href))}
+   component])
 
-(defn- dispatch-uri
-  [u]
-  (s/dispatch! (.-token u)))
+;;
 
 (defn start-history!
   []
@@ -48,19 +66,6 @@
   (add-watch location
              :history
              (fn [_ _ _ new-location]
-               (publish! new-location)))
+               (publish! [:location new-location])))
 
   (s/dispatch! js/window.location.href))
-
-(defn navigate!
-  [uri]
-  (.setToken history uri))
-
-;; Components
-
-(defn link
-  [href component]
-  [:a
-   {:href href
-    :on-click #(do (.preventDefault %) (navigate! href))}
-   component])

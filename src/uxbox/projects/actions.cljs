@@ -42,7 +42,8 @@
    (let [now (js/Date.)
          activity {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
                    :uuid (random-uuid)
-                   :project {:uuid (:uuid project) :name (:name project)}
+                   :project {:uuid (:uuid project)
+                             :name (:name project)}
                    :datetime now
                    :event {:type :create-project :text "Create new project"}}]
      (-> state
@@ -73,9 +74,9 @@
  :delete-page
  (fn [state [project page]]
    (let [page-uuid (:uuid page)
-         new-state (update-in state [:project-pages] dissoc page-uuid)]
+         new-state (update state :project-pages dissoc page-uuid)]
      (if (= (:uuid (:page state)) page-uuid)
-       (assoc new-state :page (first (vals (get-in new-state [:project-pages]))))
+       (assoc new-state :page (first (vals (get new-state :project-pages))))
        new-state))))
 
 (pubsub/register-transition

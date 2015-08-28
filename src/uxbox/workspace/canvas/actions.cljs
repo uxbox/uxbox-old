@@ -69,7 +69,7 @@
      (storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
 
 (pubsub/register-event
-  :viewport-mouse-click
+  :canvas-mouse-click
   (fn [state coords]
     (if (get-in state [:workspace :selected-tool])
       (drawing-shape coords)
@@ -104,7 +104,7 @@
          state))))
 
 (pubsub/register-transition
- :viewport-mouse-down
+ :canvas-mouse-down
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (let [coors {:x (get-in state [:shapes selected-uuid :x]) :y (get-in state [:shapes selected-uuid :y])}]
@@ -114,7 +114,7 @@
      state)))
 
 (pubsub/register-transition
- :viewport-mouse-up
+ :canvas-mouse-up
  (fn [state]
    (if-let [selected-uuid (get-in state [:page :selected])]
      (let [x (get-in state [:shapes selected-uuid :x])
@@ -133,7 +133,7 @@
      state)))
 
 (pubsub/register-transition
- :viewport-mouse-move
+ :canvas-mouse-move
  (let [last-event (atom [0 0])]
    (fn [state _]
      (let [[x y] (:mouse-position state)
@@ -223,13 +223,14 @@
   (fn [state delta]
     (update-in state [:workspace :zoom] #(max 0.01 (+ % (* % 0.015 delta))))))
 
+
 (pubsub/register-transition
  :viewport-scroll
  (fn [state data]
    (assoc state :scroll data)))
 
 (pubsub/register-transition
- :viewport-mouse-move
+ :canvas-mouse-move
  (fn [state data]
    (let [zoom (get-in state [:workspace :zoom])]
      (assoc state :mouse-position [(int (/ (first data) zoom)) (int (/ (second data) zoom))]))))

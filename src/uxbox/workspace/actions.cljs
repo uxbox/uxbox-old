@@ -139,7 +139,7 @@
 (pubsub/register-transition
  :location
  (fn [state data]
-   (let [[location project-uuid page-uuid] data]
+   (let [[location [project-uuid page-uuid]] data]
      (if (= location :workspace)
        (assoc state :project (storage/get-project project-uuid)
                     :page (storage/get-page page-uuid)

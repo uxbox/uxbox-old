@@ -11,62 +11,63 @@
             [uxbox.shapes.core :as shapes]
             [uxbox.pubsub :as pubsub]))
 
-(rum/defc project-tree
-  [db]
-  (let [title (get-in @db [:page :title])]
+(rum/defc project-tree < rum/cursored
+  [page-title project-bar-visible?]
+  (let [title @page-title]
     [:div.project-tree-btn
-     {:on-click #(swap! db update :project-bar-visible? not)}
+     {:on-click #(swap! project-bar-visible? not)}
      icons/project-tree
      [:span title]]))
 
-(rum/defc header
-  [db]
+(rum/defc header < rum/cursored
+  [user-cursor page grid? project-bar-visible?]
   [:header#workspace-bar.workspace-bar
-    [:div.main-icon
-     (link "/dashboard"
-      icons/logo-icon)]
-    (project-tree db)
-    [:div.workspace-options
-     [:ul.options-btn
-      [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
-       icons/undo]
-      [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
-       icons/redo]]
-     [:ul.options-btn
-      ;; TODO: refactor
-      [:li.tooltip.tooltip-bottom
-       {:alt "Export (Ctrl + E)"}
-       [:a {:download (str (get-in @db [:page :title]) ".svg")
-            :href "#"
-            :on-click (fn [e]
-                        (let [innerHTML (.-innerHTML (.getElementById js/document "page-layout"))
-                              width (get-in @db [:page :width])
-                              height (get-in @db [:page :height])
-                              html (str "<svg width='" width  "' height='" height  "'>" innerHTML "</svg>")
-                              data (js/Blob. #js [html] #js {:type "application/octet-stream"})
-                              url (.createObjectURL (.-URL js/window) data)]
-                          (set! (.-href (.-currentTarget e)) url)))}
-        icons/export]]
-      [:li.tooltip.tooltip-bottom
-       {:alt "Image (Ctrl + I)"}
-       icons/image]]
-     [:ul.options-btn
-      [:li.tooltip.tooltip-bottom
-       {:alt "Ruler (Ctrl + R)"}
-       icons/ruler]
-      [:li.tooltip.tooltip-bottom
-       {:alt "Grid (Ctrl + G)"
-        :class (when (:grid? (:workspace @db))
-                 "selected")
-        :on-click #(actions/toggle-grid)}
-       icons/grid]
-      [:li.tooltip.tooltip-bottom
-       {:alt "Align (Ctrl + A)"}
-       icons/alignment]
-      [:li.tooltip.tooltip-bottom
-       {:alt "Organize (Ctrl + O)"}
-       icons/organize]]]
-   (user (:user @db))])
+   [:div.main-icon
+    (link "/dashboard"
+          icons/logo-icon)]
+   (project-tree (rum/cursor page [:title]) project-bar-visible?)
+   [:div.workspace-options
+    [:ul.options-btn
+     [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
+      icons/undo]
+     [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
+      icons/redo]]
+    [:ul.options-btn
+     ;; TODO: refactor
+     [:li.tooltip.tooltip-bottom
+      {:alt "Export (Ctrl + E)"}
+      ;; page-title
+      [:a {:download (str (:title @page) ".svg")
+           :href "#"
+           :on-click (fn [e]
+                       (let [innerHTML (.-innerHTML (.getElementById js/document "page-layout"))
+                             width (:width @page)
+                             height (:height @page)
+                             html (str "<svg width='" width  "' height='" height  "'>" innerHTML "</svg>")
+                             data (js/Blob. #js [html] #js {:type "application/octet-stream"})
+                             url (.createObjectURL (.-URL js/window) data)]
+                         (set! (.-href (.-currentTarget e)) url)))}
+       icons/export]]
+     [:li.tooltip.tooltip-bottom
+      {:alt "Image (Ctrl + I)"}
+      icons/image]]
+    [:ul.options-btn
+     [:li.tooltip.tooltip-bottom
+      {:alt "Ruler (Ctrl + R)"}
+      icons/ruler]
+     [:li.tooltip.tooltip-bottom
+      {:alt "Grid (Ctrl + G)"
+       :class (when @grid?
+                "selected")
+       :on-click #(actions/toggle-grid)}
+      icons/grid]
+     [:li.tooltip.tooltip-bottom
+      {:alt "Align (Ctrl + A)"}
+      icons/alignment]
+     [:li.tooltip.tooltip-bottom
+      {:alt "Organize (Ctrl + O)"}
+      icons/organize]]]
+   (user @user-cursor)])
 
 (rum/defc icons-sets < rum/cursored
   [selected-tool current-icons-set components]
@@ -117,15 +118,16 @@
         :on-click #(actions/set-tool (:key tool))} (:icon tool)])]])
 
 ;; FIXME: should start with `:options` always
-(rum/defcs element-options < (rum/local :options)
-  [state db]
+(rum/defcs element-options < (rum/local :options) rum/cursored
+  [state page project zoom shapes]
   (let [show-element (:rum/local state)
         show-element-value @show-element
-        selected-uuid (get-in @db [:page :selected])
-        project-uuid (get-in @db [:project :uuid])
-        page-uuid (get-in @db [:page :uuid])
-        zoom (get-in @db [:workspace :zoom])
-        selected-shape (get-in @db [:shapes selected-uuid])
+        selected-uuid (:selected @page)
+        project-uuid (:uuid @project)
+        page-uuid (:uuid @page)
+        zoom @zoom
+        selected-shape (get @shapes selected-uuid)
+
         [popup-x popup-y] (shapes/toolbar-coords selected-shape)]
     [:div#element-options.element-options
      {:style #js {:left (* popup-x zoom)
@@ -141,7 +143,7 @@
      (for [menu (shapes/menu-info selected-shape)]
        [:div#element-basics.element-set
         {:key (:key menu)
-         :class (when (not (= show-element-value (:key menu)))
+         :class (when-not (= show-element-value (:key menu))
                   "hide")}
         [:div.element-set-title (:name menu)]
         [:div.element-set-content
@@ -252,81 +254,84 @@
        {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
-(rum/defc project-pages
-  [db pages]
-  (let [current-page (:page @db)
-        current-project (:project @db)
-        editing-pages (:editing-pages @db)]
+(rum/defcs project-pages < (rum/local {}) rum/cursored
+  [state project-cursor page-cursor pages-cursor]
+  (let [editing-pages (:rum/local state)
+        current-project @project-cursor
+        current-pages @pages-cursor
+        current-page @page-cursor]
     [:ul.tree-view
-      (for [page (vals pages)]
-        (if (contains? editing-pages (:uuid page))
+      (for [page (vals current-pages)]
+        (if (contains? @editing-pages (:uuid page))
           [:input.input-text
            {:title "page-title"
             :auto-focus true
             :placeholder "Page title"
             :type "text"
-            :value (get editing-pages (:uuid page))
-            :on-change #(swap! db assoc-in [:editing-pages (:uuid page)] (.-value (.-target %)))
+            :value (get @editing-pages (:uuid page))
+            :on-change #(swap! editing-pages assoc (:uuid page) (.-value (.-target %)))
             :on-key-up #(cond
                           (= (.-keyCode %) 13)
-                            (when (not (empty? (str/trim (get editing-pages (:uuid page)))))
-                              (change-page-title current-project page (get editing-pages (:uuid page)))
-                              (swap! db update :editing-pages dissoc (:uuid page)))
+                            (when (not (empty? (str/trim (get @editing-pages (:uuid page)))))
+                              (change-page-title current-project page (get @editing-pages (:uuid page)))
+                              (swap! editing-pages dissoc (:uuid page)))
                           (= (.-keyCode %) 27)
-                            (swap! db update :editing-pages dissoc (:uuid page)))
+                            (swap! editing-pages dissoc (:uuid page)))
             :key (:uuid page)}]
 
           [:li.single-page
-           {:class (when (= (:uuid page) (:uuid current-page)) "current")
+           {:class (when (= (:uuid page)
+                            (:uuid current-page))
+                     "current")
             :on-click #(when (not= (:uuid page) (:uuid current-page))
-                         (navigate! (workspace-page-route {:project-uuid (:uuid current-project) :page-uuid (:uuid page)})))
+                         (navigate! (workspace-page-route {:project-uuid (:uuid current-project)
+                                                           :page-uuid (:uuid page)})))
             :key (:uuid page)}
            [:div.tree-icon icons/page]
            [:span (:title page)]
            [:div.options
             [:div
-             {:on-click #(do (.stopPropagation %) (swap! db assoc-in [:editing-pages (:uuid page)] (:title page)))}
+             {:on-click #(do (.stopPropagation %) (swap! editing-pages assoc (:uuid page) (:title page)))}
              icons/pencil]
             [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]]))]))
 
-(defn clean-new-page!
-  [db]
-  (swap! db assoc :adding-new-page? false
-                  :new-page-title ""))
+(rum/defcs new-page < (rum/local {:adding-new? false
+                                  :new-page-title ""})
+                       rum/cursored
+  [{local-state :rum/local} project-cursor]
+  (let [{:keys [adding-new? new-page-title]} @local-state
+        project @project-cursor]
+    (if adding-new?
+      [:input.input-text
+       {:title "page-title"
+        :auto-focus true
+        :placeholder "Page title"
+        :type "text"
+        :value new-page-title
+        :on-change #(swap! local-state assoc :new-page-title (.-value (.-target %)))
+        :on-key-up #(cond
+                      (= (.-keyCode %) 13)
+                      (when (not (empty? (str/trim new-page-title)))
+                        (create-simple-page project new-page-title)
+                        (reset! local-state {:adding-new? false
+                                             :new-page-title ""}))
+                      (= (.-keyCode %) 27)
+                      (reset! local-state {:adding-new? false
+                                           :new-page-title ""}))}]
+      [:button.btn-primary.btn-small
+       {:on-click #(swap! local-state assoc :adding-new? true)}
+       "+ Add new page"])))
 
-(rum/defc new-page
-  [db project]
-  (if (:adding-new-page? @db)
-    [:input.input-text
-     {:title "page-title"
-      :auto-focus true
-      :placeholder "Page title"
-      :type "text"
-      :value (:new-page-title @db)
-      :on-change #(swap! db assoc :new-page-title (.-value (.-target %)))
-      :on-key-up #(cond
-                    (= (.-keyCode %) 13)
-                    (when (not (empty? (str/trim (:new-page-title @db))))
-                      (create-simple-page project (:new-page-title @db))
-                      (clean-new-page! db))
-                    (= (.-keyCode %) 27)
-                    (clean-new-page! db))}]
-    [:button.btn-primary.btn-small
-     {:on-click #(swap! db assoc :adding-new-page? true)}
-     "+ Add new page"]))
-
-(rum/defc project-bar
-  [db]
-  (let [project (:project @db)
-        project-name (:name project)
-        pages (:project-pages @db)]
+(rum/defc project-bar < rum/cursored
+  [project page pages project-bar-visible?]
+  (let [project-name (:name @project)]
     [:div#project-bar.project-bar
-     (when-not (:project-bar-visible? @db)
+     (when-not @project-bar-visible?
        {:class "toggle"})
      [:div.project-bar-inside
       [:span.project-name project-name]
-      (project-pages db pages)
-      (new-page db project)]]))
+      (project-pages project page pages)
+      (new-page project)]]))
 
 (rum/defc aside
   [db]
@@ -353,7 +358,7 @@
             (layers groups selected-groups))]]))))
 
 (rum/defc vertical-rule < rum/static
-  [top height start-height zoom]
+  [top zoom height start-height]
   (let [padding 20
         big-ticks-mod (/ 100 zoom)
         mid-ticks-mod (/ 50 zoom)
@@ -380,7 +385,7 @@
      (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]]))
 
 (rum/defc horizontal-rule < rum/static
-  [left width start-width zoom]
+  [left zoom width start-width]
   (let [padding 20
         big-ticks-mod (/ 100 zoom)
         mid-ticks-mod (/ 50 zoom)
@@ -420,27 +425,13 @@
 (def document-start-x 50)
 (def document-start-y 50)
 
-(defn on-event [event-type]
-  (fn [e]
-    (let [coords (geo/client-coords->canvas-coords [(.-clientX e) (.-clientY e)])]
-      (pubsub/publish! [event-type coords])
-      (.preventDefault e))))
-
-(defn on-wheel-event [event-type]
-  (fn [e]
-    (when (.-altKey e)
-      (do (if (> (.-deltaY e) 0)
-            (pubsub/publish! [event-type 5])
-            (pubsub/publish! [event-type -5]))
-          (.preventDefault e)))))
-
 (rum/defc viewport < rum/cursored
   [page groups shapes zoom grid?]
   [:svg#viewport
    {:width viewport-height
     :height viewport-width}
    [:g.zoom
-    {:transform (str "scale(" zoom " " zoom ")")}
+    {:transform (str "scale(" @zoom " " @zoom ")")}
     (canvas @page
             @groups
             @shapes
@@ -448,53 +439,79 @@
              :viewport-width viewport-width
              :document-start-x document-start-x
              :document-start-y document-start-y})
-    (when grid?
+    (when @grid?
       (grid viewport-width
             viewport-height
             document-start-x
             document-start-y
-            zoom))]])
+            @zoom))]])
 
-(rum/defc working-area
-  [db]
-  (let [zoom (get-in @db [:workspace :zoom])]
-    [:div
-     {:on-mouse-move (on-event :viewport-mouse-move)
-      :on-click (on-event :viewport-mouse-click)
-      :on-mouse-down (on-event :viewport-mouse-down)
-      :on-mouse-up (on-event :viewport-mouse-up)
-      :on-wheel (on-wheel-event :zoom-wheel)}
-     [:section.workspace-canvas
-      {:class (when (empty? (:open-setting-boxes @db))
+(rum/defc working-area < rum/cursored
+  [page-cursor
+   groups-cursor
+   project-cursor
+   workspace-cursor
+   shapes-cursor
+   zoom-cursor]
+  (let [zoom @zoom-cursor
+        page @page-cursor
+        groups @groups-cursor
+        project @project-cursor
+        workspace @workspace-cursor
+        shapes @shapes-cursor]
+    [:section.workspace-canvas
+      #_{:class (when (empty? (:open-setting-boxes @db))
                 "no-tool-bar")}
-      (when (get-in @db [:page :selected])
-        (element-options db))
+      (when (:selected page)
+        (element-options page-cursor
+                         project-cursor
+                         zoom-cursor
+                         shapes-cursor))
       (debug-coordinates)
-      (viewport (rum/cursor db [:page])
-                (rum/cursor db [:groups])
-                (rum/cursor db [:shapes])
-                zoom
-                (get-in @db [:workspace :grid?]))]]))
+      (viewport page-cursor
+                groups-cursor
+                shapes-cursor
+                zoom-cursor
+                (rum/cursor workspace-cursor [:grid?]))]))
 
 (rum/defc workspace
   [db]
-  (let [zoom (get-in @db [:workspace :zoom])
-        open-setting-boxes (:open-setting-boxes @db)
-        workspace (:workspace @db)
-        components (:components @db)
-        tools (:tools @db)]
+  (let [open-setting-boxes (:open-setting-boxes @db)
+
+        left (rum/cursor db [:scroll :left])
+        top (rum/cursor db [:scroll :top])
+
+        workspace (rum/cursor db [:workspace])
+        grid? (rum/cursor workspace [:grid?])
+        zoom (rum/cursor workspace [:zoom])
+
+        shapes (rum/cursor db [:shapes])
+
+        user (rum/cursor db [:user])
+
+        project (rum/cursor db [:project])
+        pages (rum/cursor db [:project-pages])
+
+        groups (rum/cursor db [:groups])
+        page (rum/cursor db [:page])
+        project-bar-visible? (rum/cursor db [:project-bar-visible?])]
     [:div
-     (header db)
+     (header user page grid? project-bar-visible?)
      [:main.main-content
       [:section.workspace-content
        ;; Toolbar
        (toolbar open-setting-boxes)
        ;; Project bar
-       (project-bar db)
+       (project-bar project page pages project-bar-visible?)
        ;; Rules
-       (horizontal-rule (get-in @db [:scroll :left]) 3000 50 zoom)
-       (vertical-rule (get-in @db [:scroll :top]) 3000 50 zoom)
+       (horizontal-rule @left @zoom viewport-width document-start-x)
+       (vertical-rule @top @zoom viewport-height document-start-y)
        ;; Working area
-       (working-area db)
+       (working-area page
+                     groups
+                     project
+                     workspace
+                     shapes
+                     zoom)
        ;; Aside
        (aside db)]]]))

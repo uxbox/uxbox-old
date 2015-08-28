@@ -76,6 +76,36 @@
        [:td "Y:"]
        [:td y]]]]))
 
+(defn on-canvas-click
+  [e]
+  (.preventDefault e)
+  (pubsub/publish! [:canvas-mouse-click (geo/client-coords->canvas-coords [(.-clientX e)
+                                                                           (.-clientY e)])]))
+
+(defn on-canvas-mouse-move
+  [e]
+  (.preventDefault e)
+  (pubsub/publish! [:canvas-mouse-move (geo/client-coords->canvas-coords [(.-clientX e)
+                                                                          (.-clientY e)])]))
+(defn on-canvas-mouse-up
+  [e]
+  (.preventDefault e)
+  (pubsub/publish! [:canvas-mouse-up (geo/client-coords->canvas-coords [(.-clientX e)
+                                                                        (.-clientY e)])]))
+(defn on-canvas-mouse-down
+  [e]
+  (.preventDefault e)
+  (pubsub/publish! [:canvas-mouse-down (geo/client-coords->canvas-coords [(.-clientX e)
+                                                                          (.-clientY e)])]))
+
+(defn on-canvas-wheel
+  [e]
+  (when (.-altKey e)
+      (do (if (> (.-deltaY e) 0)
+            (pubsub/publish! [:canvas-mouse-wheel 5])
+            (pubsub/publish! [:canvas-mouse-wheel -5]))
+          (.preventDefault e))))
+
 (rum/defc canvas < rum/static
   [page
    groups
@@ -116,7 +146,12 @@
      {:x document-start-x
       :y document-start-y
       :width page-width
-      :height page-height}
+      :height page-height
+      :on-click on-canvas-click
+      :on-mouse-move on-canvas-mouse-move
+      :on-mouse-down on-canvas-mouse-down
+      :on-mouse-up on-canvas-mouse-up
+      :on-wheel on-canvas-wheel}
      [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
      (apply vector :svg#page-layout shapes-svg)
      (when-let [shape (get page :drawing)]
