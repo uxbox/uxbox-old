@@ -19,6 +19,46 @@
                            :inputs [{:name "X" :type :number :shape-key :x2 :value-filter int}
                                     {:name "Y" :type :number :shape-key :y2 :value-filter int}]}]})
 
+
+(rum/defc linec < rum/static
+  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
+  (let [length-x (geo/distance x1 0 x2 0)
+          length-y (geo/distance 0 y1 0 y2)
+          min-x (min x1 x2)
+          min-y (min y1 y2)
+          center-x (+ min-x (/ length-x 2))
+          center-y (+ min-y (/ length-y 2))]
+      [:line {:x1 x1
+              :y1 y1
+              :x2 x2
+              :y2 y2
+              :stroke stroke
+              :strokeWidth stroke-width
+              :stroke-opacity stroke-opacity
+              :transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}]))
+
+(rum/defc selected-linec < rum/static
+  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
+  (let [length-x (geo/distance x1 0 x2 0)
+          length-y (geo/distance 0 y1 0 y2)
+          min-x (min x1 x2)
+          min-y (min y1 y2)
+          center-x (+ min-x (/ length-x 2))
+          center-y (+ min-y (/ length-y 2))]
+      [:g {:transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}
+        [:rect {:x (- x1 4)
+                 :y (- y1 4)
+                 :width 8
+                 :height 8
+                 :fill "#4af7c3"
+                 :fill-opacity "0.75"}]
+         [:rect {:x (- x2 4)
+                 :y (- y2 4)
+                 :width 8
+                 :height 8
+                 :fill "#4af7c3"
+                 :fill-opacity "0.75"}]]))
+
 (rum/defc drawing-linec < rum/reactive
   [x y]
   (let [[mouse-x mouse-y] (rum/react canvas-coordinates)]
@@ -48,43 +88,12 @@
       (geo/viewportcoord->clientcoord vx vy)))
 
   (shape->svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
-    (let [length-x (geo/distance x1 0 x2 0)
-          length-y (geo/distance 0 y1 0 y2)
-          min-x (min x1 x2)
-          min-y (min y1 y2)
-          center-x (+ min-x (/ length-x 2))
-          center-y (+ min-y (/ length-y 2))]
-      [:line {:x1 x1
-              :y1 y1
-              :x2 x2
-              :y2 y2
-              :stroke stroke
-              :strokeWidth stroke-width
-              :stroke-opacity stroke-opacity
-              :transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}]))
+    [shape]
+    (linec shape))
 
   (shape->selected-svg
-    [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
-    (let [length-x (geo/distance x1 0 x2 0)
-          length-y (geo/distance 0 y1 0 y2)
-          min-x (min x1 x2)
-          min-y (min y1 y2)
-          center-x (+ min-x (/ length-x 2))
-          center-y (+ min-y (/ length-y 2))]
-      [:g {:transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}
-        [:rect {:x (- x1 4)
-                 :y (- y1 4)
-                 :width 8
-                 :height 8
-                 :fill "#4af7c3"
-                 :fill-opacity "0.75"}]
-         [:rect {:x (- x2 4)
-                 :y (- y2 4)
-                 :width 8
-                 :height 8
-                 :fill "#4af7c3"
-                 :fill-opacity "0.75"}]]))
+    [shape]
+    (selected-linec shape))
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]

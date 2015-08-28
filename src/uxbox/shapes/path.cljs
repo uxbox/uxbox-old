@@ -19,6 +19,37 @@
                                     {:name "lock" :type :lock}
                                     {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
+(rum/defc pathc < rum/static
+  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
+  [:svg {:viewBox (str "0 0 " icowidth " " icoheight)
+         :width width
+         :height height
+         :x x
+         :y y
+         :preserveAspectRatio "none"}
+     [:g
+      {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
+      [:path {:d path
+              :fill fill
+              :fill-opacity fill-opacity}]]])
+
+(rum/defc selected-pathc < rum/static
+  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
+  [:g
+      [:rect {:x x
+              :y y
+              :width width
+              :height height
+              :fill "transparent"
+              :stroke "#4af7c3"
+              :strokeWidth 2
+              :strokeDasharray "5,5"
+              :fill-opacity "0.5"}]
+      [:rect {:x (- x 8) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+      [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
+
 (rum/defc drawing-pathc < rum/reactive
   [x y]
   (let [[mouse-x mouse-y] (rum/react canvas-coordinates)
@@ -46,34 +77,13 @@
           vy y]
       (geo/viewportcoord->clientcoord vx vy)))
 
-  (shape->svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
-    [:svg {:viewBox (str "0 0 " icowidth " " icoheight)
-           :width width
-           :height height
-           :x x
-           :y y
-           :preserveAspectRatio "none"}
-     [:g
-      {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
-      [:path {:d path
-              :fill fill
-              :fill-opacity fill-opacity}]]])
+  (shape->svg
+    [shape]
+    (pathc shape))
 
-  (shape->selected-svg [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
-    [:g
-      [:rect {:x x
-              :y y
-              :width width
-              :height height
-              :fill "transparent"
-              :stroke "#4af7c3"
-              :strokeWidth 2
-              :strokeDasharray "5,5"
-              :fill-opacity "0.5"}]
-      [:rect {:x (- x 8) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ x width) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
+  (shape->selected-svg
+    [shape]
+    (selected-pathc shape))
 
   (shape->drawing-svg [{:keys [x y]}]
     (drawing-pathc x y))
