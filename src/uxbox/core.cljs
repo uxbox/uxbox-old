@@ -16,7 +16,7 @@
 (enable-console-print!)
 
 (rum/defc ui < rum/cursored-watch
-  [db location]
+  [app-state location]
   (let [[page params] @location]
     (case page
       ;; User
@@ -25,10 +25,10 @@
       :recover-password (recover-password)
       ;; Home
       :dashboard [:div
-                  (dashboard db)
-                  (lightbox db)]
+                  (dashboard app-state)
+                  (lightbox app-state)]
       ;; Workspace
-      :workspace (workspace db))))
+      :workspace (workspace app-state))))
 
 (def $el (.getElementById js/document "app"))
 

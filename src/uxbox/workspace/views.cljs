@@ -333,29 +333,25 @@
       (project-pages project page pages)
       (new-page project)]]))
 
-(rum/defc aside
-  [db]
-  (let [open-setting-boxes (:open-setting-boxes @db)]
-    (when (not (empty? open-setting-boxes))
-      (let [components-cursor (rum/cursor db [:components])
-            component-tools (rum/cursor components-cursor [:tools])
-            current-icons-set (rum/cursor db [:current-icons-set])
-
-            workspace (rum/cursor db [:workspace])
-            selected-tool (rum/cursor workspace [:selected-tool])
-            selected-groups (rum/cursor workspace [:selected-groups])
-
-            groups (rum/cursor db [:groups])]
-        [:aside#settings-bar.settings-bar
-         [:div.settings-bar-inside
-          (when (:tools open-setting-boxes)
-            (tools selected-tool component-tools))
-          (when (:icons open-setting-boxes)
-            (icons-sets selected-tool current-icons-set components-cursor))
-          (when (:components open-setting-boxes)
-            (components selected-tool components-cursor))
-          (when (:layers open-setting-boxes)
-            (layers groups selected-groups))]]))))
+(rum/defc aside < rum/cursored
+  [open-setting-boxes
+   components-cursor
+   current-icons-set
+   workspace
+   groups]
+  (let [component-tools (rum/cursor components-cursor [:tools])
+        selected-tool (rum/cursor workspace [:selected-tool])
+        selected-groups (rum/cursor workspace [:selected-groups])]
+    [:aside#settings-bar.settings-bar
+     [:div.settings-bar-inside
+      (when (:tools open-setting-boxes)
+        (tools selected-tool component-tools))
+      (when (:icons open-setting-boxes)
+        (icons-sets selected-tool current-icons-set components-cursor))
+      (when (:components open-setting-boxes)
+        (components selected-tool components-cursor))
+      (when (:layers open-setting-boxes)
+        (layers groups selected-groups))]]))
 
 (rum/defc vertical-rule < rum/static
   [top zoom height start-height]
@@ -447,7 +443,8 @@
             @zoom))]])
 
 (rum/defc working-area < rum/cursored
-  [page-cursor
+  [open-setting-boxes
+   page-cursor
    groups-cursor
    project-cursor
    workspace-cursor
@@ -460,7 +457,7 @@
         workspace @workspace-cursor
         shapes @shapes-cursor]
     [:section.workspace-canvas
-      #_{:class (when (empty? (:open-setting-boxes @db))
+      {:class (when (empty? open-setting-boxes)
                 "no-tool-bar")}
       (when (:selected page)
         (element-options page-cursor
@@ -494,7 +491,11 @@
 
         groups (rum/cursor db [:groups])
         page (rum/cursor db [:page])
-        project-bar-visible? (rum/cursor db [:project-bar-visible?])]
+        project-bar-visible? (rum/cursor db [:project-bar-visible?])
+
+
+        components-cursor (rum/cursor db [:components])
+        current-icons-set (rum/cursor db [:current-icons-set])]
     [:div
      (header user page grid? project-bar-visible?)
      [:main.main-content
@@ -507,11 +508,17 @@
        (horizontal-rule @left @zoom viewport-width document-start-x)
        (vertical-rule @top @zoom viewport-height document-start-y)
        ;; Working area
-       (working-area page
+       (working-area open-setting-boxes
+                     page
                      groups
                      project
                      workspace
                      shapes
                      zoom)
        ;; Aside
-       (aside db)]]]))
+       (when-not (empty? open-setting-boxes)
+         (aside open-setting-boxes
+                components-cursor
+                current-icons-set
+                workspace
+                groups))]]]))
