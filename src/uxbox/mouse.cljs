@@ -8,7 +8,8 @@
 (defn- listen
   [el type & args]
   (let [out (apply async/chan 1 args)]
-    (events/listen el type (fn [e] (async/put! out e)))
+    (events/listen el type (fn [e]
+                             (async/put! out e)))
     out))
 
 (defn- client-position-channel

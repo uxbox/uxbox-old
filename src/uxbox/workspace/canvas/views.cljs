@@ -80,23 +80,29 @@
   [e]
   (.preventDefault e)
   (pubsub/publish! [:canvas-mouse-click (geo/client-coords->canvas-coords [(.-clientX e)
-                                                                           (.-clientY e)])]))
+                                                                           (.-clientY e)])])
+  e)
 
 (defn on-canvas-mouse-move
   [e]
   (.preventDefault e)
   (pubsub/publish! [:canvas-mouse-move (geo/client-coords->canvas-coords [(.-clientX e)
-                                                                          (.-clientY e)])]))
+                                                                          (.-clientY e)])])
+  e)
+
 (defn on-canvas-mouse-up
   [e]
   (.preventDefault e)
   (pubsub/publish! [:canvas-mouse-up (geo/client-coords->canvas-coords [(.-clientX e)
-                                                                        (.-clientY e)])]))
+                                                                        (.-clientY e)])])
+  e)
+
 (defn on-canvas-mouse-down
   [e]
   (.preventDefault e)
   (pubsub/publish! [:canvas-mouse-down (geo/client-coords->canvas-coords [(.-clientX e)
-                                                                          (.-clientY e)])]))
+                                                                          (.-clientY e)])])
+  e)
 
 (defn on-canvas-wheel
   [e]
@@ -104,7 +110,8 @@
       (do (if (> (.-deltaY e) 0)
             (pubsub/publish! [:canvas-mouse-wheel 5])
             (pubsub/publish! [:canvas-mouse-wheel -5]))
-          (.preventDefault e))))
+          (.preventDefault e)))
+  e)
 
 (rum/defc canvas < rum/static
   [page
