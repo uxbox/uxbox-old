@@ -20,7 +20,7 @@
                                     {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
 (rum/defc pathc < rum/static
-  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate visible locked]}]
+  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate visible]}]
   [:svg {:viewBox (str "0 0 " icowidth " " icoheight)
          :width width
          :height height
@@ -65,7 +65,7 @@
                     :stroke "gray"
                     :strokeDasharray "5,5"}}])))
 
-(defrecord Path [name path icowidth icoheight x y width height fill fill-opacity rotate visible]
+(defrecord Path [name path icowidth icoheight x y width height fill fill-opacity rotate visible locked]
   Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)

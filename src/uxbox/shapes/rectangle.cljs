@@ -21,7 +21,7 @@
                                          {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
 (rum/defc rectanglec < rum/static
-  [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]}]
+  [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible]}]
   [:rect
      {:x x
       :y y
@@ -73,7 +73,7 @@
                     :stroke "gray"
                     :strokeDasharray "5,5"}}])))
 
-(defrecord Rectangle [name x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible]
+(defrecord Rectangle [name x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
   Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)

@@ -21,7 +21,7 @@
 
 
 (rum/defc linec < rum/static
-  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]}]
+  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible]}]
   (let [length-x (geo/distance x1 0 x2 0)
           length-y (geo/distance 0 y1 0 y2)
           min-x (min x1 x2)
@@ -72,7 +72,7 @@
                         :strokeWidth 2
                         :strokeDasharray "5,5"}}]))
 
-(defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible]
+(defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]
   Shape
 
   (intersect

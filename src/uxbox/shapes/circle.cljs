@@ -21,7 +21,7 @@
                              :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
 
 (rum/defc circlec < rum/static
-  [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]}]
+  [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible]}]
   [:circle {:cx cx
             :cy cy
             :r r
@@ -71,7 +71,7 @@
                           :stroke "gray"
                           :strokeDasharray "5,5"}}]))
 
-(defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible]
+(defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
   Shape
   (intersect
     [{:keys [cx cy r]} px py]
