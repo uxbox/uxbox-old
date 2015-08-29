@@ -2,7 +2,7 @@
   (:require
    rum
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.shapes.core :refer [Shape generate-transformation actions-menu fill-menu new-group]]
+   [uxbox.shapes.core :refer [Shape generate-transformation actions-menu fill-menu]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -20,12 +20,13 @@
                                     {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
 (rum/defc pathc < rum/static
-  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate]}]
+  [{:keys [path icowidth icoheight x y width height fill fill-opacity rotate visible locked]}]
   [:svg {:viewBox (str "0 0 " icowidth " " icoheight)
          :width width
          :height height
          :x x
          :y y
+         :style #js {:visibility (if visible "visible" "hidden")}
          :preserveAspectRatio "none"}
      [:g
       {:transform (generate-transformation {:rotate rotate :center {:x (/ icowidth 2) :y (/ icoheight 2)}})}
@@ -64,7 +65,7 @@
                     :stroke "gray"
                     :strokeDasharray "5,5"}}])))
 
-(defrecord Path [path icowidth icoheight x y width height fill fill-opacity rotate]
+(defrecord Path [name path icowidth icoheight x y width height fill fill-opacity rotate visible]
   Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
@@ -95,24 +96,31 @@
 
   (menu-info
     [shape]
-    [path-menu fill-menu actions-menu]))
+    [path-menu fill-menu actions-menu])
+
+  (icon [shape]
+    [:svg {:viewBox (str "0 0 " (:icowidth shape) " " (:icoheight shape))
+           :width (:icowidth shape)
+           :height (:icoheight shape)
+           :x 0
+           :y 0
+           :visibility (if (:visible shape) "visible" "hidden")
+           :preserveAspectRatio "none"}
+       [:g
+        [:path {:d (:path shape)}]]]))
 
 (defn new-path-shape
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
-  (Path. path icowidth icoheight x y width height "black" 1 0))
+  (Path. "Path" path icowidth icoheight x y width height "black" 1 0 true false))
 
 (defn drawing-path [state [x y] symbol]
  (if-let [drawing-val (get-in state [:page :drawing])]
    (let [shape-uuid (random-uuid)
-         group-uuid (random-uuid)
          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-         new-group-order (->> state :groups vals (sort-by :order) last :order inc)
-         shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)
-         group-val (new-group (str (:name symbol) " " new-group-order) new-group-order shape-uuid)]
+         shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)]
 
-     (do (pubsub/publish! [:insert-group [group-uuid group-val]])
-         (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+     (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
          (-> state
               (assoc-in [:page :drawing] nil)
               (assoc-in [:page :selected] shape-uuid)

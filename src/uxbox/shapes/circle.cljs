@@ -4,7 +4,7 @@
    [jamesmacaulay.zelkova.signal :as z]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.mouse :as mouse]
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
+   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -21,7 +21,7 @@
                              :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
 
 (rum/defc circlec < rum/static
-  [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
+  [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]}]
   [:circle {:cx cx
             :cy cy
             :r r
@@ -30,6 +30,7 @@
             :stroke stroke
             :strokeWidth stroke-width
             :stroke-opacity stroke-opacity
+            :style #js {:visibility (if visible "visible" "hidden")}
             :transform (generate-transformation {:rotate rotate
                                                  :center {:x cx
                                                           :y cy}})}])
@@ -70,7 +71,7 @@
                           :stroke "gray"
                           :strokeDasharray "5,5"}}]))
 
-(defrecord Circle [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]
+(defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible]
   Shape
   (intersect
     [{:keys [cx cy r]} px py]
@@ -102,18 +103,18 @@
 
   (menu-info
     [shape]
-    [circle-menu stroke-menu fill-menu actions-menu]))
+    [circle-menu stroke-menu fill-menu actions-menu])
+
+  (icon [_] icons/circle))
 
 (defn new-circle
   "Retrieves a circle with the default parameters"
   [cx cy r]
-  (Circle. cx cy r "#cacaca" 1 "gray" 5 1 0))
+  (Circle. "Circle" cx cy r "#cacaca" 1 "gray" 5 1 0 true false))
 
 (defn drawing-circle [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
-          group-uuid (random-uuid)
-          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
           cx (:cx drawing-val)
           cy (:cy drawing-val)
           r (geo/distance x y cx cy)
@@ -121,11 +122,9 @@
           dx (- (geo/distance cx cy cx 0) r)
           dy (- (geo/distance cx cy 0 cy) r)
           r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)
-          shape-val (new-circle (:cx drawing-val) (:cy drawing-val) r)
-          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+          shape-val (new-circle (:cx drawing-val) (:cy drawing-val) r)]
 
-      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
-          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (-> state
               (assoc-in [:page :drawing] nil)
               (assoc-in [:page :selected] shape-uuid)

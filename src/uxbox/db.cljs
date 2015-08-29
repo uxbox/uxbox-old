@@ -51,7 +51,6 @@
                                          :grid? false
                                          :zoom 1}
                     :workspace {:selected-tool nil
-                                :selected-groups #{}
                                 :selected-element 0
                                 :grid? false
                                 :zoom 1}

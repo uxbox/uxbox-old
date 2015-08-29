@@ -2,7 +2,7 @@
   (:require
    rum
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
+   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -21,7 +21,7 @@
 
 
 (rum/defc linec < rum/static
-  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
+  [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]}]
   (let [length-x (geo/distance x1 0 x2 0)
           length-y (geo/distance 0 y1 0 y2)
           min-x (min x1 x2)
@@ -35,6 +35,7 @@
               :stroke stroke
               :strokeWidth stroke-width
               :stroke-opacity stroke-opacity
+              :style #js {:visibility (if visible "visible" "hidden")}
               :transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}]))
 
 (rum/defc selected-linec < rum/static
@@ -71,7 +72,7 @@
                         :strokeWidth 2
                         :strokeDasharray "5,5"}}]))
 
-(defrecord Line [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]
+(defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible]
   Shape
 
   (intersect
@@ -110,23 +111,20 @@
   (menu-info
     [shape]
     [line-menu stroke-menu actions-menu])
-  )
+
+  (icon [_] icons/line))
 
 (defn new-line
   "Retrieves a line with the default parameters"
   [x1 y1 x2 y2]
-  (Line. x1 y1 x2 y2 "gray" 4 1 0))
+  (Line. "Line" x1 y1 x2 y2 "gray" 4 1 0 true false))
 
 (defn drawing-line [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
-          group-uuid (random-uuid)
-          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
-          shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)
-          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+          shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)]
 
-      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
-          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (-> state
               (assoc-in [:page :drawing] nil)
               (assoc-in [:page :selected] shape-uuid)

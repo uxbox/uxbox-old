@@ -1,7 +1,7 @@
 (ns uxbox.shapes.rectangle
   (:require
    rum
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu new-group]]
+   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
@@ -21,7 +21,7 @@
                                          {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
 
 (rum/defc rectanglec < rum/static
-  [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
+  [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]}]
   [:rect
      {:x x
       :y y
@@ -35,6 +35,7 @@
       :strokeWidth stroke-width
       :stroke-opacity stroke-opacity
       :rotate rotate
+      :style #js {:visibility (if visible "visible" "hidden")}
       :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
 
 (rum/defc selected-rectanglec < rum/static
@@ -72,7 +73,7 @@
                     :stroke "gray"
                     :strokeDasharray "5,5"}}])))
 
-(defrecord Rectangle [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]
+(defrecord Rectangle [name x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible]
   Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
@@ -104,24 +105,22 @@
 
   (menu-info
     [shape]
-    [rectangle-menu stroke-menu fill-menu actions-menu]))
+    [rectangle-menu stroke-menu fill-menu actions-menu])
+
+  (icon [_] icons/box))
 
 (defn new-rectangle
   "Retrieves a line with the default parameters"
   [x y width height]
-  (Rectangle. x y width height 0 0 "#cacaca" 1 "gray" 5 1 0))
+  (Rectangle. "Rectangle" x y width height 0 0 "#cacaca" 1 "gray" 5 1 0 true false))
 
 (defn drawing-rectangle [state [x y]]
   (if-let [drawing-val (get-in state [:page :drawing])]
     (let [shape-uuid (random-uuid)
-          group-uuid (random-uuid)
           [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-          new-group-order (->> state :groups vals (sort-by :order) last :order inc)
-          shape-val (new-rectangle rect-x rect-y rect-width rect-height)
-          group-val (new-group (str "Group " new-group-order) new-group-order shape-uuid)]
+          shape-val (new-rectangle rect-x rect-y rect-width rect-height)]
 
-      (do (pubsub/publish! [:insert-group [group-uuid group-val]])
-          (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
+      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (-> state
               (assoc-in [:page :drawing] nil)
               (assoc-in [:page :selected] shape-uuid)

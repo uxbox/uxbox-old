@@ -9,7 +9,6 @@
   ;; (generators/undo-tree event)
   (generators/projects-data event)
   (generators/pages-data event)
-  (generators/groups-data event)
   (generators/shapes-data event)
   event)
 
@@ -28,5 +27,4 @@
    (backend/bind-key atoms/projects-view :projects-view)
    (backend/bind-key atoms/pages-view :pages-view)
    (backend/bind-key atoms/activity-view :activity-view)
-   (backend/bind-key atoms/groups-view :groups-view)
    (backend/bind-key atoms/shapes-view :shapes-view)))

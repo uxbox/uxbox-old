@@ -11,6 +11,7 @@
 (defn create-page
   [project-uuid title width height]
   {:title title
+   :root []
    :uuid (random-uuid)
    :width width
    :height height

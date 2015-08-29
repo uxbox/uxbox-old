@@ -108,7 +108,6 @@
 
 (rum/defc canvas < rum/static
   [page
-   groups
    shapes
    {:keys [viewport-height
            viewport-width
@@ -116,32 +115,7 @@
            document-start-y]}]
   (let [page-width (:width page)
         page-height (:height page)
-        ;; Get a group of ids and retrieves the list of shapes
-        id->shape-xform (comp
-                         (map #(get shapes %))
-                         (filter #(not (nil? %))))
-        ids->shapes #(sequence id->shape-xform %)
-
-        ;; Retrieve the <g> element grouped if applied
-        group-svg (fn [shapes]
-                    (if (= (count shapes) 1)
-                      (->> shapes first shapes/shape->svg)
-                      (apply vector
-                             :g
-                             (->> shapes
-                                  (map shapes/shape->svg)))))
-
-        ;; Retrieve the list of shapes grouped if applies
-        shape-svg-xform (comp
-                         (filter :visible)
-                         (map #(update-in % [:shapes] ids->shapes))
-                         (map :shapes)
-                         (map group-svg))
-
-        shapes-svg (->> groups
-                        (vals)
-                        (sort-by :order)
-                        (sequence shape-svg-xform))]
+        shapes-to-draw (map #(get shapes %) (reverse (:root page)))]
     [:svg#page-canvas
      {:x document-start-x
       :y document-start-y
@@ -153,7 +127,7 @@
       :on-mouse-up on-canvas-mouse-up
       :on-wheel on-canvas-wheel}
      [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
-     (apply vector :svg#page-layout shapes-svg)
+     (apply vector :svg#page-layout (map shapes/shape->svg shapes-to-draw))
      (when-let [shape (get page :drawing)]
        (shapes/shape->drawing-svg shape))
      (when-let [selected-uuid (get page :selected)]
