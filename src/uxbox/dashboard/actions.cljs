@@ -23,9 +23,8 @@
 
 (pubsub/register-transition
  :location
- (fn [state location]
-   (if (= (first location)
-          :dashboard)
+ (fn [state [page]]
+   (if (= page :dashboard)
      (-> state
          (assoc :projects (storage/get-projects "user-1"))
          (assoc :activity (storage/get-activity "user-1")))
