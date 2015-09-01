@@ -1,13 +1,17 @@
 (ns uxbox.dashboard.views
-  (:require rum
-            [uxbox.user.views :refer [user]]
-            [uxbox.activity :refer [activity-timeline]]
-            [uxbox.dashboard.actions :as actions]
-            [uxbox.projects.actions :refer [delete-project]]
-            [uxbox.dashboard.icons :as icons]
-            [uxbox.icons :refer [chat logo]]
-            [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
-            [uxbox.time :refer [ago]]))
+  (:require
+   rum
+   [datascript :as d]
+   [uxbox.data.db :refer [conn]]
+   [uxbox.data.queries :as q]
+   [uxbox.user.views :refer [user]]
+   [uxbox.activity :refer [activity-timeline]]
+   [uxbox.dashboard.actions :as actions]
+   [uxbox.projects.actions :refer [delete-project]]
+   [uxbox.dashboard.icons :as icons]
+   [uxbox.icons :refer [chat logo]]
+   [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
+   [uxbox.time :refer [ago]]))
 
 (rum/defc header < rum/cursored
   [user-cursor]
@@ -16,10 +20,10 @@
     (link "/" logo)]
    (user @user-cursor)])
 
-(rum/defc project-count < rum/static
-  [n]
-  [:span.dashboard-projects n " projects"])
-
+(def project-count-atom (q/pipe-to-atom q/project-count conn :project-count))
+(rum/defc project-count < rum/reactive
+  []
+  [:span.dashboard-projects (rum/react project-count-atom) " projects"])
 
 (defn reverse-associative
   [m]
@@ -30,7 +34,7 @@
   (let [name->order (reverse-associative orderings)
         sort-name (get orderings sort-order)]
     [:div.dashboard-info
-     (project-count (count projects))
+     (project-count)
      [:span "Sort by"]
      [:select.input-select
       {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))

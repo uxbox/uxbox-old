@@ -1,15 +1,27 @@
 (ns uxbox.projects.actions
-  (:require [uxbox.pubsub :as pubsub]
-            [uxbox.projects.data :as d]
-            [uxbox.storage.api :as storage]))
+  (:require
+   [uxbox.data.log :as log]
+   [uxbox.data.projects :as p]
+   [uxbox.pubsub :as pubsub]
+   [uxbox.projects.data :as d]
+   [uxbox.storage.api :as storage]))
 
 (defn create-project
   [{:keys [name width height layout]}]
-  (let [now (js/Date.)
-        project (d/create-project name width height layout)
+  (let [project (d/create-project name width height layout)
         page (d/create-page (:uuid project) "Homepage" width height)]
     (pubsub/publish! [:create-project project])
-    (pubsub/publish! [:create-page page])))
+    (pubsub/publish! [:create-page page])
+    (log/record [:uxbox/create-project (p/create-project (:uuid project)
+                                                         name
+                                                         width
+                                                         height
+                                                         layout)])
+    (log/record [:uxbox/create-page (p/create-page (:uuid page)
+                                                   (:uuid project)
+                                                   (:title page)
+                                                   (:width page)
+                                                   (:height page))])))
 
 (defn create-page
   [page]
