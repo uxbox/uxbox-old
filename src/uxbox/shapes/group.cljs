@@ -125,4 +125,5 @@
 
    (assoc-in state [:page :drawing] (map->Group {:x x :y y}))))
 
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.group/Group) "/" ".") uxbox.shapes.group/map->Group)
+(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.group/Group) "/" ".")
+                             uxbox.shapes.group/map->Group)
