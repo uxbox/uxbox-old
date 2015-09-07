@@ -30,9 +30,9 @@
   (let [usr (rum/react data/user)]
     [:div.user-zone {:on-mouse-enter #(reset! menu-open? true)
                      :on-mouse-leave #(reset! menu-open? false)}
-     [:span (:fullname usr)]
+     [:span (:user/fullname usr)]
      [:img {:border "0"
-            :src (:avatar usr)}]
+            :src (:user/avatar usr)}]
      (user-menu @menu-open?)]))
 
 (rum/defc register-form < rum/static

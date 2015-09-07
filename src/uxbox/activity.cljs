@@ -6,7 +6,7 @@
 (rum/defc create-page-activity < rum/static
   [{:keys [project author event datetime]}]
   [:div.activity-content
-    [:span.bold (:name author)]
+    [:span.bold (:user/fullname author)]
     [:span "Create new page"]
     [:div.activity-project
      [:a
@@ -21,7 +21,7 @@
 (rum/defc create-project-activity < rum/static
   [{:keys [project author datetime]}]
   [:div.activity-content
-    [:span.bold (:name author)]
+    [:span.bold (:user/fullname author)]
     [:span "Create new project"]
      [:a {:on-click #(navigate! (workspace-route {:project-uuid (:uuid project)}))} (:name project)]
     [:span.activity-time (ago datetime)]])

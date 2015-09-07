@@ -1,4 +1,5 @@
 (ns uxbox.user.data)
 
-(defonce user (atom {:fullname "Michael Buchannon"
-                     :avatar "/images/avatar.jpg"}))
+(defonce user (atom {:user/uuid (random-uuid)
+                     :user/fullname "Michael Buchannon"
+                     :user/avatar "/images/avatar.jpg"}))

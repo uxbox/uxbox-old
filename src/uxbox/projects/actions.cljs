@@ -6,6 +6,8 @@
    [uxbox.projects.data :as d]
    [uxbox.storage.api :as storage]))
 
+(declare create-page)
+
 (defn create-project
   [{:keys [name width height layout]}]
   (let [project (d/create-project name width height layout)
@@ -64,7 +66,8 @@
  :create-project
  (fn [state project]
    (let [now (js/Date.)
-         activity {:author {:name "Michael Buchannon" :avatar "../../images/avatar.jpg"}
+         activity {:author {:user/fullname "Michael Buchannon"
+                            :user/avatar "../../images/avatar.jpg"}
                    :uuid (random-uuid)
                    :project {:uuid (:uuid project)
                              :name (:name project)}
