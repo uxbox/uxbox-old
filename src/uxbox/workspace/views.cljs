@@ -1,5 +1,6 @@
 (ns uxbox.workspace.views
   (:require rum
+            [uxbox.workspace.signals :as signals]
             [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
@@ -11,6 +12,14 @@
             [uxbox.shapes.core :as shapes]
             [uxbox.pubsub :as pubsub]))
 
+;; Constants
+(def viewport-height  3000)
+(def viewport-width 3000)
+
+(def document-start-x 50)
+(def document-start-y 50)
+
+;; Views
 (rum/defc project-tree < rum/cursored
   [page-title project-bar-visible?]
   (let [title @page-title]
@@ -347,11 +356,13 @@
       (when (:layers open-setting-boxes)
         (layers shapes page))]]))
 
-;; TODO: top scroll stream
 ;; TODO: zoom stream
-(rum/defc vertical-rule < rum/static
-  [top zoom height start-height]
-  (let [padding 20
+(rum/defc vertical-rule < rum/reactive rum/static
+  [zoom]
+  (let [height viewport-height
+        start-height document-start-y
+        top (rum/react signals/scroll-top)
+        padding 20
         big-ticks-mod (/ 100 zoom)
         mid-ticks-mod (/ 50 zoom)
         step-size 10
@@ -371,16 +382,19 @@
    [:svg.vertical-rule
     {:width 3000
      :height 3000
-     :style {:top (str top "px")}}
+     :style {:top (str (- top) "px")}}
     [:g
      [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
      (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]]))
 
 ;; TODO: left scroll stream
 ;; TODO: zoom stream
-(rum/defc horizontal-rule < rum/static
-  [left zoom width start-width]
-  (let [padding 20
+(rum/defc horizontal-rule < rum/reactive rum/static
+  [zoom]
+  (let [left (rum/react signals/scroll-left)
+        width viewport-width
+        start-width document-start-x
+        padding 20
         big-ticks-mod (/ 100 zoom)
         mid-ticks-mod (/ 50 zoom)
         step-size 10
@@ -412,12 +426,6 @@
                :height padding
                :fill "#bab7b7"}]
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
-
-(def viewport-height  3000)
-(def viewport-width 3000)
-
-(def document-start-x 50)
-(def document-start-y 50)
 
 (rum/defc viewport < rum/cursored
   [page shapes zoom grid?]
@@ -453,7 +461,8 @@
         shapes @shapes-cursor]
     [:section.workspace-canvas
       {:class (when (empty? open-setting-boxes)
-                "no-tool-bar")}
+                "no-tool-bar")
+       :on-scroll signals/on-workspace-scroll}
       (when (:selected page)
         (element-options page-cursor
                          project-cursor
@@ -469,9 +478,6 @@
   [db]
   (let [open-setting-boxes (:open-setting-boxes @db)
 
-        left (rum/cursor db [:scroll :left])
-        top (rum/cursor db [:scroll :top])
-
         workspace (rum/cursor db [:workspace])
         grid? (rum/cursor workspace [:grid?])
         zoom (rum/cursor workspace [:zoom])
@@ -484,7 +490,6 @@
         page (rum/cursor db [:page])
         project-bar-visible? (rum/cursor db [:project-bar-visible?])
 
-
         components-cursor (rum/cursor db [:components])
         current-icons-set (rum/cursor db [:current-icons-set])]
     [:div
@@ -496,8 +501,8 @@
        ;; Project bar
        (project-bar project page pages project-bar-visible?)
        ;; Rules
-       (horizontal-rule @left @zoom viewport-width document-start-x)
-       (vertical-rule @top @zoom viewport-height document-start-y)
+       (horizontal-rule @zoom)
+       (vertical-rule @zoom)
        ;; Working area
        (working-area open-setting-boxes
                      page

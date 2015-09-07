@@ -53,9 +53,6 @@
 
                     :current-icons-set :material-design-actions
                     :default-open-setting-boxes #{:tools :layers}
-                    :open-setting-boxes #{:tools :layers}
-
-                    ;; Browser
-                    :scroll {:top 0 :left 0}})
+                    :open-setting-boxes #{:tools :layers}})
 
 (defonce app-state (atom initial-state))

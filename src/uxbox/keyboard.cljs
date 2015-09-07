@@ -34,7 +34,6 @@
   (let [event (get event-keys (.-identifier e))]
     (pubsub/publish! event)))
 
-
 (defn start-keyboard! []
   (let [handler (KeyboardShortcutHandler. js/document)]
     (doseq [[shortcut key] event-keys]
