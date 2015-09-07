@@ -1,5 +1,6 @@
 (ns uxbox.user.views
   (:require rum
+            [uxbox.user.data :as data]
             [uxbox.icons :refer [logo]]
             [uxbox.icons :as icons]
             [uxbox.navigation :as nav :refer [link navigate!]]))
@@ -24,9 +25,9 @@
        icons/exit
        [:span "Save & Exit"]]])
 
-(rum/defcs user < (rum/local false)
-  [state usr]
-  (let [menu-open? (:rum/local state)]
+(rum/defcs user < (rum/local false :menu-open?) rum/reactive
+  [{:keys [menu-open?]}]
+  (let [usr (rum/react data/user)]
     [:div.user-zone {:on-mouse-enter #(reset! menu-open? true)
                      :on-mouse-leave #(reset! menu-open? false)}
      [:span (:fullname usr)]

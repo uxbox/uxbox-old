@@ -2,11 +2,7 @@
 
 
 
-(def initial-state {;; User
-                    :user {:fullname "Michael Buchannon"
-                           :avatar "/images/avatar.jpg"}
-
-                    ;; Projects
+(def initial-state {;; Projects
                     :project nil
                     :project-sort-order :name
                     :project-orderings {

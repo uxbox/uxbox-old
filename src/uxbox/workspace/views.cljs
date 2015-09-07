@@ -67,7 +67,7 @@
      [:li.tooltip.tooltip-bottom
       {:alt "Organize (Ctrl + O)"}
       icons/organize]]]
-   (user @user-cursor)])
+   (user)])
 
 (rum/defc icons-sets < rum/cursored
   [selected-tool current-icons-set components]

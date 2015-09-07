@@ -25,12 +25,12 @@
 
 (def name->order (into {} (for [[k v] project-orderings] [v k])))
 
-(rum/defc header < rum/cursored
-  [user-cursor]
+(rum/defc header < rum/static
+  []
   [:header#main-bar.main-bar
    [:div.main-logo
     (link "/" logo)]
-   (user @user-cursor)])
+   (user)])
 
 (rum/defc project-count < rum/reactive
   []
@@ -107,7 +107,7 @@
                         rum/reactive
   [{sort-order :project-sort-order} db]
   [:main.dashboard-main
-    (header (rum/cursor db [:user]))
+    (header)
     [:section.dashboard-content
      (dashboard-bar sort-order)
      (dashboard-grid sort-order)]
