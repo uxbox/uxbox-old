@@ -11,20 +11,20 @@
   (let [project (d/create-project name width height layout)
         page (d/create-page (:uuid project) "Homepage" width height)]
     (pubsub/publish! [:create-project project])
-    (pubsub/publish! [:create-page page])
     (log/record :uxbox/create-project (p/create-project (:uuid project)
                                                          name
                                                          width
                                                          height
                                                          layout))
-    (log/record :uxbox/create-page (p/create-page (:uuid page)
-                                                  (:uuid project)
-                                                  (:title page)
-                                                  (:width page)
-                                                  (:height page)))))
+    (create-page (:uuid project) page)))
 
 (defn create-page
-  [page]
+  [project-uuid page]
+  (log/record :uxbox/create-page (p/create-page (:uuid page)
+                                                project-uuid
+                                                (:title page)
+                                                (:width page)
+                                                (:height page)))
   (pubsub/publish! [:create-page page]))
 
 (defn create-simple-page
@@ -33,29 +33,23 @@
 
 (defn change-page-title
   [project page title]
+  (log/record :uxbox/change-page-title [page title])
   (pubsub/publish! [:change-page-title [project page title]]))
 
 (defn delete-page
   [project page]
+  (log/record :uxbox/delete-page (:uuid page))
   (pubsub/publish! [:delete-page [project page]]))
 
 (defn delete-project
   [uuid]
+  (log/record :uxbox/delete-project uuid)
   (pubsub/publish! [:delete-project uuid]))
 
 (pubsub/register-transition
  :delete-project
  (fn [state uuid]
-   (log/record :uxbox/delete-project uuid)
    (update state :projects #(dissoc % uuid))))
-
-;; TODO: writes
-;; - create project
-;; - delete project
-
-;; - create page
-;; - change page title
-;; - delete page
 
 ;; TODO: is this only related to UI? seems like local state
 ;; - create group
@@ -65,7 +59,6 @@
 
 ;; - create comment
 ;; - delete comment
-
 
 (pubsub/register-transition
  :create-project

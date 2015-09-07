@@ -6,7 +6,6 @@
 
 (def event-types #{:uxbox/create-project
                    :uxbox/delete-project
-                   ;; TODO
                    :uxbox/create-page
                    :uxbox/change-page-title
                    :uxbox/delete-page
@@ -29,13 +28,26 @@
   [_ project conn]
   (d/transact! conn [project]))
 
+(defmethod persist! :uxbox/delete-project
+  [_ uuid conn]
+  (d/transact! conn [[:db.fn/retractEntity (q/project-by-id @conn uuid)]]))
+
+;; Page
+
 (defmethod persist! :uxbox/create-page
   [_ page conn]
   (d/transact! conn [page]))
 
-(defmethod persist! :uxbox/delete-project
+(defmethod persist! :uxbox/change-page-title
+  [_ [page new-title] conn]
+  (d/transact! conn [[:db/add
+                      (q/page-by-id @conn (:page/uuid page))
+                      :page/title
+                      new-title]]))
+
+(defmethod persist! :uxbox/delete-page
   [_ uuid conn]
-  (d/transact! conn [[:db.fn/retractEntity (q/project-by-id @conn uuid)]]))
+  (d/transact! conn [[:db.fn/retractEntity (q/page-by-id @conn uuid)]]))
 
 (defn record
   [key data]
