@@ -20,7 +20,7 @@
      [:span title]]))
 
 (rum/defc header < rum/cursored
-  [user-cursor page grid? project-bar-visible?]
+  [page grid? project-bar-visible?]
   [:header#workspace-bar.workspace-bar
    [:div.main-icon
     (link "/dashboard"
@@ -474,8 +474,6 @@
 
         shapes (rum/cursor db [:shapes])
 
-        user (rum/cursor db [:user])
-
         project (rum/cursor db [:project])
         pages (rum/cursor db [:project-pages])
 
@@ -486,7 +484,7 @@
         components-cursor (rum/cursor db [:components])
         current-icons-set (rum/cursor db [:current-icons-set])]
     [:div
-     (header user page grid? project-bar-visible?)
+     (header page grid? project-bar-visible?)
      [:main.main-content
       [:section.workspace-content
        ;; Toolbar
