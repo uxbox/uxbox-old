@@ -13,6 +13,18 @@
    [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
    [uxbox.time :refer [ago]]))
 
+;; Materialized queries
+(def projects-atom (q/pipe-to-atom q/projects conn :projects))
+(def project-count-atom (q/pipe-to-atom q/project-count conn :project-count))
+
+;; Config
+;; TODO: i18nized names
+(def project-orderings {:project/name "name"
+                        :project/last-update "date updated"
+                        :project/created "date created"})
+
+(def name->order (into {} (for [[k v] project-orderings] [v k])))
+
 (rum/defc header < rum/cursored
   [user-cursor]
   [:header#main-bar.main-bar
@@ -20,55 +32,36 @@
     (link "/" logo)]
    (user @user-cursor)])
 
-(def project-count-atom (q/pipe-to-atom q/project-count conn :project-count))
 (rum/defc project-count < rum/reactive
   []
   [:span.dashboard-projects (rum/react project-count-atom) " projects"])
 
-(defn reverse-associative
-  [m]
-  (into (empty m) (for [[k v] m] [v k])))
+(rum/defc project-sort-selector < rum/reactive
+  [sort-order]
+  (let [sort-name (get project-orderings (rum/react sort-order))]
+    [:select.input-select
+     {:on-change #(reset! sort-order (name->order (.-value (.-target %))))
+      :value sort-name}
+     (for [order (keys project-orderings)
+           :let [name (get project-orderings order)]]
+       [:option {:key name} name])]))
 
-(rum/defc dashboard-info < rum/static
-  [projects sort-order orderings]
-  (let [name->order (reverse-associative orderings)
-        sort-name (get orderings sort-order)]
+(rum/defc dashboard-bar
+  [sort-order]
+  [:section#dashboard-bar.dashboard-bar
     [:div.dashboard-info
      (project-count)
      [:span "Sort by"]
-     [:select.input-select
-      {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))
-       :value sort-name}
-      (for [order (keys orderings)
-            :let [name (get orderings order)]]
-        [:option {:key name} name])]]))
-
-(rum/defc project-sort-selector < rum/static
-  [sort-order orderings]
-  (let [sort-name (get orderings sort-order)
-        name->order (reverse-associative orderings)]
-    [:select.input-select
-     {:on-change #(actions/set-projects-order (name->order (.-value (.-target %))))
-      :value sort-name}
-     (for [order (keys orderings)
-           :let [name (get orderings order)]]
-       [:option {:key name} name])]))
-
-(rum/defc dashboard-bar < rum/cursored
-  [projects-cursor
-   sort-order-cursor
-   orderings-cursor]
-  [:section#dashboard-bar.dashboard-bar
-    [:div.dashboard-info
-     (project-count (count @projects-cursor))
-     [:span "Sort by"]
-     (project-sort-selector @sort-order-cursor
-                            @orderings-cursor)]
+     (project-sort-selector sort-order)]
     [:div.dashboard-search
      icons/search]])
 
 (rum/defc project-card < rum/static
-  [{:keys [uuid last-update name pages comment-count]}]
+  [{uuid :project/uuid
+    last-update :project/last-update
+    name :project/name
+    pages :project/pages
+    comment-count :project/comment-count}]
   [:div.grid-item.project-th
    {:on-click #(navigate! (workspace-route {:project-uuid uuid}))
     :key uuid}
@@ -83,7 +76,9 @@
      chat
      [:span comment-count]]
     [:div.project-th-icon.delete
-     {:on-click #(do (.stopPropagation %) (delete-project uuid))}
+     {:on-click #(do (.stopPropagation %)
+                     (delete-project uuid)
+                     %)}
      icons/trash]]])
 
 (def new-project
@@ -94,27 +89,26 @@
 (defn sorted-projects
   [projects sort-order]
   (let [project-cards (map project-card (sort-by sort-order projects))]
-    (if (= sort-order :name)
+    (if (= sort-order :project/name)
       project-cards
       (reverse project-cards))))
 
-(rum/defc dashboard-grid < rum/cursored
-  [projects-cursor sort-order-cursor]
+(rum/defc dashboard-grid < rum/reactive
+  [sort-order]
   [:section.dashboard-grid
     [:h2 "Your projects"]
    [:div.dashboard-grid-content
     (vec
      (concat [:div.dashboard-grid-content new-project]
-             (sorted-projects (vals @projects-cursor)
-                              @sort-order-cursor)))]])
+             (sorted-projects (rum/react projects-atom)
+                              (rum/react sort-order))))]])
 
-(rum/defc dashboard [db]
+(rum/defcs dashboard < (rum/local :project/name :project-sort-order)
+                        rum/reactive
+  [{sort-order :project-sort-order} db]
   [:main.dashboard-main
     (header (rum/cursor db [:user]))
     [:section.dashboard-content
-     (dashboard-bar (rum/cursor db [:projects])
-                    (rum/cursor db [:project-sort-order])
-                    (rum/cursor db [:project-orderings]))
-     (dashboard-grid (rum/cursor db [:projects])
-                     (rum/cursor db [:project-sort-order]))]
+     (dashboard-bar sort-order)
+     (dashboard-grid sort-order)]
     (activity-timeline (rum/cursor db [:activity]))])

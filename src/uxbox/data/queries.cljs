@@ -13,6 +13,16 @@
     ;; TODO: cleanup
     a))
 
+(def projects-query '[:find ?e
+                      :where
+                      [?e :project/uuid ?u]])
+
+(defn projects
+  [db]
+  (let [raw-eids (d/q projects-query db)
+        eids (flatten (into [] raw-eids))]
+    (d/pull-many db '[*] eids)))
+
 (defn project-count
   [db]
   (ffirst
