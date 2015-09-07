@@ -17,6 +17,14 @@
                       :where
                       [?e :project/uuid ?u]])
 
+(defn project-by-id
+  [db uuid]
+  (ffirst
+   (d/q
+    `[:find ?e
+      :where [?e :project/uuid ~uuid]]
+    db)))
+
 (defn projects
   [db]
   (let [raw-eids (d/q projects-query db)

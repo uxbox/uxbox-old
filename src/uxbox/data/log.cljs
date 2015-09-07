@@ -1,5 +1,6 @@
 (ns uxbox.data.log
   (:require
+   [uxbox.data.queries :as q]
    [uxbox.data.db :as db]
    [datascript :as d]))
 
@@ -20,6 +21,22 @@
                    :uxbox/move-shape-up
                    :uxbox/move-shape-down})
 
+(defmulti persist! (fn [key data conn] key))
+
+;; Project
+
+(defmethod persist! :uxbox/create-project
+  [_ project conn]
+  (d/transact! conn [project]))
+
+(defmethod persist! :uxbox/create-page
+  [_ page conn]
+  (d/transact! conn [page]))
+
+(defmethod persist! :uxbox/delete-project
+  [_ uuid conn]
+  (d/transact! conn [[:db.fn/retractEntity (q/project-by-id @conn uuid)]]))
+
 (defn record
-  [entry]
-  (d/transact! db/conn [(second entry)]))
+  [key data]
+  (persist! key data db/conn))

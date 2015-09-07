@@ -12,16 +12,16 @@
         page (d/create-page (:uuid project) "Homepage" width height)]
     (pubsub/publish! [:create-project project])
     (pubsub/publish! [:create-page page])
-    (log/record [:uxbox/create-project (p/create-project (:uuid project)
+    (log/record :uxbox/create-project (p/create-project (:uuid project)
                                                          name
                                                          width
                                                          height
-                                                         layout)])
-    (log/record [:uxbox/create-page (p/create-page (:uuid page)
-                                                   (:uuid project)
-                                                   (:title page)
-                                                   (:width page)
-                                                   (:height page))])))
+                                                         layout))
+    (log/record :uxbox/create-page (p/create-page (:uuid page)
+                                                  (:uuid project)
+                                                  (:title page)
+                                                  (:width page)
+                                                  (:height page)))))
 
 (defn create-page
   [page]
@@ -46,6 +46,7 @@
 (pubsub/register-transition
  :delete-project
  (fn [state uuid]
+   (log/record :uxbox/delete-project uuid)
    (update state :projects #(dissoc % uuid))))
 
 ;; TODO: writes
