@@ -347,6 +347,8 @@
       (when (:layers open-setting-boxes)
         (layers shapes page))]]))
 
+;; TODO: top scroll stream
+;; TODO: zoom stream
 (rum/defc vertical-rule < rum/static
   [top zoom height start-height]
   (let [padding 20
@@ -374,6 +376,8 @@
      [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
      (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]]))
 
+;; TODO: left scroll stream
+;; TODO: zoom stream
 (rum/defc horizontal-rule < rum/static
   [left zoom width start-width]
   (let [padding 20
