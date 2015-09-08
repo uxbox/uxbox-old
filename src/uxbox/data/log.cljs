@@ -14,7 +14,6 @@
                    :uxbox/delete-shape
                    :uxbox/move-shape
                    :uxbox/change-shape-attr
-
                    :uxbox/toggle-shape-visibility
                    :uxbox/toggle-shape-lock
                    :uxbox/move-shape-up

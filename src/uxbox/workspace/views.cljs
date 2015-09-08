@@ -257,10 +257,9 @@
        {:alt "Feedback (Ctrl + Shift + M)"}
        icons/chat]]]])
 
-(rum/defcs project-pages < (rum/local {}) rum/cursored
-  [state project-cursor page-cursor pages-cursor]
-  (let [editing-pages (:rum/local state)
-        current-project @project-cursor
+(rum/defcs project-pages < (rum/local {} :editing-pages) rum/cursored
+  [{:keys [editing-pages]} project-cursor page-cursor pages-cursor]
+  (let [current-project @project-cursor
         current-pages @pages-cursor
         current-page @page-cursor]
     [:ul.tree-view
@@ -300,10 +299,9 @@
 
 (rum/defcs new-page < (rum/local {:adding-new? false
                                   :new-page-title ""})
-                       rum/cursored
-  [{local-state :rum/local} project-cursor]
-  (let [{:keys [adding-new? new-page-title]} @local-state
-        project @project-cursor]
+                       rum/static
+  [{local-state :rum/local} project-uuid]
+  (let [{:keys [adding-new? new-page-title]} @local-state]
     (if adding-new?
       [:input.input-text
        {:title "page-title"
@@ -315,7 +313,7 @@
         :on-key-up #(cond
                       (= (.-keyCode %) 13)
                       (when (not (empty? (str/trim new-page-title)))
-                        (create-simple-page project new-page-title)
+                        (create-simple-page project-uuid new-page-title)
                         (reset! local-state {:adding-new? false
                                              :new-page-title ""}))
                       (= (.-keyCode %) 27)
@@ -326,7 +324,7 @@
        "+ Add new page"])))
 
 (rum/defc project-bar < rum/cursored
-  [project page pages project-bar-visible?]
+  [project-uuid project page pages project-bar-visible?]
   (let [project-name (:name @project)]
     [:div#project-bar.project-bar
      (when-not @project-bar-visible?
@@ -334,7 +332,7 @@
      [:div.project-bar-inside
       [:span.project-name project-name]
       (project-pages project page pages)
-      (new-page project)]]))
+      (new-page project-uuid)]]))
 
 (rum/defc aside < rum/cursored
   [open-setting-boxes
@@ -475,7 +473,7 @@
                 (rum/cursor workspace-cursor [:grid?]))]))
 
 (rum/defc workspace
-  [db]
+  [db [project-uuid]]
   (let [open-setting-boxes (:open-setting-boxes @db)
 
         workspace (rum/cursor db [:workspace])
@@ -499,7 +497,7 @@
        ;; Toolbar
        (toolbar open-setting-boxes)
        ;; Project bar
-       (project-bar project page pages project-bar-visible?)
+       (project-bar project-uuid project page pages project-bar-visible?)
        ;; Rules
        (horizontal-rule @zoom)
        (vertical-rule @zoom)
