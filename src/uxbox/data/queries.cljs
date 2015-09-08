@@ -13,37 +13,55 @@
     ;; TODO: cleanup
     a))
 
-(def projects-query '[:find ?e
+(def projects-query '[:find [?e ...]
                       :where
                       [?e :project/uuid ?u]])
 
 (defn project-by-id
-  [db uuid]
-  (ffirst
+  [uuid db]
+  (first
    (d/q
-    `[:find ?e
+    `[:find [?e]
       :where [?e :project/uuid ~uuid]]
     db)))
 
+(defn pull-project-by-id
+  [uuid db]
+  (d/pull db '[*] (project-by-id uuid db)))
+
 (defn page-by-id
-  [db uuid]
-  (ffirst
+  [uuid db]
+  (first
    (d/q
-    `[:find ?e
+    `[:find [?e]
       :where [?e :page/uuid ~uuid]]
     db)))
 
+(defn pull-page-by-id
+  [uuid db]
+  (d/pull db '[*] (page-by-id uuid db)))
+
+(defn pages-by-project-id
+  [puuid db]
+  (d/q
+   `[:find [?e ...]
+     :where [?e :page/project ~puuid]]
+   db))
+
+(defn pull-pages-by-project-id
+  [puuid db]
+  (d/pull-many db '[*] (pages-by-project-id puuid db)))
+
 (defn projects
   [db]
-  (let [raw-eids (d/q projects-query db)
-        eids (flatten (into [] raw-eids))]
+  (let [eids (d/q projects-query db)]
     (d/pull-many db '[*] eids)))
 
 (defn project-count
   [db]
-  (ffirst
+  (first
    (d/q
-    '[:find (count ?e)
+    '[:find [(count ?e)]
       :where
       [?e :project/uuid ?u]]
     db)))
