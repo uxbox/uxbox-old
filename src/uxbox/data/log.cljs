@@ -36,7 +36,10 @@
 
 (defmethod persist! :uxbox/create-page
   [_ page conn]
-  (d/transact! conn [page]))
+  (let [relpage (assoc page
+                       :page/project
+                       (q/project-by-id (:page/project page) @conn))]
+    (d/transact! conn [relpage])))
 
 (defmethod persist! :uxbox/change-page-title
   [_ [page new-title] conn]

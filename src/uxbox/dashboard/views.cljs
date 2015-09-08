@@ -14,8 +14,10 @@
    [uxbox.time :refer [ago]]))
 
 ;; Materialized queries
-(def projects-atom (q/pipe-to-atom q/projects conn :projects))
-(def project-count-atom (q/pipe-to-atom q/project-count conn :project-count))
+(def projects-atom
+  (q/pipe-to-atom q/projects conn :projects))
+(def project-count-atom
+  (q/pipe-to-atom q/project-count conn :project-count))
 
 ;; Config
 ;; TODO: i18nized names

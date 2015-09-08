@@ -1,6 +1,6 @@
 (ns uxbox.projects.data)
 
-;; FIXME: use
+;; FIXME: use data.projects
 (defn create-project
   [name width height layout]
   {:name name

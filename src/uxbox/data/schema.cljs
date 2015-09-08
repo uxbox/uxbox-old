@@ -9,9 +9,7 @@
    :project/height {:db/cardinality :db.cardinality/one
                    :db/valueType    :db.type/long}
    :project/layout {:db/cardinality :db.cardinality/one
-                    :db/valueType   :db.type/keyword}
-   :project/pages {:db/cardinality :db.cardinality/many
-                   :db/valueType    :db.type/ref}})
+                    :db/valueType   :db.type/keyword}})
 
 (def page-schema
   {:page/uuid {:db/unique :db.unique/identity}
