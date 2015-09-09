@@ -63,7 +63,11 @@
   [puuid db]
   (d/pull-many db '[*] (pages-by-project-id puuid db)))
 
-(defn projects
+(defn page-count-by-project-id
+  [puuid db]
+  (count (pages-by-project-id puuid db)))
+
+(defn pull-projects
   [db]
   (let [eids (d/q projects-query db)]
     (d/pull-many db '[*] eids)))

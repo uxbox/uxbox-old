@@ -15,7 +15,7 @@
 
 ;; Materialized queries
 (def projects-atom
-  (q/pipe-to-atom q/projects conn :projects))
+  (q/pipe-to-atom q/pull-projects conn :projects))
 (def project-count-atom
   (q/pipe-to-atom q/project-count conn :project-count))
 
