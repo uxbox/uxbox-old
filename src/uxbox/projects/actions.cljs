@@ -30,22 +30,28 @@
   (pubsub/publish! [:create-page page]))
 
 (defn create-simple-page
-  [project-uuid title]
-  (pubsub/publish!
-   [:create-page (d/create-page project-uuid
-                                title
-                                (:width project)
-                                (:height project))]))
+  [project title]
+  (let [p (d/create-page project
+                         title
+                         (:width project)
+                         (:height project))]
+    (log/record :uxbox/create-page (p/create-page (:uuid p)
+                                                  (:project/uuid project)
+                                                  (:title p)
+                                                  (:project/width project)
+                                                  (:project/height project)))
+    (pubsub/publish!
+     [:create-page p])))
 
 (defn change-page-title
-  [project page title]
+  [project-uuid page title]
   (log/record :uxbox/change-page-title [page title])
-  (pubsub/publish! [:change-page-title [project page title]]))
+  (pubsub/publish! [:change-page-title [project-uuid page title]]))
 
 (defn delete-page
-  [project page]
-  (log/record :uxbox/delete-page (:uuid page))
-  (pubsub/publish! [:delete-page [project page]]))
+  [project-uuid page]
+  (log/record :uxbox/delete-page (:page/uuid page))
+  (pubsub/publish! [:delete-page [project-uuid page]]))
 
 (defn delete-project
   [uuid]
@@ -104,7 +110,7 @@
 
 (pubsub/register-transition
  :delete-page
- (fn [state [project page]]
+ (fn [state [_ page]]
    (let [page-uuid (:uuid page)
          new-state (update state :project-pages dissoc page-uuid)]
      (if (= (:uuid (:page state)) page-uuid)
@@ -113,15 +119,15 @@
 
 (pubsub/register-transition
  :change-page-title
- (fn [state [project page title]]
+ (fn [state [_ page title]]
    (assoc-in state [:project-pages (:uuid page) :title] title)))
 
 (pubsub/register-effect
  :change-page-title
- (fn [state [project page title]]
-   (storage/change-page-title (:uuid project) page title)))
+ (fn [state [project-uuid page title]]
+   (storage/change-page-title project-uuid page title)))
 
 (pubsub/register-effect
  :delete-page
- (fn [state [project page]]
-   (storage/delete-page (:uuid project) page)))
+ (fn [state [project-uuid page]]
+   (storage/delete-page project-uuid page)))

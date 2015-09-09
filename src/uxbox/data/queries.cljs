@@ -43,10 +43,11 @@
 
 (defn pages-by-project-id
   [puuid db]
-  (d/q
-   `[:find [?e ...]
-     :where [?e :page/project ~puuid]]
-   db))
+  (let [pid (project-by-id puuid db)]
+    (d/q
+     `[:find [?e ...]
+       :where [?e :page/project ~pid]]
+     db)))
 
 (defn pull-pages-by-project-id
   [puuid db]

@@ -49,7 +49,18 @@
 
 (defmethod persist! :uxbox/delete-page
   [_ uuid conn]
-  (d/transact! conn [[:db.fn/retractEntity (q/page-by-id @conn uuid)]]))
+  (d/transact! conn [[:db.fn/retractEntity (q/page-by-id uuid @conn)]]))
+
+;; Shape
+
+;; :uxbox/create-shape
+;; :uxbox/delete-shape
+;; :uxbox/move-shape
+;; :uxbox/change-shape-attr
+;; :uxbox/toggle-shape-visibility
+;; :uxbox/toggle-shape-lock
+;; :uxbox/move-shape-up
+;; :uxbox/move-shape-down
 
 (defn record
   [key data]
