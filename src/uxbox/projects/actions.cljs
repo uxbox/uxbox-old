@@ -3,8 +3,7 @@
    [uxbox.data.log :as log]
    [uxbox.data.projects :as p]
    [uxbox.pubsub :as pubsub]
-   [uxbox.projects.data :as d]
-   [uxbox.storage.api :as storage]))
+   [uxbox.projects.data :as d]))
 
 (declare create-page)
 
@@ -93,21 +92,6 @@
  (fn [state page]
    (assoc-in state [:project-pages (:uuid page)] page)))
 
-(pubsub/register-effect
- :create-project
- (fn [state project]
-   (storage/create-project project)))
-
-(pubsub/register-effect
- :delete-project
- (fn [state uuid]
-   (storage/delete-project uuid)))
-
-(pubsub/register-effect
- :create-page
- (fn [state page]
-   (storage/create-page page)))
-
 (pubsub/register-transition
  :delete-page
  (fn [state [_ page]]
@@ -121,13 +105,3 @@
  :change-page-title
  (fn [state [_ page title]]
    (assoc-in state [:project-pages (:uuid page) :title] title)))
-
-(pubsub/register-effect
- :change-page-title
- (fn [state [project-uuid page title]]
-   (storage/change-page-title project-uuid page title)))
-
-(pubsub/register-effect
- :delete-page
- (fn [state [project-uuid page]]
-   (storage/delete-page project-uuid page)))

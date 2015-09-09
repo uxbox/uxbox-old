@@ -1,7 +1,6 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
-            [uxbox.storage.api :as storage]
             [uxbox.shapes.core :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
@@ -55,7 +54,7 @@
  (fn [state [shape-uuid shape-val]]
    (let [project-uuid (get-in state [:project :uuid])
          page-uuid (get-in state [:page :uuid])]
-     (storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
+     #_(storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
 
 (pubsub/register-event
   :canvas-mouse-click
@@ -72,7 +71,7 @@
           page-uuid (get-in state [:page :uuid])]
 
       (when selected-uuid
-         (storage/remove-shape project-uuid page-uuid selected-uuid))
+         #_(storage/remove-shape project-uuid page-uuid selected-uuid))
 
       (if selected-uuid
          (-> state
@@ -104,7 +103,7 @@
            project-uuid (get-in state [:project :uuid])
            page-uuid (get-in state [:page :uuid])]
        (do
-         (storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
+         #_(storage/move-shape project-uuid page-uuid selected-uuid deltax deltay)
          (-> state
              (update-in [:shapes selected-uuid] dissoc :dragging-coors)
              (update-in [:shapes selected-uuid] dissoc :dragging))))

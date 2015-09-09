@@ -7,7 +7,6 @@
               [uxbox.data.projects :as proj]
               [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.keyboard :refer [start-keyboard!]]
-              [uxbox.storage.core :refer [start-storage!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
@@ -38,7 +37,6 @@
 
 (defn start!
   [app-state location]
-  (start-storage! local-storage)
   (start-history!)
   (start-keyboard!)
   (rum/mount (ui app-state location) $el))

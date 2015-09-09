@@ -1,6 +1,5 @@
 (ns uxbox.workspace.actions
-  (:require [uxbox.pubsub :as pubsub]
-            [uxbox.storage.api :as storage]))
+  (:require [uxbox.pubsub :as pubsub]))
 
 (defn change-shape-attr
   [project-uuid page-uuid shape-uuid attr value]
@@ -54,7 +53,7 @@
 (pubsub/register-effect
  :change-shape-attr
  (fn [state [project-uuid page-uuid shape-uuid attr value]]
-   (storage/change-shape-attr project-uuid page-uuid shape-uuid attr value)))
+   #_(storage/change-shape-attr project-uuid page-uuid shape-uuid attr value)))
 
 (pubsub/register-transition
  :close-setting-box
@@ -119,28 +118,14 @@
 (pubsub/register-effect
  :toggle-shape-visiblity
  (fn [state shape-id]
-   (storage/toggle-shape-visibility shape-id)))
+   #_(storage/toggle-shape-visibility shape-id)))
 
 (pubsub/register-effect
  :toggle-shape-lock
  (fn [state shape-id]
-   (storage/toggle-shape-lock shape-id)))
+   #_(storage/toggle-shape-lock shape-id)))
 
 (pubsub/register-transition
  :toggle-shape-lock
  (fn [state shape-id]
    (update-in state [:shapes shape-id :locked] #(not %1))))
-
-(pubsub/register-transition
- :location
- (fn [state data]
-   (let [[location [project-uuid page-uuid]] data]
-     (if (= location :workspace)
-       (assoc state :project (storage/get-project project-uuid)
-                    :page (storage/get-page page-uuid)
-                    :project-pages (storage/get-pages project-uuid)
-                    :shapes (storage/get-shapes project-uuid page-uuid)
-                    :workspace (:workspace-defaults state)
-                    :open-setting-boxes (:default-open-setting-boxes state)
-                    :project-bar-visible? false)
-       state))))

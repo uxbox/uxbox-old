@@ -1,13 +1,11 @@
 (ns uxbox.runner
-  (:require [cljs.test :as test]
-            [uxbox.storage.generators-test]))
+  (:require [cljs.test :as test]))
 
 
 (enable-console-print!)
 
 (defn main
   []
-  (test/run-tests (test/empty-env)
-                  'uxbox.storage.generators-test))
+  (test/run-tests (test/empty-env)))
 
 (set! *main-cli-fn* main)
