@@ -135,7 +135,7 @@
       :on-wheel on-canvas-wheel}
      [:rect {:x 0 :y 0 :width "100%" :height "100%" :fill "white"}]
      (apply vector :svg#page-layout (map shapes/shape->svg shapes-to-draw))
-     (when-let [shape (get page :drawing)]
+     #_(when-let [shape (get page :drawing)]
        (shapes/shape->drawing-svg shape))
-     (when-let [selected-uuid (get page :selected)]
+     #_(when-let [selected-uuid (get page :selected)]
        (shapes/shape->selected-svg (get shapes selected-uuid)))]))

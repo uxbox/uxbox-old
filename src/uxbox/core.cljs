@@ -30,7 +30,7 @@
                   (dashboard app-state)
                   (lightbox app-state)]
       ;; Workspace
-      :workspace (workspace conn app-state params))))
+      :workspace (workspace conn params))))
 
 (def $el (.getElementById js/document "app"))
 

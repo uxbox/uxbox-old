@@ -231,9 +231,8 @@
          :on-click #(reset! selected-tool (:key tool))}
         (:icon tool)])]])
 
-;; TODO: selected, locked
 (rum/defc layers
-  [open-toolboxes page shapes]
+  [open-toolboxes page]
   [:div#layers.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
@@ -290,7 +289,7 @@
         {:alt "Feedback (Ctrl + Shift + M)"}
         icons/chat]]]]))
 
-(rum/defcs project-page < (rum/local false :editing?)
+(rum/defcs project-page < (rum/local false :editing?) rum/static
   [{:keys [editing?]} page current-page project deletable?]
   (let [{page-uuid :page/uuid
          page-title :page/title} page
@@ -376,13 +375,8 @@
       (project-pages project page pages)
       (new-page project)]]))
 
-;; FIXME: tools as an atom in uxbox.workspace.tools
 (rum/defc aside < rum/cursored
-  [open-toolboxes
-   selected-tool
-   components-cursor
-   page
-   shapes]
+  [open-toolboxes selected-tool page]
   (let [open-setting-boxes @open-toolboxes]
     [:aside#settings-bar.settings-bar
      [:div.settings-bar-inside
@@ -391,16 +385,14 @@
 
       (when (:icons open-setting-boxes)
         (icons-sets open-toolboxes
-                    selected-tool
-                    components-cursor))
+                    selected-tool))
 
       (when (:components open-setting-boxes)
-        (components open-toolboxes selected-tool components-cursor))
+        (components open-toolboxes selected-tool))
 
       (when (:layers open-setting-boxes)
-        (layers open-toolboxes page shapes))]]))
+        (layers open-toolboxes page))]]))
 
-;; TODO: zoom stream
 (rum/defc vertical-rule < rum/reactive rum/static
   [zoom]
   (let [height viewport-height
@@ -431,8 +423,6 @@
      [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
      (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]]))
 
-;; TODO: left scroll stream
-;; TODO: zoom stream
 (rum/defc horizontal-rule < rum/reactive rum/static
   [zoom]
   (let [left (rum/react signals/scroll-left)
@@ -513,47 +503,36 @@
 (rum/defcs workspace < (rum/local {:open-toolboxes #{:tools :layers}
                                    :grid? false
                                    :zoom 1
-                                   :selected-tool nil})
-  [{local-state :rum/local} conn db [project-uuid page-uuid]]
+                                   :selected-tool nil
+                                   :project-bar-visible? false})
+  [{local-state :rum/local} conn [project-uuid page-uuid]]
   (let [page-uuid (or page-uuid (q/first-page-id-by-project-id project-uuid @conn))
 
         open-toolboxes (rum/cursor local-state [:open-toolboxes])
         grid? (rum/cursor local-state [:grid?])
         zoom (rum/cursor local-state [:zoom]) ;; FIXME
         selected-tool (rum/cursor local-state [:selected-tool])
+        project-bar-visible? (rum/cursor local-state [:project-bar-visible?])
 
-        shapes (rum/cursor db [:shapes])
-
-        project (rum/cursor db [:project])
-        pproject (q/pull-project-by-id project-uuid @conn)
-        pages (rum/cursor db [:project-pages])
-        ppages (q/pull-pages-by-project-id project-uuid @conn)
-
-        page (rum/cursor db [:page])
-        ppage (q/pull-page-by-id page-uuid @conn)
-
-        project-bar-visible? (rum/cursor db [:project-bar-visible?])
-
-        components-cursor (rum/cursor db [:components])
-        current-icons-set (rum/cursor db [:current-icons-set])]
+        project (q/pull-project-by-id project-uuid @conn)
+        pages (q/pull-pages-by-project-id project-uuid @conn)
+        page (q/pull-page-by-id page-uuid @conn)
+        shapes (q/pull-shapes-by-page-id page-uuid @conn)]
     [:div
-     (header ppage grid? project-bar-visible?)
+     (header page grid? project-bar-visible?)
      [:main.main-content
       [:section.workspace-content
        ;; Toolbar
        (toolbar open-toolboxes)
        ;; Project bar
-       (project-bar pproject ppage ppages @project-bar-visible?)
+       (project-bar project page pages @project-bar-visible?)
        ;; Rules
        (horizontal-rule @zoom)
        (vertical-rule @zoom)
        ;; Working area
-       (working-area @open-toolboxes ppage pproject @shapes @zoom @grid?)
+       (working-area @open-toolboxes page project shapes @zoom @grid?)
        ;; Aside
        (when-not (empty? @open-toolboxes)
          (aside open-toolboxes
                 selected-tool
-                components-cursor
-                current-icons-set
-                ppage
-                shapes))]]]))
+                page))]]]))

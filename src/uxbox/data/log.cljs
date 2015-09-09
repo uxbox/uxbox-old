@@ -16,6 +16,7 @@
                    :uxbox/change-shape
                    :uxbox/toggle-shape-visibility
                    :uxbox/toggle-shape-lock
+                   ;; TODO
                    :uxbox/move-shape-up
                    :uxbox/move-shape-down})
 
