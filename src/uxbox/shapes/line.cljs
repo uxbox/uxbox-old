@@ -1,6 +1,7 @@
 (ns uxbox.shapes.line
   (:require
    rum
+   [uxbox.workspace.tools :refer [register-drawing-tool!]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.pubsub :as pubsub]
@@ -135,11 +136,11 @@
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".")
                              uxbox.shapes.line/map->Line)
 
-(pubsub/publish! [:register-shape {:shape Line
-                                   :new new-line
-                                   :drawing drawing-line
-                                   :key :line
-                                   :icon icons/line
-                                   :text "Line (Ctrl + L)"
-                                   :menu :tools
-                                   :order 30}])
+(register-drawing-tool! {:shape Line
+                         :new new-line
+                         :drawing drawing-line
+                         :key :line
+                         :icon icons/line
+                         :text "Line (Ctrl + L)"
+                         :menu :tools
+                         :priority 30})

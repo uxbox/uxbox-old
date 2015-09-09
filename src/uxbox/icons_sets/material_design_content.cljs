@@ -1,6 +1,5 @@
 (ns uxbox.icons-sets.material-design-content
-  (:require [uxbox.icons-sets.register]
-            [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.workspace.tools :as t]))
 
 (def material-design-content (sorted-map
    :add {
@@ -194,6 +193,6 @@
       :d
       "M25 16c-5.29 0-10.11 1.97-13.8 5.2l-7.2-7.2v18h18l-7.23-7.23c2.77-2.33 6.32-3.77 10.23-3.77 7.09 0 13.09 4.61 15.19 11l4.73-1.56c-2.75-8.38-10.62-14.44-19.92-14.44z"}]}))
 
-(pubsub/publish! [:register-icons-set {:key :material-design-content
-                                       :name "Material Design (Content)"
-                                       :icons material-design-content}])
+(t/register-icon-set! {:key :material-design-content
+                       :name "Material Design (Content)"
+                       :icons material-design-content})

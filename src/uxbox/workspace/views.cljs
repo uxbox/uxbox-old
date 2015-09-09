@@ -1,5 +1,8 @@
 (ns uxbox.workspace.views
   (:require rum
+            [uxbox.keyboard :as k]
+            [uxbox.data.queries :as q]
+            [uxbox.workspace.tools :as t]
             [uxbox.workspace.signals :as signals]
             [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
@@ -12,7 +15,27 @@
             [uxbox.shapes.core :as shapes]
             [uxbox.pubsub :as pubsub]))
 
+;; Actions
+
+(defn- open-toolbox
+  [open-toolboxes toolbox]
+  (if (= toolbox :layers)
+    (conj open-toolboxes toolbox)
+    (clojure.set/intersection (conj open-toolboxes toolbox)
+                              #{:layers toolbox})))
+
+(defn- close-toolbox
+  [open-toolboxes toolbox]
+  (disj open-toolboxes toolbox))
+
+(defn- toggle-toolbox
+  [open-toolboxes toolbox]
+  (if (contains? open-toolboxes toolbox)
+    (close-toolbox open-toolboxes toolbox)
+    (open-toolbox open-toolboxes toolbox)))
+
 ;; Constants
+
 (def viewport-height  3000)
 (def viewport-width 3000)
 
@@ -20,101 +43,108 @@
 (def document-start-y 50)
 
 ;; Views
+
 (rum/defc project-tree < rum/cursored
   [page-title project-bar-visible?]
-  (let [title @page-title]
-    [:div.project-tree-btn
-     {:on-click #(swap! project-bar-visible? not)}
-     icons/project-tree
-     [:span title]]))
+  [:div.project-tree-btn
+   {:on-click #(swap! project-bar-visible? not)}
+   icons/project-tree
+   [:span page-title]])
 
 (rum/defc header < rum/cursored
   [page grid? project-bar-visible?]
-  [:header#workspace-bar.workspace-bar
-   [:div.main-icon
-    (link "/dashboard"
-          icons/logo-icon)]
-   (project-tree (rum/cursor page [:title]) project-bar-visible?)
-   [:div.workspace-options
-    [:ul.options-btn
-     [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
-      icons/undo]
-     [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
-      icons/redo]]
-    [:ul.options-btn
-     ;; TODO: refactor
-     [:li.tooltip.tooltip-bottom
-      {:alt "Export (Ctrl + E)"}
-      ;; page-title
-      [:a {:download (str (:title @page) ".svg")
-           :href "#"
-           :on-click (fn [e]
-                       (let [innerHTML (.-innerHTML (.getElementById js/document "page-layout"))
-                             width (:width @page)
-                             height (:height @page)
-                             html (str "<svg width='" width  "' height='" height  "'>" innerHTML "</svg>")
-                             data (js/Blob. #js [html] #js {:type "application/octet-stream"})
-                             url (.createObjectURL (.-URL js/window) data)]
-                         (set! (.-href (.-currentTarget e)) url)))}
-       icons/export]]
-     [:li.tooltip.tooltip-bottom
-      {:alt "Image (Ctrl + I)"}
-      icons/image]]
-    [:ul.options-btn
-     [:li.tooltip.tooltip-bottom
-      {:alt "Ruler (Ctrl + R)"}
-      icons/ruler]
-     [:li.tooltip.tooltip-bottom
-      {:alt "Grid (Ctrl + G)"
-       :class (when @grid?
-                "selected")
-       :on-click #(actions/toggle-grid)}
-      icons/grid]
-     [:li.tooltip.tooltip-bottom
-      {:alt "Align (Ctrl + A)"}
-      icons/alignment]
-     [:li.tooltip.tooltip-bottom
-      {:alt "Organize (Ctrl + O)"}
-      icons/organize]]]
-   (user)])
+  (let [{page-title :page/title
+         page-width :page/width
+         page-height :page/height} page]
+    [:header#workspace-bar.workspace-bar
+     [:div.main-icon
+      (link "/dashboard"
+            icons/logo-icon)]
+     (project-tree page-title project-bar-visible?)
+     [:div.workspace-options
+      [:ul.options-btn
+       [:li.tooltip.tooltip-bottom {:alt "Undo (Ctrl + Z)"}
+        icons/undo]
+       [:li.tooltip.tooltip-bottom {:alt "Redo (Ctrl + Shift + Z)"}
+        icons/redo]]
+      [:ul.options-btn
+       ;; TODO: refactor
+       [:li.tooltip.tooltip-bottom
+        {:alt "Export (Ctrl + E)"}
+        ;; page-title
+        [:a {:download (str page-title ".svg")
+             :href "#"
+             :on-click (fn [e]
+                         (let [innerHTML (.-innerHTML (.getElementById js/document "page-layout"))
+                               width page-width
+                               height page-height
+                               html (str "<svg width='" width  "' height='" height  "'>" innerHTML "</svg>")
+                               data (js/Blob. #js [html] #js {:type "application/octet-stream"})
+                               url (.createObjectURL (.-URL js/window) data)]
+                           (set! (.-href (.-currentTarget e)) url)))}
+         icons/export]]
+       [:li.tooltip.tooltip-bottom
+        {:alt "Image (Ctrl + I)"}
+        icons/image]]
+      [:ul.options-btn
+       [:li.tooltip.tooltip-bottom
+        {:alt "Ruler (Ctrl + R)"}
+        icons/ruler]
+       [:li.tooltip.tooltip-bottom
+        {:alt "Grid (Ctrl + G)"
+         :class (when @grid?
+                  "selected")
+         :on-click #(swap! grid? not)}
+        icons/grid]
+       [:li.tooltip.tooltip-bottom
+        {:alt "Align (Ctrl + A)"}
+        icons/alignment]
+       [:li.tooltip.tooltip-bottom
+        {:alt "Organize (Ctrl + O)"}
+        icons/organize]]]
+     (user)]))
 
-(rum/defc icons-sets < rum/cursored
-  [selected-tool current-icons-set components]
+(rum/defcs icons-sets < (rum/local (first (keys @t/icon-sets))
+                                   :current-icons-set)
+                                    rum/cursored rum/reactive
+  [{:keys [current-icons-set]} open-toolboxes selected-tool]
   [:div#form-figures.tool-window
    [:div.tool-window-bar
     [:div.tool-window-icon
      icons/window]
     [:span "Figures"]
     [:div.tool-window-close
-     {:on-click #(actions/close-setting-box :icons-sets)}
+     {:on-click #(swap! open-toolboxes close-toolbox :icons-sets)}
      icons/close]]
    [:div.tool-window-content
     [:div.figures-catalog
+     ;; extract component: set selector
      [:select.input-select.small
-      {:on-change #(actions/set-icons-set (keyword (.-value (.-target %))))}
-      (for [[icons-set-key icons-set] (seq (:icons-sets @components))]
+      {:on-change #(reset! current-icons-set (keyword (.-value (.-target %))))}
+      (for [[icons-set-key icons-set] (rum/react t/icon-sets)]
         [:option
          {:key icons-set-key
           :value icons-set-key}
          (:name icons-set)])]]
-    (for [[icon-key icon] (seq (get-in @components [:icons-sets @current-icons-set :icons]))]
+    ;; extract component: icon set
+    (for [[icon-key icon] (get-in (rum/react t/icon-sets) [@current-icons-set :icons])]
       [:div.figure-btn
        {:key icon-key
         :class (when (= @selected-tool
                         [:icon @current-icons-set icon-key])
                  "selected")
-        :on-click #(actions/set-tool [:icon @current-icons-set icon-key])}
+        :on-click #(reset! selected-tool [:icon @current-icons-set icon-key])}
        [:svg (:svg icon)]])]])
 
 (rum/defc components < rum/cursored
-  [selected-tool comps]
+  [open-toolboxes selected-tool comps]
   [:div#form-components.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
       icons/window]
      [:span "Components"]
      [:div.tool-window-close
-      {:on-click #(actions/close-setting-box :components)}
+      {:on-click #(swap! open-toolboxes close-toolbox :components)}
       icons/close]]
    [:div.tool-window-content
     (for [tool (sort :order (vals (:components @comps)))]
@@ -124,7 +154,7 @@
                         (:key tool))
                  "selected")
         :key (:key tool)
-        :on-click #(actions/set-tool (:key tool))} (:icon tool)])]])
+        :on-click #(reset! selected-tool (:key tool))} (:icon tool)])]])
 
 
 (rum/defcs element-options < (rum/local :options) rum/cursored
@@ -181,41 +211,43 @@
                   {:key (str (:key menu) "-" (:name option) "-lock")}
                   icons/lock]))]])]])]))
 
-(rum/defc tools < rum/cursored
-  [selected-tool available-tools]
+(rum/defc tools < rum/cursored rum/reactive
+  [open-toolboxes selected-tool]
   [:div#form-tools.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
       icons/window]
      [:span "Tools"]
      [:div.tool-window-close
-      {:on-click #(actions/close-setting-box :tools)}
+      {:on-click #(swap! open-toolboxes close-toolbox :tools)}
       icons/close]]
     [:div.tool-window-content
-     (for [tool (sort :order (vals @available-tools))]
+     (for [tool (t/sorted-tools (rum/react t/drawing-tools))]
        [:div.tool-btn.tooltip.tooltip-hover
         {:alt (:text tool)
          :class (when (= @selected-tool (:key tool))
                   "selected")
          :key (:key tool)
-         :on-click #(actions/set-tool (:key tool))}
+         :on-click #(reset! selected-tool (:key tool))}
         (:icon tool)])]])
 
-(rum/defc layers < rum/cursored
-  [shapes page]
+;; TODO: selected, locked
+(rum/defc layers
+  [open-toolboxes page shapes]
   [:div#layers.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
       icons/layers]
      [:span "Elements"]
-     [:div.tool-window-close {:on-click #(actions/close-setting-box :layers)}
+     [:div.tool-window-close
+     {:on-click #(swap! open-toolboxes close-toolbox :layers)}
       icons/close]]
     [:div.tool-window-content
-     [:ul.element-list
-      (for [shape-id (:root @page)]
-        (let [shape (get @shapes shape-id)]
+     #_[:ul.element-list
+      (for [shape-id (:root page)]
+        (let [shape (get shapes shape-id)]
           [:li {:key shape-id
-                :class (when (= (:selected @page) shape-id) "selected")}
+                :class (when (= (:selected page) shape-id) "selected")}
            [:div.toggle-element {:class (if (:visible shape) "selected" "")
                                  :on-click #(actions/toggle-shape-visibility shape-id)} icons/eye]
            [:div.block-element {:class (if (:locked shape) "selected" "")
@@ -224,83 +256,93 @@
             (shapes/icon shape)]
            [:span {:on-click #(actions/toggle-select-shape shape-id)} (:name shape)]]))]]])
 
-(rum/defc toolbar < rum/static
-  [open-setting-boxes]
-  [:div#tool-bar.tool-bar
-    [:div.tool-bar-inside
-     [:ul.main-tools
-      [:li.tooltip
-       {:alt "Shapes (Ctrl + Shift + F)"
-        :class (when (:tools open-setting-boxes)
-                 "current")
-        :on-click #(actions/toggle-setting-box :tools)}
-       icons/shapes]
-      [:li.tooltip
-       {:alt "Components (Ctrl + Shift + C)"
-        :class (when (:components open-setting-boxes)
-                 "current")
-        :on-click #(actions/toggle-setting-box :components)}
-       icons/puzzle]
-      [:li.tooltip
-       {:alt "Icons (Ctrl + Shift + I)"
-        :class (when (:icons open-setting-boxes)
-                 "current")
-        :on-click #(actions/toggle-setting-box :icons)}
-       icons/icon-set]
-      [:li.tooltip
-       {:alt "Elements (Ctrl + Shift + L)"
-        :class (when (:layers open-setting-boxes)
-                 "current")
-        :on-click #(actions/toggle-setting-box :layers)}
-       icons/layers]
-      [:li.tooltip
-       {:alt "Feedback (Ctrl + Shift + M)"}
-       icons/chat]]]])
+(rum/defc toolbar < rum/reactive
+  [open-toolboxes]
+  (let [toolboxes @open-toolboxes]
+    [:div#tool-bar.tool-bar
+     [:div.tool-bar-inside
+      [:ul.main-tools
+       [:li.tooltip
+        {:alt "Shapes (Ctrl + Shift + F)"
+         :class (when (:tools toolboxes)
+                  "current")
+         :on-click #(swap! open-toolboxes toggle-toolbox :tools)}
+        icons/shapes]
+       [:li.tooltip
+        {:alt "Components (Ctrl + Shift + C)"
+         :class (when (:components toolboxes)
+                  "current")
+         :on-click #(swap! open-toolboxes toggle-toolbox :components)}
+        icons/puzzle]
+       [:li.tooltip
+        {:alt "Icons (Ctrl + Shift + I)"
+         :class (when (:icons toolboxes)
+                  "current")
+         :on-click #(swap! open-toolboxes toggle-toolbox :icons)}
+        icons/icon-set]
+       [:li.tooltip
+        {:alt "Elements (Ctrl + Shift + L)"
+         :class (when (:layers toolboxes)
+                  "current")
+         :on-click #(swap! open-toolboxes toggle-toolbox :layers)}
+        icons/layers]
+       [:li.tooltip
+        {:alt "Feedback (Ctrl + Shift + M)"}
+        icons/chat]]]]))
 
-(rum/defcs project-pages < (rum/local {} :editing-pages) rum/cursored
-  [{:keys [editing-pages]} project-cursor page-cursor pages-cursor]
-  (let [current-project @project-cursor
-        current-pages @pages-cursor
-        current-page @page-cursor]
-    [:ul.tree-view
-      (for [page (vals current-pages)]
-        (if (contains? @editing-pages (:uuid page))
-          [:input.input-text
-           {:title "page-title"
-            :auto-focus true
-            :placeholder "Page title"
-            :type "text"
-            :value (get @editing-pages (:uuid page))
-            :on-change #(swap! editing-pages assoc (:uuid page) (.-value (.-target %)))
-            :on-key-up #(cond
-                          (= (.-keyCode %) 13)
-                            (when (not (empty? (str/trim (get @editing-pages (:uuid page)))))
-                              (change-page-title current-project page (get @editing-pages (:uuid page)))
-                              (swap! editing-pages dissoc (:uuid page)))
-                          (= (.-keyCode %) 27)
-                            (swap! editing-pages dissoc (:uuid page)))
-            :key (:uuid page)}]
+(rum/defcs project-page < (rum/local false :editing?)
+  [{:keys [editing?]} page current-page project deletable?]
+  (let [{page-uuid :page/uuid
+         page-title :page/title} page
+         {current-page-uuid :page/uuid} current-page]
+    (if @editing?
+      [:input.input-text
+       {:title "page-title"
+        :auto-focus true
+        :placeholder "Page title"
+        :default-value page-title
+        :type "text"
+        :on-key-up #(cond
+                      (k/enter? %)
+                      (when (not (empty? (str/trim (.-value (.-target %)))))
+                        (change-page-title project
+                                           page
+                                           (str/trim (.-value (.-target %))))
+                        (reset! editing? false))
 
-          [:li.single-page
-           {:class (when (= (:uuid page)
-                            (:uuid current-page))
-                     "current")
-            :on-click #(when (not= (:uuid page) (:uuid current-page))
-                         (navigate! (workspace-page-route {:project-uuid (:uuid current-project)
-                                                           :page-uuid (:uuid page)})))
-            :key (:uuid page)}
-           [:div.tree-icon icons/page]
-           [:span (:title page)]
-           [:div.options
-            [:div
-             {:on-click #(do (.stopPropagation %) (swap! editing-pages assoc (:uuid page) (:title page)))}
-             icons/pencil]
-            [:div {:on-click #(do (.stopPropagation %) (delete-page current-project page))} icons/trash]]]))]))
+                      (k/esc? %)
+                      (reset! editing? false))
+        :key page-uuid}]
+      [:li.single-page
+       {:class (when (= page-uuid current-page-uuid)
+                 "current")
+        :on-click #(when (not= page-uuid current-page-uuid)
+                     (navigate! (workspace-page-route {:project-uuid (:project/uuid project)
+                                                       :page-uuid page-uuid})))
+        :key page-uuid}
+       [:div.tree-icon icons/page]
+       [:span page-title]
+       [:div.options
+        [:div
+         {:on-click #(do (.stopPropagation %) (reset! editing? true) %)}
+         icons/pencil]
+        [:div
+         {:class (when-not deletable?
+                   "hide")
+          :on-click #(do (.stopPropagation %) (delete-page project page))}
+         icons/trash]]])))
+
+(rum/defc project-pages < rum/static
+  [project current-page pages]
+  (let [deletable? (> (count pages) 1)]
+    (vec
+     (cons :ul.tree-view
+           (map #(project-page % current-page project deletable?) pages)))))
 
 (rum/defcs new-page < (rum/local {:adding-new? false
                                   :new-page-title ""})
                        rum/static
-  [{local-state :rum/local} project-uuid]
+  [{local-state :rum/local} project]
   (let [{:keys [adding-new? new-page-title]} @local-state]
     (if adding-new?
       [:input.input-text
@@ -311,48 +353,52 @@
         :value new-page-title
         :on-change #(swap! local-state assoc :new-page-title (.-value (.-target %)))
         :on-key-up #(cond
-                      (= (.-keyCode %) 13)
+                      (k/enter? %)
                       (when (not (empty? (str/trim new-page-title)))
-                        (create-simple-page project-uuid new-page-title)
+                        (create-simple-page project (str/trim new-page-title))
                         (reset! local-state {:adding-new? false
                                              :new-page-title ""}))
-                      (= (.-keyCode %) 27)
+                      (k/esc? %)
                       (reset! local-state {:adding-new? false
                                            :new-page-title ""}))}]
       [:button.btn-primary.btn-small
        {:on-click #(swap! local-state assoc :adding-new? true)}
        "+ Add new page"])))
 
-(rum/defc project-bar < rum/cursored
-  [project-uuid project page pages project-bar-visible?]
-  (let [project-name (:name @project)]
+(rum/defc project-bar < rum/static
+  [project page pages project-bar-visible?]
+  (let [project-name (:project/name project)]
     [:div#project-bar.project-bar
-     (when-not @project-bar-visible?
+     (when-not project-bar-visible?
        {:class "toggle"})
      [:div.project-bar-inside
       [:span.project-name project-name]
       (project-pages project page pages)
-      (new-page project-uuid)]]))
+      (new-page project)]]))
 
+;; FIXME: tools as an atom in uxbox.workspace.tools
 (rum/defc aside < rum/cursored
-  [open-setting-boxes
+  [open-toolboxes
+   selected-tool
    components-cursor
-   current-icons-set
-   workspace
-   shapes
-   page]
-  (let [component-tools (rum/cursor components-cursor [:tools])
-        selected-tool (rum/cursor workspace [:selected-tool])]
+   page
+   shapes]
+  (let [open-setting-boxes @open-toolboxes]
     [:aside#settings-bar.settings-bar
      [:div.settings-bar-inside
       (when (:tools open-setting-boxes)
-        (tools selected-tool component-tools))
+        (tools open-toolboxes selected-tool))
+
       (when (:icons open-setting-boxes)
-        (icons-sets selected-tool current-icons-set components-cursor))
+        (icons-sets open-toolboxes
+                    selected-tool
+                    components-cursor))
+
       (when (:components open-setting-boxes)
-        (components selected-tool components-cursor))
+        (components open-toolboxes selected-tool components-cursor))
+
       (when (:layers open-setting-boxes)
-        (layers shapes page))]]))
+        (layers open-toolboxes page shapes))]]))
 
 ;; TODO: zoom stream
 (rum/defc vertical-rule < rum/reactive rum/static
@@ -425,94 +471,89 @@
                :fill "#bab7b7"}]
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
 
-(rum/defc viewport < rum/cursored
+(rum/defc viewport < rum/static
   [page shapes zoom grid?]
   [:svg#viewport
    {:width viewport-height
     :height viewport-width}
    [:g.zoom
-    {:transform (str "scale(" @zoom " " @zoom ")")}
-    (canvas @page
-            @shapes
+    {:transform (str "scale(" zoom ", " zoom ")")}
+    (canvas page
+            shapes
             {:viewport-height viewport-height
              :viewport-width viewport-width
              :document-start-x document-start-x
              :document-start-y document-start-y})
-    (when @grid?
+    (when grid?
       (grid viewport-width
             viewport-height
             document-start-x
             document-start-y
-            @zoom))]])
+            zoom))]])
 
-(rum/defc working-area < rum/cursored
+(rum/defc working-area < rum/static
   [open-setting-boxes
-   page-cursor
-   project-cursor
-   workspace-cursor
-   shapes-cursor
-   zoom-cursor]
-  (let [zoom @zoom-cursor
-        page @page-cursor
-        project @project-cursor
-        workspace @workspace-cursor
-        shapes @shapes-cursor]
-    [:section.workspace-canvas
-      {:class (when (empty? open-setting-boxes)
-                "no-tool-bar")
-       :on-scroll signals/on-workspace-scroll}
-      (when (:selected page)
-        (element-options page-cursor
-                         project-cursor
-                         zoom-cursor
-                         shapes-cursor))
-      (debug-coordinates)
-      (viewport page-cursor
-                shapes-cursor
-                zoom-cursor
-                (rum/cursor workspace-cursor [:grid?]))]))
+   page
+   project
+   shapes
+   zoom
+   grid?]
+  [:section.workspace-canvas
+    {:class (when (empty? open-setting-boxes)
+              "no-tool-bar")
+     :on-scroll signals/on-workspace-scroll}
+    #_(when (:selected page)
+      (element-options page-cursor
+                       project-cursor
+                       zoom-cursor
+                       shapes-cursor))
+    (debug-coordinates)
+    (viewport page shapes zoom grid?)])
 
-(rum/defc workspace
-  [db [project-uuid]]
-  (let [open-setting-boxes (:open-setting-boxes @db)
+(rum/defcs workspace < (rum/local {:open-toolboxes #{:tools :layers}
+                                   :grid? false
+                                   :zoom 1
+                                   :selected-tool nil})
+  [{local-state :rum/local} conn db [project-uuid page-uuid]]
+  (let [page-uuid (or page-uuid (q/first-page-id-by-project-id project-uuid @conn))
 
-        workspace (rum/cursor db [:workspace])
-        grid? (rum/cursor workspace [:grid?])
-        zoom (rum/cursor workspace [:zoom])
+        open-toolboxes (rum/cursor local-state [:open-toolboxes])
+        grid? (rum/cursor local-state [:grid?])
+        zoom (rum/cursor local-state [:zoom]) ;; FIXME
+        selected-tool (rum/cursor local-state [:selected-tool])
 
         shapes (rum/cursor db [:shapes])
 
         project (rum/cursor db [:project])
+        pproject (q/pull-project-by-id project-uuid @conn)
         pages (rum/cursor db [:project-pages])
+        ppages (q/pull-pages-by-project-id project-uuid @conn)
 
         page (rum/cursor db [:page])
+        ppage (q/pull-page-by-id page-uuid @conn)
+
         project-bar-visible? (rum/cursor db [:project-bar-visible?])
 
         components-cursor (rum/cursor db [:components])
         current-icons-set (rum/cursor db [:current-icons-set])]
     [:div
-     (header page grid? project-bar-visible?)
+     (header ppage grid? project-bar-visible?)
      [:main.main-content
       [:section.workspace-content
        ;; Toolbar
-       (toolbar open-setting-boxes)
+       (toolbar open-toolboxes)
        ;; Project bar
-       (project-bar project-uuid project page pages project-bar-visible?)
+       (project-bar pproject ppage ppages @project-bar-visible?)
        ;; Rules
        (horizontal-rule @zoom)
        (vertical-rule @zoom)
        ;; Working area
-       (working-area open-setting-boxes
-                     page
-                     project
-                     workspace
-                     shapes
-                     zoom)
+       (working-area @open-toolboxes ppage pproject @shapes @zoom @grid?)
        ;; Aside
-       (when-not (empty? open-setting-boxes)
-         (aside open-setting-boxes
+       (when-not (empty? @open-toolboxes)
+         (aside open-toolboxes
+                selected-tool
                 components-cursor
                 current-icons-set
-                workspace
-                shapes
-                page))]]]))
+                ppage
+                shapes))]]]))

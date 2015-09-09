@@ -5,14 +5,6 @@
   [project-uuid page-uuid shape-uuid attr value]
   (pubsub/publish! [:change-shape-attr [project-uuid page-uuid shape-uuid attr value]]))
 
-(defn close-setting-box
-  [setting-box]
-  (pubsub/publish! [:close-setting-box setting-box]))
-
-(defn toggle-setting-box
-  [setting-box]
-  (pubsub/publish! [:toggle-setting-box setting-box]))
-
 (defn set-tool
   [tool]
   (pubsub/publish! [:set-tool tool]))
@@ -56,26 +48,6 @@
    #_(storage/change-shape-attr project-uuid page-uuid shape-uuid attr value)))
 
 (pubsub/register-transition
- :close-setting-box
- (fn [state setting-box]
-   (update state :open-setting-boxes #(disj %1 setting-box))))
-
-(pubsub/register-transition
- :open-setting-box
- (fn [state setting-box]
-   (if (= setting-box :layers)
-     (update state :open-setting-boxes #(conj %1 setting-box))
-     (update state :open-setting-boxes #(clojure.set/intersection (conj %1 setting-box) #{:layers setting-box})))))
-
-(pubsub/register-event
- :toggle-setting-box
- (fn [state setting-box]
-   (let [setting-boxes (:open-setting-boxes state)]
-     (if (contains? setting-boxes setting-box)
-       (pubsub/publish! [:close-setting-box setting-box])
-       (pubsub/publish! [:open-setting-box setting-box])))))
-
-(pubsub/register-transition
  :set-tool
  (fn [state tool]
    (assoc-in state [:workspace :selected-tool] tool)))
@@ -94,11 +66,6 @@
          shape-uuid (random-uuid)]
       (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
           (assoc-in state [:workspace :selected] nil)))))
-
-(pubsub/register-transition
- :set-icons-set
- (fn [state catalog]
-   (assoc state :current-icons-set catalog)))
 
 (pubsub/register-transition
  :toggle-grid

@@ -1,6 +1,7 @@
 (ns uxbox.forms
   (:require
    rum
+   [uxbox.keyboard :as k]
    [uxbox.projects.actions :refer [create-project]]
    [uxbox.icons :as icons]
    [uxbox.pubsub :as pubsub]
@@ -59,7 +60,7 @@
 
 (defn dismiss-lightbox-on-esc
   [e]
-  (when (= (.-keyCode e) 27)
+  (when (k/esc? e)
     (close-lightbox)))
 
 (def dismiss-on-esc

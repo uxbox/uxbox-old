@@ -35,11 +35,6 @@
   (let [x (:x center) y (:y center)]
     (str "translate( " x "," y ") rotate(" rotate ") translate( -" x ", -" y ")")))
 
-(pubsub/register-transition
- :register-shape
- (fn [state shape-info]
-   (assoc-in state [:components :tools (:key shape-info)] shape-info)))
-
 (def stroke-menu {:name "Stroke"
                   :icon icons/stroke
                   :key :stroke

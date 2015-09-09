@@ -6,7 +6,6 @@
               [uxbox.data.queries :as q]
               [uxbox.data.projects :as proj]
               [uxbox.navigation :as nav :refer [start-history!]]
-              [uxbox.keyboard :refer [start-keyboard!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
               [uxbox.forms :refer [lightbox]]
@@ -31,14 +30,13 @@
                   (dashboard app-state)
                   (lightbox app-state)]
       ;; Workspace
-      :workspace (workspace app-state params))))
+      :workspace (workspace conn app-state params))))
 
 (def $el (.getElementById js/document "app"))
 
 (defn start!
   [app-state location]
   (start-history!)
-  (start-keyboard!)
   (rum/mount (ui app-state location) $el))
 
 (start! db/app-state nav/location)

@@ -1,6 +1,5 @@
 (ns uxbox.icons-sets.material-design-file
-  (:require [uxbox.icons-sets.register]
-            [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.workspace.tools :as t]))
 
 (def material-design-file (sorted-map
    :attachment {
@@ -75,6 +74,6 @@
       :d
       "M40 12h-16l-4-4h-12c-2.21 0-3.98 1.79-3.98 4l-.02 24c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4v-20c0-2.21-1.79-4-4-4zm-10 6c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm8 16h-16v-2c0-2.67 5.33-4 8-4s8 1.33 8 4v2z"}]}))
 
-(pubsub/publish! [:register-icons-set {:key :material-design-file
-                                       :name "Material Design (File)"
-                                       :icons material-design-file}])
+(t/register-icon-set! {:key :material-design-file
+                       :name "Material Design (File)"
+                       :icons material-design-file})

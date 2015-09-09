@@ -1,6 +1,5 @@
 (ns uxbox.icons-sets.material-design-alert
-  (:require [uxbox.icons-sets.register]
-            [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.workspace.tools :as t]))
 
 (def material-design-alert (sorted-map
     :error {
@@ -14,6 +13,6 @@
                    :d "M2 42h44l-22-38-22 38zm24-6h-4v-4h4v4zm0-8h-4v-8h4v8z"
                    :style {:stroke nil}}]}))
 
-(pubsub/publish! [:register-icons-set {:key :material-design-alert
-                                       :name "Material Design (Alert)"
-                                       :icons material-design-alert}])
+(t/register-icon-set! {:key :material-design-alert
+                       :name "Material Design (Alert)"
+                       :icons material-design-alert})

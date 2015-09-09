@@ -15,8 +15,6 @@
   [coordinates]
   (pubsub/publish! [:select-shape coordinates]))
 
-
-
 (pubsub/register-transition
  :select-shape
  (fn [state [x y]]
@@ -187,12 +185,6 @@
   :zoom-wheel
   (fn [state delta]
     (update-in state [:workspace :zoom] #(max 0.01 (+ % (* % 0.015 delta))))))
-
-
-(pubsub/register-transition
- :viewport-scroll
- (fn [state data]
-   (assoc state :scroll data)))
 
 (pubsub/register-transition
  :canvas-mouse-move

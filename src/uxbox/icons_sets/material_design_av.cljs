@@ -1,6 +1,5 @@
 (ns uxbox.icons-sets.material-design-av
-  (:require [uxbox.icons-sets.register]
-            [uxbox.pubsub :as pubsub]))
+  (:require [uxbox.workspace.tools :as t]))
 
 (def material-design-av (sorted-map
    :album {
@@ -288,6 +287,6 @@
       :d
       "M40 8H8c-2.21 0-3.98 1.79-3.98 4L4 36c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4zM30 36H8v-8h22v8zm0-10H8v-8h22v8zm10 10h-8V18h8v18z"}]}))
 
-(pubsub/publish! [:register-icons-set {:key :material-design-av
-                                       :name "Material Design (Av)"
-                                       :icons material-design-av}])
+(t/register-icon-set! {:key :material-design-av
+                       :name "Material Design (Av)"
+                       :icons material-design-av})

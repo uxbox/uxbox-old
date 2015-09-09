@@ -1,6 +1,7 @@
 (ns uxbox.shapes.rectangle
   (:require
    rum
+   [uxbox.workspace.tools :refer [register-drawing-tool!]]
    [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.pubsub :as pubsub]
@@ -131,11 +132,11 @@
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.rectangle/Rectangle) "/" ".")
                              uxbox.shapes.rectangle/map->Rectangle)
 
-(pubsub/publish! [:register-shape {:shape Rectangle
-                                   :new new-rectangle
-                                   :drawing drawing-rectangle
-                                   :key :rect
-                                   :icon icons/box
-                                   :text "Box (Ctrl + B)"
-                                   :menu :tools
-                                   :order 10}])
+(register-drawing-tool! {:shape Rectangle
+                         :new new-rectangle
+                         :drawing drawing-rectangle
+                         :key :rect
+                         :icon icons/box
+                         :text "Box (Ctrl + B)" ;; TODO: i18n
+                         :menu :tools
+                         :priority 10})

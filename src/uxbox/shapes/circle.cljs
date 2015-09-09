@@ -1,6 +1,7 @@
 (ns uxbox.shapes.circle
   (:require
    rum
+   [uxbox.workspace.tools :refer [register-drawing-tool!]]
    [jamesmacaulay.zelkova.signal :as z]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.mouse :as mouse]
@@ -135,11 +136,11 @@
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".")
                              uxbox.shapes.circle/map->Circle)
 
-(pubsub/publish! [:register-shape {:shape Circle
-                                   :new new-circle
-                                   :drawing drawing-circle
-                                   :key :circle
-                                   :icon icons/circle
-                                   :text "Circle (Ctrl + E)"
-                                   :menu :tools
-                                   :order 20}])
+(register-drawing-tool! {:shape Circle
+                         :new new-circle
+                         :drawing drawing-circle
+                         :key :circle
+                         :icon icons/circle
+                         :text "Circle (Ctrl + E)" ;; TODO: i18n
+                         :menu :tools
+                         :priority 20})

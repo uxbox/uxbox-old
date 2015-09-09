@@ -29,6 +29,16 @@
   [uuid db]
   (d/pull db '[*] (project-by-id uuid db)))
 
+(defn first-page-id-by-project-id
+  [uuid db]
+  (first
+   (d/q
+    `[:find [?u]
+      :where [?e :page/project ?p]
+             [?e :page/uuid ?u]
+             [?p :project/uuid ~uuid]]
+    db)))
+
 (defn page-by-id
   [uuid db]
   (first
