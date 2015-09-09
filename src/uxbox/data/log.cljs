@@ -84,8 +84,24 @@
                         (assoc (:shape/data (q/pull-shape-by-id uuid @conn))
                                attr
                                value)]])))
-;; :uxbox/toggle-shape-visibility
-;; :uxbox/toggle-shape-lock
+
+(defmethod persist! :uxbox/toggle-shape-visibility
+  [_ uuid conn]
+  (let [{visible? :shape/visible?
+         s        :db/id} (q/pull-shape-by-id uuid @conn)]
+    (d/transact! conn [[:db/add
+                        s
+                        :shape/visible?
+                        (not visible?)]])))
+
+(defmethod persist! :uxbox/toggle-shape-lock
+  [_ uuid conn]
+  (let [{locked? :shape/locked?
+         s        :db/id} (q/pull-shape-by-id uuid @conn)]
+    (d/transact! conn [[:db/add
+                        s
+                        :shape/locked?
+                        (not locked?)]])))
 
 ;; :uxbox/move-shape-up
 ;; :uxbox/move-shape-down

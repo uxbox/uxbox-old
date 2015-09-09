@@ -245,4 +245,55 @@
                     conn)
 
       (let [{sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
-          (t/is (= sdata (Line. 42 0 1 1)))))))
+          (t/is (= sdata (Line. 42 0 1 1))))))
+
+  (t/testing "Visible and locked flag can be toggled"
+    (let [conn (d/create-conn s/schema)
+          pid (random-uuid)
+          name "A project"
+          width 1920
+          height 1080
+          layout :desktop
+
+          page1 (random-uuid)
+          title1 "A page"
+
+          shape1 (random-uuid)]
+      ;; Create project
+      (log/persist! :uxbox/create-project
+                    (p/create-project pid name width height layout)
+                    conn)
+      ;; Add page
+      (log/persist! :uxbox/create-page
+                    (p/create-page page1 pid title1 width height)
+                    conn)
+      ;; Add shape to page
+      (log/persist! :uxbox/create-shape
+                      (p/create-shape shape1 page1 (Line. 0 0 1 1))
+                      conn)
+
+      ;; Toggle visibility
+      (t/is (:shape/visible? (q/pull-shape-by-id shape1 @conn)))
+
+      (log/persist! :uxbox/toggle-shape-visibility shape1 conn)
+
+      (t/is (not (:shape/visible? (q/pull-shape-by-id shape1 @conn))))
+
+      (log/persist! :uxbox/toggle-shape-visibility
+                    shape1
+                    conn)
+
+      (t/is (:shape/visible? (q/pull-shape-by-id shape1 @conn)))
+
+      ;; Toggle locking
+      (t/is (not (:shape/locked? (q/pull-shape-by-id shape1 @conn))))
+
+      (log/persist! :uxbox/toggle-shape-lock shape1 conn)
+
+      (t/is (:shape/locked? (q/pull-shape-by-id shape1 @conn)))
+
+      (log/persist! :uxbox/toggle-shape-lock
+                    shape1
+                    conn)
+
+      (t/is (not (:shape/locked? (q/pull-shape-by-id shape1 @conn)))))))

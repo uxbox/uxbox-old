@@ -21,5 +21,5 @@
   {:shape/uuid uuid
    :shape/page page-uuid
    :shape/data shape
-   :shape/locked false
-   :shape/visible true})
+   :shape/locked? false
+   :shape/visible? true})
