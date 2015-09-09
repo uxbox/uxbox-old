@@ -108,4 +108,6 @@
 
 (defn record
   [key data]
+  #_(d/transact! db/conn [{:event/key key
+                           :event/payload data}])
   (persist! key data db/conn))

@@ -37,8 +37,13 @@
    :user/avatar {:db/cardinality :db.cardinality/one
                  :db/valueType :db.type/string}})
 
+(def event-schema
+  {:event/key {:db/cardinality :db.cardinality/one}
+   :event/payload {:db/cardinality :db.cardinality/one}})
+
 (def schema
   {:uxbox/project project-schema
    :uxbox/page page-schema
    :uxbox/shape shape-schema
-   :uxbox/user user-schema})
+   :uxbox/user user-schema
+   :uxbox/event event-schema})
