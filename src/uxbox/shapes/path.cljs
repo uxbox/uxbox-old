@@ -2,7 +2,8 @@
   (:require
    rum
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.shapes.core :refer [Shape generate-transformation actions-menu fill-menu]]
+   [uxbox.shapes.protocols :as proto]
+   [uxbox.shapes.core :refer [generate-transformation actions-menu fill-menu]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -66,7 +67,7 @@
                     :strokeDasharray "5,5"}}])))
 
 (defrecord Path [name path icowidth icoheight x y width height fill fill-opacity rotate visible locked]
-  Shape
+  proto/Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
          (<= px (+ x width))

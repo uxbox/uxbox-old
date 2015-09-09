@@ -12,7 +12,7 @@
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.canvas.views :refer [canvas grid debug-coordinates]]
             [uxbox.geometry :as geo]
-            [uxbox.shapes.core :as shapes]
+            [uxbox.shapes.protocols :as shapes]
             [uxbox.pubsub :as pubsub]))
 
 ;; Actions

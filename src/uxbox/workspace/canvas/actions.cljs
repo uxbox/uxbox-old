@@ -1,7 +1,7 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
             [uxbox.geometry :as geo]
-            [uxbox.shapes.core :as shapes]
+            [uxbox.shapes.protocols :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
             [uxbox.shapes.circle :refer [new-circle map->Circle]]
@@ -52,7 +52,8 @@
  (fn [state [shape-uuid shape-val]]
    (let [project-uuid (get-in state [:project :uuid])
          page-uuid (get-in state [:page :uuid])]
-     #_(storage/create-shape project-uuid page-uuid shape-uuid shape-val))))
+     #_(storage/create-shape project-uuid page-uuid shape-uuid shape-val)
+     )))
 
 (pubsub/register-event
   :canvas-mouse-click

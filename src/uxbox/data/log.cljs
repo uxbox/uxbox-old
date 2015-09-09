@@ -1,6 +1,7 @@
 (ns uxbox.data.log
   (:require
    [uxbox.data.queries :as q]
+   [uxbox.shapes.protocols :as p]
    [uxbox.data.db :as db]
    [datascript :as d]))
 
@@ -12,7 +13,7 @@
                    :uxbox/create-shape
                    :uxbox/delete-shape
                    :uxbox/move-shape
-                   :uxbox/change-shape-attr
+                   :uxbox/change-shape
                    :uxbox/toggle-shape-visibility
                    :uxbox/toggle-shape-lock
                    :uxbox/move-shape-up
@@ -62,10 +63,30 @@
 (defmethod persist! :uxbox/delete-shape
   [_ uuid conn]
   (d/transact! conn [[:db.fn/retractEntity (q/shape-by-id uuid @conn)]]))
-;; :uxbox/move-shape
-;; :uxbox/change-shape-attr
+
+;; TODO: call fn transactionally with db.fn/call?
+(defmethod persist! :uxbox/move-shape
+  [_ [uuid dx dy] conn]
+  (let [s (q/shape-by-id uuid @conn)]
+    (d/transact! conn [[:db/add
+                        s
+                        :shape/data
+                        (p/move-delta (:shape/data (q/pull-shape-by-id uuid @conn))
+                                      dx
+                                      dy)]])))
+
+(defmethod persist! :uxbox/change-shape
+  [_ [uuid attr value] conn]
+  (let [s (q/shape-by-id uuid @conn)]
+    (d/transact! conn [[:db/add
+                        s
+                        :shape/data
+                        (assoc (:shape/data (q/pull-shape-by-id uuid @conn))
+                               attr
+                               value)]])))
 ;; :uxbox/toggle-shape-visibility
 ;; :uxbox/toggle-shape-lock
+
 ;; :uxbox/move-shape-up
 ;; :uxbox/move-shape-down
 

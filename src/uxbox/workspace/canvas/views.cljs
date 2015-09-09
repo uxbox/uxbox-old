@@ -7,7 +7,7 @@
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.geometry :as geo]
    [cuerdas.core :as str]
-   [uxbox.shapes.core :as shapes]))
+   [uxbox.shapes.protocols :as shapes]))
 
 (rum/defc grid < rum/static
   [width height start-width start-height zoom]

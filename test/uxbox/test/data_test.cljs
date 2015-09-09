@@ -5,6 +5,7 @@
    [uxbox.data.schema :as s]
    [uxbox.data.queries :as q]
    [uxbox.data.projects :as p]
+   [uxbox.shapes.protocols :as proto]
    [cljs.test :as t]))
 
 (t/deftest project
@@ -121,7 +122,13 @@
         (let [{ptitle :page/title} (q/pull-page-by-id page1 @conn)]
           (t/is (= ptitle ntitle)))))))
 
-(defrecord Line [x1 y1 x2 y2])
+(defrecord Line [x1 y1 x2 y2]
+  proto/Shape
+  (move-delta [_ dx dy]
+    (Line. (+ x1 dx)
+           (+ y1 dy)
+           (+ x2 dx)
+           (+ y2 dy))))
 
 (t/deftest shapes
   (t/testing "Shapes can be added to and removed from a page"
@@ -158,9 +165,84 @@
           (t/is (= suuid shape1))
           (t/is (= sdata rshape))))
 
+      ;; Move shape
+      (log/persist! :uxbox/move-shape
+                    [shape1 10 20]
+                    conn)
+
+      (let [{suuid :shape/uuid
+             sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
+          (t/is (= sdata (Line. 10 20 11 21))))
+
       ;; Delete shape
       (log/persist! :uxbox/delete-shape
                     shape1
                     conn)
 
-      (t/is (= 0 (q/shape-count-by-page-id page1 @conn))))))
+      (t/is (= 0 (q/shape-count-by-page-id page1 @conn)))))
+
+  (t/testing "Shapes can be moved"
+    (let [conn (d/create-conn s/schema)
+          pid (random-uuid)
+          name "A project"
+          width 1920
+          height 1080
+          layout :desktop
+
+          page1 (random-uuid)
+          title1 "A page"
+
+          shape1 (random-uuid)]
+      ;; Create project
+      (log/persist! :uxbox/create-project
+                    (p/create-project pid name width height layout)
+                    conn)
+      ;; Add page
+      (log/persist! :uxbox/create-page
+                    (p/create-page page1 pid title1 width height)
+                    conn)
+      ;; Add shape to page
+      (log/persist! :uxbox/create-shape
+                      (p/create-shape shape1 page1 (Line. 0 0 1 1))
+                      conn)
+
+      ;; Move shape
+      (log/persist! :uxbox/move-shape
+                    [shape1 10 20]
+                    conn)
+
+      (let [{sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
+          (t/is (= sdata (Line. 10 20 11 21))))))
+
+  (t/testing "Shape attributes can be changed"
+    (let [conn (d/create-conn s/schema)
+          pid (random-uuid)
+          name "A project"
+          width 1920
+          height 1080
+          layout :desktop
+
+          page1 (random-uuid)
+          title1 "A page"
+
+          shape1 (random-uuid)]
+      ;; Create project
+      (log/persist! :uxbox/create-project
+                    (p/create-project pid name width height layout)
+                    conn)
+      ;; Add page
+      (log/persist! :uxbox/create-page
+                    (p/create-page page1 pid title1 width height)
+                    conn)
+      ;; Add shape to page
+      (log/persist! :uxbox/create-shape
+                      (p/create-shape shape1 page1 (Line. 0 0 1 1))
+                      conn)
+
+      ;; Change shape attribute
+      (log/persist! :uxbox/change-shape
+                    [shape1 :x1 42]
+                    conn)
+
+      (let [{sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
+          (t/is (= sdata (Line. 42 0 1 1)))))))

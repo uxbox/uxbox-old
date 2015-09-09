@@ -3,7 +3,8 @@
    rum
    [uxbox.workspace.tools :refer [register-drawing-tool!]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.protocols :as proto]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -74,7 +75,7 @@
                         :strokeDasharray "5,5"}}]))
 
 (defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]
-  Shape
+  proto/Shape
   (intersect
     [{:keys [x1 y1 x2 y2]} px py]
     (let [distance (geo/distance-line-point x1 y1 x2 y2 px py)]

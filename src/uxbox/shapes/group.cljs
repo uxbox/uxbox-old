@@ -2,6 +2,7 @@
   (:require
    rum
    [uxbox.shapes.core :as s]
+   [uxbox.shapes.protocols :as proto]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
@@ -72,10 +73,9 @@
                     :strokeDasharray "5,5"}}])))
 
 (defrecord Group [name x y rotate shapes visible locked]
-  s/Shape
-
+  proto/Shape
   (intersect [{:keys [shapes]} px py]
-    (apply some (map s/intersect shapes)))
+    (apply some (map proto/intersect shapes)))
 
   (toolbar-coords [{:keys [x y shapes]}]
     (let [vx (+ x 50)

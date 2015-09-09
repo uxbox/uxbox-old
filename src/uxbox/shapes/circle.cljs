@@ -5,7 +5,8 @@
    [jamesmacaulay.zelkova.signal :as z]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.mouse :as mouse]
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.protocols :as proto]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
@@ -73,7 +74,7 @@
                           :strokeDasharray "5,5"}}]))
 
 (defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
-  Shape
+  proto/Shape
   (intersect
     [{:keys [cx cy r]} px py]
     (let [distance (geo/distance-line-circle cx cy r px py)]

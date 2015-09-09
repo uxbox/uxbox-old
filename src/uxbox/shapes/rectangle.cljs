@@ -2,7 +2,8 @@
   (:require
    rum
    [uxbox.workspace.tools :refer [register-drawing-tool!]]
-   [uxbox.shapes.core :refer [Shape generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.shapes.protocols :as proto]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
@@ -75,7 +76,7 @@
                     :strokeDasharray "5,5"}}])))
 
 (defrecord Rectangle [name x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
-  Shape
+  proto/Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
          (<= px (+ x width))
