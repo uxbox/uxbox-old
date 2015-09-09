@@ -26,7 +26,9 @@
   {:shape/uuid {:db/unique :db.unique/identity}
    :shape/page {:db/cardinality :db.cardinality/one
                 :db/valueType   :db.type/ref}
-   :shape/data {:db/cardinality :db.cardinality/one}})
+   :shape/data {:db/cardinality :db.cardinality/one}
+   :shape/locked? {:db/cardinality :db.cardinality/one}
+   :shape/visible? {:db/cardinality :db.cardinality/one}})
 
 (def user-schema
   {:user/uuid {:db/unique :db.unique/identity}
