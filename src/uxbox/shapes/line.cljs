@@ -75,7 +75,6 @@
 
 (defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]
   Shape
-
   (intersect
     [{:keys [x1 y1 x2 y2]} px py]
     (let [distance (geo/distance-line-point x1 y1 x2 y2 px py)]

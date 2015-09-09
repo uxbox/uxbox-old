@@ -24,8 +24,6 @@
 
 (def shape-schema
   {:shape/uuid {:db/unique :db.unique/identity}
-   :shape/project {:db/cardinality :db.cardinality/one
-                   :db/valueType   :db.type/ref}
    :shape/page {:db/cardinality :db.cardinality/one
                 :db/valueType   :db.type/ref}
    :shape/data {:db/cardinality :db.cardinality/one}})

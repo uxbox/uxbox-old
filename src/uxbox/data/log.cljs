@@ -9,7 +9,6 @@
                    :uxbox/create-page
                    :uxbox/change-page-title
                    :uxbox/delete-page
-
                    :uxbox/create-shape
                    :uxbox/delete-shape
                    :uxbox/move-shape
@@ -53,8 +52,16 @@
 
 ;; Shape
 
-;; :uxbox/create-shape
-;; :uxbox/delete-shape
+(defmethod persist! :uxbox/create-shape
+  [_ shape conn]
+  (let [relshape (assoc shape
+                        :shape/page
+                        (q/page-by-id (:shape/page shape) @conn))]
+    (d/transact! conn [relshape])))
+
+(defmethod persist! :uxbox/delete-shape
+  [_ uuid conn]
+  (d/transact! conn [[:db.fn/retractEntity (q/shape-by-id uuid @conn)]]))
 ;; :uxbox/move-shape
 ;; :uxbox/change-shape-attr
 ;; :uxbox/toggle-shape-visibility
