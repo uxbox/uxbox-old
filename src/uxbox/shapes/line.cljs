@@ -1,7 +1,8 @@
 (ns uxbox.shapes.line
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!]]
+   [uxbox.workspace.tools :refer [register-drawing-tool!
+                                  start-drawing]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.shapes.protocols :as proto]
@@ -75,6 +76,11 @@
                         :strokeDasharray "5,5"}}]))
 
 (defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]
+  ;; FIXME: arbitrary to make datascript happy
+  IComparable
+  (-compare [_ other]
+    (compare x1 (.-x1 other)))
+
   proto/Shape
   (intersect
     [{:keys [x1 y1 x2 y2]} px py]
@@ -102,12 +108,20 @@
     (drawing-linec x1 y1))
 
   (move-delta
-    [{:keys [x1 y1 x2 y2] :as shape} delta-x delta-y]
-    (-> shape
-        (assoc :x1 (+ x1 delta-x))
-        (assoc :y1 (+ y1 delta-y))
-        (assoc :x2 (+ x2 delta-x))
-        (assoc :y2 (+ y2 delta-y))))
+    [this dx dy]
+    (merge this
+           {:x1 (+ x1 dx)
+            :x2 (+ x2 dx)
+            :y1 (+ y1 dy)
+            :y2 (+ y2 dy)}))
+
+  (drag-delta
+    [this dx dy]
+    (merge this
+           {:x1 x1
+            :x2 (+ x2 dx)
+            :y1 y1
+            :y2 (+ y2 dy)}))
 
   (menu-info
     [shape]
@@ -120,27 +134,17 @@
   [x1 y1 x2 y2]
   (Line. "Line" x1 y1 x2 y2 "gray" 4 1 0 true false))
 
-(defn drawing-line [state [x y]]
-  (if-let [drawing-val (get-in state [:page :drawing])]
-    (let [shape-uuid (random-uuid)
-          shape-val (new-line (:x1 drawing-val) (:y1 drawing-val) x y)]
-
-      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
-          (-> state
-              (assoc-in [:page :drawing] nil)
-              (assoc-in [:page :selected] shape-uuid)
-              (assoc-in [:workspace :selected-tool] nil))))
-
-    (assoc-in state [:page :drawing] (map->Line {:x1 x :y1 y :x2 x :y2 y}))))
-
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".")
                              uxbox.shapes.line/map->Line)
 
-(register-drawing-tool! {:shape Line
-                         :new new-line
-                         :drawing drawing-line
+(register-drawing-tool! {;;:shape Line
+                         ;;:new new-line
                          :key :line
                          :icon icons/line
                          :text "Line (Ctrl + L)"
                          :menu :tools
-                         :priority 30})
+                         :priority 30}) ;; pure data, can be in database (for example for configurable priority)
+
+(defmethod start-drawing :line
+  [_ [x y]]
+  (new-line x y x y))

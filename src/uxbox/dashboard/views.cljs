@@ -18,6 +18,7 @@
    [uxbox.time :refer [ago]]))
 
 ;; Materialized queries
+
 (def projects-atom
   (q/pipe-to-atom q/pull-projects conn :projects))
 (def project-count-atom

@@ -24,3 +24,12 @@
                 {:top (.-scrollTop t)
                  :left (.-scrollLeft t)})
     e))
+
+(def selected-tool-signal
+  (z/write-port :none))
+
+(defn select-tool!
+  [tool]
+  (async/put! selected-tool-signal (:key tool)))
+
+(defonce selected-tool (z/pipe-to-atom selected-tool-signal))

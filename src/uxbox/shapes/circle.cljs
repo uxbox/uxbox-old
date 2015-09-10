@@ -1,8 +1,8 @@
 (ns uxbox.shapes.circle
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!]]
-   [jamesmacaulay.zelkova.signal :as z]
+   [uxbox.workspace.tools :refer [register-drawing-tool!
+                                  start-drawing]]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.mouse :as mouse]
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
@@ -103,6 +103,9 @@
         (assoc :cx (+ cx delta-x))
         (assoc :cy (+ cy delta-y))))
 
+  (drag-delta
+    [this dx dy])
+
   (menu-info
     [shape]
     [circle-menu stroke-menu fill-menu actions-menu])
@@ -145,3 +148,7 @@
                          :text "Circle (Ctrl + E)" ;; TODO: i18n
                          :menu :tools
                          :priority 20})
+
+(defmethod start-drawing :circle
+  [_ [x y]]
+  (new-circle x y 0))

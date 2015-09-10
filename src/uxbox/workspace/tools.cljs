@@ -18,9 +18,15 @@
   [drawing-tool]
   (swap! drawing-tools assoc (:key drawing-tool) drawing-tool))
 
+(defmulti start-drawing (fn [drawing-tool coords] drawing-tool))
+
 (defn sorted-tools
   [tools]
   (sort :priority (vals tools)))
+
+(defn get-tool
+  [key]
+  (get @drawing-tools key))
 
 ;; Icon sets
 

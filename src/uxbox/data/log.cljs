@@ -104,11 +104,8 @@
                         :shape/locked?
                         (not locked?)]])))
 
-;; :uxbox/move-shape-up
-;; :uxbox/move-shape-down
-
 (defn record
   [key data]
-  #_(d/transact! db/conn [{:event/key key
-                           :event/payload data}])
+  (d/transact! db/conn [{:event/key key
+                         :event/payload (pr-str data)}])
   (persist! key data db/conn))

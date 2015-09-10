@@ -3,7 +3,6 @@
             [uxbox.keyboard :as k]
             [uxbox.data.queries :as q]
             [uxbox.workspace.tools :as t]
-            [uxbox.workspace.signals :as signals]
             [cuerdas.core :as str]
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
@@ -11,6 +10,7 @@
             [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
             [uxbox.workspace.actions :as actions]
             [uxbox.workspace.canvas.views :refer [canvas grid debug-coordinates]]
+            [uxbox.workspace.signals :as signals]
             [uxbox.geometry :as geo]
             [uxbox.shapes.protocols :as shapes]
             [uxbox.pubsub :as pubsub]))
@@ -107,7 +107,7 @@
 (rum/defcs icons-sets < (rum/local (first (keys @t/icon-sets))
                                    :current-icons-set)
                                     rum/cursored rum/reactive
-  [{:keys [current-icons-set]} open-toolboxes selected-tool]
+  [{:keys [current-icons-set]} open-toolboxes]
   [:div#form-figures.tool-window
    [:div.tool-window-bar
     [:div.tool-window-icon
@@ -130,14 +130,14 @@
     (for [[icon-key icon] (get-in (rum/react t/icon-sets) [@current-icons-set :icons])]
       [:div.figure-btn
        {:key icon-key
-        :class (when (= @selected-tool
+        :class (when (= (rum/react signals/selected-tool)
                         [:icon @current-icons-set icon-key])
                  "selected")
-        :on-click #(reset! selected-tool [:icon @current-icons-set icon-key])}
+        :on-click #(signals/select-tool! [:icon @current-icons-set icon-key])}
        [:svg (:svg icon)]])]])
 
-(rum/defc components < rum/cursored
-  [open-toolboxes selected-tool comps]
+(rum/defc components < rum/cursored rum/reactive
+  [open-toolboxes comps]
   [:div#form-components.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
@@ -150,11 +150,11 @@
     (for [tool (sort :order (vals (:components @comps)))]
       [:div.tool-btn.tooltip.tooltip-hover
        {:alt (:text tool)
-        :class (when (= @selected-tool
+        :class (when (= (rum/react signals/selected-tool)
                         (:key tool))
                  "selected")
         :key (:key tool)
-        :on-click #(reset! selected-tool (:key tool))} (:icon tool)])]])
+        :on-click #(signals/select-tool! tool)} (:icon tool)])]])
 
 
 (rum/defcs element-options < (rum/local :options) rum/cursored
@@ -212,7 +212,7 @@
                   icons/lock]))]])]])]))
 
 (rum/defc tools < rum/cursored rum/reactive
-  [open-toolboxes selected-tool]
+  [open-toolboxes]
   [:div#form-tools.tool-window
     [:div.tool-window-bar
      [:div.tool-window-icon
@@ -225,10 +225,10 @@
      (for [tool (t/sorted-tools (rum/react t/drawing-tools))]
        [:div.tool-btn.tooltip.tooltip-hover
         {:alt (:text tool)
-         :class (when (= @selected-tool (:key tool))
+         :class (when (= (rum/react signals/selected-tool) (:key tool))
                   "selected")
          :key (:key tool)
-         :on-click #(reset! selected-tool (:key tool))}
+         :on-click #(signals/select-tool! tool)}
         (:icon tool)])]])
 
 (rum/defc layers
@@ -376,19 +376,18 @@
       (new-page project)]]))
 
 (rum/defc aside < rum/cursored
-  [open-toolboxes selected-tool page]
+  [open-toolboxes page]
   (let [open-setting-boxes @open-toolboxes]
     [:aside#settings-bar.settings-bar
      [:div.settings-bar-inside
       (when (:tools open-setting-boxes)
-        (tools open-toolboxes selected-tool))
+        (tools open-toolboxes))
 
       (when (:icons open-setting-boxes)
-        (icons-sets open-toolboxes
-                    selected-tool))
+        (icons-sets open-toolboxes))
 
       (when (:components open-setting-boxes)
-        (components open-toolboxes selected-tool))
+        (components open-toolboxes))
 
       (when (:layers open-setting-boxes)
         (layers open-toolboxes page))]]))
@@ -462,13 +461,14 @@
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
 
 (rum/defc viewport < rum/static
-  [page shapes zoom grid?]
+  [conn page shapes zoom grid?]
   [:svg#viewport
    {:width viewport-height
     :height viewport-width}
    [:g.zoom
     {:transform (str "scale(" zoom ", " zoom ")")}
-    (canvas page
+    (canvas conn
+            page
             shapes
             {:viewport-height viewport-height
              :viewport-width viewport-width
@@ -482,7 +482,8 @@
             zoom))]])
 
 (rum/defc working-area < rum/static
-  [open-setting-boxes
+  [conn
+   open-setting-boxes
    page
    project
    shapes
@@ -498,20 +499,20 @@
                        zoom-cursor
                        shapes-cursor))
     (debug-coordinates)
-    (viewport page shapes zoom grid?)])
+    (viewport conn page shapes zoom grid?)])
 
+;; TODO: reset local state when project changes!
 (rum/defcs workspace < (rum/local {:open-toolboxes #{:tools :layers}
                                    :grid? false
                                    :zoom 1
-                                   :selected-tool nil
                                    :project-bar-visible? false})
+                       rum/cursored-watch
   [{local-state :rum/local} conn [project-uuid page-uuid]]
   (let [page-uuid (or page-uuid (q/first-page-id-by-project-id project-uuid @conn))
 
         open-toolboxes (rum/cursor local-state [:open-toolboxes])
         grid? (rum/cursor local-state [:grid?])
         zoom (rum/cursor local-state [:zoom]) ;; FIXME
-        selected-tool (rum/cursor local-state [:selected-tool])
         project-bar-visible? (rum/cursor local-state [:project-bar-visible?])
 
         project (q/pull-project-by-id project-uuid @conn)
@@ -530,9 +531,7 @@
        (horizontal-rule @zoom)
        (vertical-rule @zoom)
        ;; Working area
-       (working-area @open-toolboxes page project shapes @zoom @grid?)
+       (working-area conn @open-toolboxes page project shapes @zoom @grid?)
        ;; Aside
        (when-not (empty? @open-toolboxes)
-         (aside open-toolboxes
-                selected-tool
-                page))]]]))
+         (aside open-toolboxes page))]]]))

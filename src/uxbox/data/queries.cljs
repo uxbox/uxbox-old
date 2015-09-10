@@ -96,9 +96,9 @@
 (defn shapes-by-page-id
   [pid db]
   (d/q
-   '[:find [?e ...]
+   `[:find [?e ...]
      :where [?e :shape/page ?p]
-            [?p :page/uuid ?u]]
+            [?p :page/uuid ~pid]]
    db))
 
 (defn pull-shapes-by-page-id
