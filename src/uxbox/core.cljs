@@ -8,7 +8,6 @@
               [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]
-              [uxbox.forms :refer [lightbox]]
               [uxbox.user.views :refer [login
                                         register
                                         recover-password]]
@@ -18,7 +17,7 @@
 (enable-console-print!)
 
 (rum/defc ui < rum/cursored-watch
-  [app-state location]
+  [location]
   (let [[page params] @location]
     (case page
       ;; User
@@ -26,17 +25,15 @@
       :register (register)
       :recover-password (recover-password)
       ;; Home
-      :dashboard [:div
-                  (dashboard app-state)
-                  (lightbox app-state)]
+      :dashboard (dashboard conn)
       ;; Workspace
       :workspace (workspace conn params))))
 
 (def $el (.getElementById js/document "app"))
 
 (defn start!
-  [app-state location]
+  [location]
   (start-history!)
-  (rum/mount (ui app-state location) $el))
+  (rum/mount (ui location) $el))
 
-(start! db/app-state nav/location)
+(start! nav/location)
