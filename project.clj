@@ -12,7 +12,7 @@
                  [rum "0.3.0"]
                  [cljsjs/react-with-addons "0.13.3-0"]
                  ;; Compositional Event Streams
-                 [jamesmacaulay/zelkova "0.4.0"]
+                 ;;[funcool/tocino "0.1.0"]
                  ;; Datetime
                  [cljsjs/moment "2.9.0-0"]
                  ;; Routing
@@ -26,7 +26,7 @@
                  ;; Development
                  [ring "1.4.0"]]
 
-  :plugins [[lein-cljsbuild "1.0.5"]
+  :plugins [[lein-cljsbuild "1.1.0"]
             [lein-figwheel "0.3.3"]
             [hiccup-bridge "1.0.1"]]
 
@@ -45,7 +45,10 @@
                          :output-to "resources/public/js/compiled/uxbox.js"
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true
-                         :warnings {:single-segment-namespace false}}}
+                         :warnings {:single-segment-namespace false}
+                         :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
+                                         :provides ["bacon"]}]}
+              }
 
              {:id "test"
               :source-paths ["src" "test"]
@@ -59,7 +62,9 @@
                           :optimizations :none
                           :target :nodejs
                           :pretty-print true
-                          :warnings {:single-segment-namespace false}}}
+                          :warnings {:single-segment-namespace false}
+                          :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
+                                          :provides ["bacon"]}]}}
 
              {:id "min"
               :source-paths ["src"]
@@ -67,7 +72,9 @@
                          :main uxbox.core
                          :optimizations :advanced
                          :pretty-print false
-                         :warnings {:single-segment-namespace false}}}]}
+                         :warnings {:single-segment-namespace false}
+                         :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
+                                         :provides ["bacon"]}]}}]}
 
   :figwheel {
              ;; :http-server-root "public" ;; default and assumes "resources"

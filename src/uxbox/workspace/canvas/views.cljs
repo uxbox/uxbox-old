@@ -1,11 +1,11 @@
 (ns uxbox.workspace.canvas.views
   (:require
    rum
+   [uxbox.streams :as s]
+   [uxbox.mouse :as mouse]
    [uxbox.data.log :refer [record]]
    [uxbox.workspace.tools :as tools]
    [uxbox.workspace.signals :as wsigs]
-   [jamesmacaulay.zelkova.mouse :as zm]
-   [jamesmacaulay.zelkova.signal :as z]
    [cljs.core.async :as async]
    [uxbox.workspace.canvas.actions :as actions]
    [uxbox.workspace.canvas.signals :as signals]
@@ -84,36 +84,42 @@
 
 ;; mouse down -> selected-tool? - yes -> start drawing! (implies deselect)
 
-#_(def start-drawing-signal
-  (z/sample-on signals/mouse-down
-               (z/combine [signals/mouse-down
-                           wsigs/selected-tool-signal])))
+;;(mlet [tool wsigs/selected-tool-signal
+;;       coords signals/mouse-down]
+;;  [tool coords])
 
-#_(def drawing-signal
-  (z/map
-   (fn [[coords tool]] (if (= tool :none)
-                         :nodraw
-                         (tools/start-drawing tool coords)))
-    start-drawing-signal))
+(def start-drawing-signal
+  (s/flat-map-latest wsigs/selected-tool-signal
+                     (fn [tool]
+                       (s/combine vector
+                                  (if (= tool :none)
+                                    (s/never)
+                                    (s/constant tool))
+                                  signals/mouse-down-signal))))
 
-#_(def drawn-signal
-  (z/sample-on signals/mouse-up
-               drawing-signal))
+;; todo: stop on mouse up
+(def drawing-signal
+  (s/map
+   (fn [[tool coords]]
+     (tools/start-drawing tool coords))
+   start-drawing-signal))
 
-#_(def drawing
-  (z/pipe-to-atom drawing-signal))
+(def zd (s/flat-map drawing-signal
+                    (fn [shape]
+                      (s/map (fn [[dx dy]] (shapes/move-delta shape dx dy))
+                             mouse/delta))))
 
-#_(def drawn
-  (z/pipe-to-atom drawn-signal))
+(def drawing (s/pipe-to-atom
+              (s/map second
+               (s/filter first
+                         (s/combine-with vector
+                                         signals/mouse-drag-signal
+                                         zd)))))
 
-#_(add-watch drawing
-           :dr
-           (fn [_ _ _ new-val]
-             (println :drawing new-val)))
-#_(add-watch drawn
-           :dr
-           (fn [_ _ _ new-val]
-             (println :drawn new-val)))
+(def drawn-signal
+  (s/dedupe (s/sampled-by drawing-signal
+                          signals/mouse-up-signal)))
+
 
 ;; mouse down -> selcted-tool? - no -> intersection? - yes -> select
 ;;                                                    - no -> deselect
@@ -124,67 +130,10 @@
 ;;                        - no -> selected stuff? - yes -> move selections
 ;;                                                - no ->
 
-;; mouse up -> drawing? - yes -> end drawing (implies selection of just drawn)
+;; mouse up -> drawing? - yes -> end drawing (implies selection of just drawn?)
 
 ;; shape-select :: mouse click -> (intersects with shape) -> (shape is not selected) -> selection shape
 ;; shape-deselect :: mouse click -> (doesn't intersect with shape) -> (shapes are selected) -> deselect all shapes
-
-
-
-(def canvas-init
-  {:will-mount (fn [state]
-                 (let [shape-state (:shape-state state)
-                       conn (first (:rum/args state))]
-                   ;; up
-                   #_(go-loop [coords (<! ups)]
-                     (when coords
-                       (println :up coords)
-                       (when (:drawing @shape-state)
-                         (let [drawn (:drawing @shape-state)]
-                           (swap! shape-state dissoc :drawing)
-                           (record :uxbox/create-shape {:shape/uuid (random-uuid)
-                                                        :shape/page (:page/uuid page)
-                                                        :shape/data drawn
-                                                        :shape/locked? false
-                                                        :shape/visible? true})))
-
-
-                       (recur (<! ups))))
-
-                   #_(go-loop [draw (<! start-drawing)]
-                     (when-not (nil? draw)
-                       (let [[coords tool] draw]
-                         (swap! shape-state
-                                assoc
-                                :drawing
-                                (tools/start-drawing tool coords)))
-                       (recur (<! start-drawing))))
-
-                   #_(go-loop [coords (<! drags)]
-                     (when coords
-                       (when-let [drawing (:drawing @shape-state)]
-                         (let [[dx dy] coords]
-                           ;; TODO: clamp
-                           (swap! shape-state
-                                  update
-                                  :drawing
-                                  shapes/drag-delta
-                                  dx
-                                  dy)))
-
-                       (when-not (:drawing @shape-state)
-                         )
-
-                       (recur (<! drags))))
-
-                   #_(assoc state ::canvas-chans [ups downs drags])
-                   state))
-
-   :will-unmount (fn [state]
-                   (doseq [c (::canvas-chans state)]
-                     (async/close! c))
-                   #_(wsigs/select-tool! :none)
-                   (dissoc state ::canvas-chans))})
 
 (rum/defc background < rum/static
   []
@@ -195,20 +144,46 @@
     :height "100%"
     :fill "white"}])
 
-(rum/defcs canvas < (rum/local {:selected {}}
-                               :shape-state)
-                    canvas-init
-                    rum/reactive
-  [{:keys [shape-state]}
-   conn
+(defn draw-shape
+  [page shape]
+  (record :uxbox/create-shape {:shape/data shape
+                               :shape/uuid (random-uuid)
+                               :shape/page (:page/uuid page)
+                               :shape/locked? false
+                               :shape/visible? true}))
+
+(def canvas-signals
+  {:will-mount (fn [state]
+                 (let [args (:rum/args state)
+                       page (second args)
+                       unsub (s/on-value drawn-signal #(draw-shape page %))]
+                   (assoc state ::unsub unsub)))
+   :transfer-state (fn [old-state state]
+                     (let [oldargs (:rum/args state)
+                           oldpage (second oldargs)
+                           args (:rum/args state)
+                           page (second args)]
+                      (if-not (= (:page/uuid oldpage) (:page/uuid page))
+                        (let [unsub (::unsub old-state)
+                              nunsub (s/on-value drawn-signal #(draw-shape page %))]
+                          (unsub)
+                          (assoc state ::unsub nunsub))
+                        state)))
+   :will-unmount (fn [state]
+                   (let [unsub (::unsub state)]
+                     (unsub)
+                     (dissoc state ::unsub)))})
+
+(rum/defc canvas < rum/reactive canvas-signals
+  [conn
    page
    shapes
    {:keys [viewport-height
            viewport-width
            document-start-x
            document-start-y]}]
-  (let [page-width (:width page)
-        page-height (:height page)
+  (let [page-width (:page/width page)
+        page-height (:page/height page)
         raw-shapes (map :shape/data shapes)]
     [:svg#page-canvas
      {:x document-start-x
@@ -216,11 +191,10 @@
       :width page-width
       :height page-height
       :on-mouse-down signals/on-mouse-down
-      :on-mouse-up signals/on-mouse-up
-      :on-mouse-drag signals/on-mouse-drag}
+      :on-mouse-up signals/on-mouse-up}
      (background)
      (apply vector :svg#page-layout (map shapes/shape->svg raw-shapes))
-     #_(when-let [shape (rum/react drawing)]
+     (when-let [shape (rum/react drawing)]
        (shapes/shape->drawing-svg shape))
      #_(when-let [selected-shapes (get page :selected)]
        (map shapes/selected-svg selected-shapes)

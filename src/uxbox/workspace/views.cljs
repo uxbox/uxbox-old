@@ -154,7 +154,7 @@
                         (:key tool))
                  "selected")
         :key (:key tool)
-        :on-click #(signals/select-tool! tool)} (:icon tool)])]])
+        :on-click #(signals/select-tool! (:key tool))} (:icon tool)])]])
 
 
 (rum/defcs element-options < (rum/local :options) rum/cursored
@@ -228,7 +228,7 @@
          :class (when (= (rum/react signals/selected-tool) (:key tool))
                   "selected")
          :key (:key tool)
-         :on-click #(signals/select-tool! tool)}
+         :on-click #(signals/select-tool! (:key tool))}
         (:icon tool)])]])
 
 (rum/defc layers

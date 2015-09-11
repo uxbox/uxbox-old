@@ -1,13 +1,14 @@
 (ns uxbox.runner
   (:require [cljs.test :as test]
-            [uxbox.test.data-test]))
-
+            [uxbox.test.data-test]
+            [uxbox.test.streams-test]))
 
 (enable-console-print!)
 
 (defn main
   []
   (test/run-tests (test/empty-env)
-                  'uxbox.test.data-test))
+                  'uxbox.test.data-test
+                  'uxbox.test.streams-test))
 
 (set! *main-cli-fn* main)

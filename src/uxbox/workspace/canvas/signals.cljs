@@ -1,42 +1,40 @@
 (ns uxbox.workspace.canvas.signals
   (:require
-   [jamesmacaulay.zelkova.signal :as z]
-   [jamesmacaulay.zelkova.mouse :as zm]
-   [cljs.core.async :as async]
-   [uxbox.geometry :refer [client-coords->canvas-coords]]
-   [uxbox.mouse :as mouse]))
+   [goog.dom :as dom]
+   [uxbox.streams :as s]
+   [uxbox.mouse :as mouse]
+   [uxbox.geometry :refer [client-coords->canvas-coords]]))
 
 (def canvas-coordinates-signal
-  (z/map client-coords->canvas-coords mouse/client-position))
+  (s/map client-coords->canvas-coords mouse/client-position))
 
 (defonce canvas-coordinates
-  (z/pipe-to-atom canvas-coordinates-signal))
+  (s/pipe-to-atom canvas-coordinates-signal))
 
 (def mouse-down-signal
-  (z/write-port false))
+  (s/bus))
 
+(def mouse-up-signal
+  (s/bus))
+
+;; TODO
 (def mouse-drag-signal
-  (z/write-port false))
+  (s/bus))
 
 (defn on-mouse-down
   [e]
-  (async/put! mouse-down-signal true))
+  (s/push mouse-down-signal
+          (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
 
 (defn on-mouse-up
   [e]
-  (async/put! mouse-down-signal false))
+  (s/push mouse-up-signal
+          (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
 
-(defn on-mouse-drag
+(defn on-drag-start
   [e]
-  (async/put! mouse-drag-signal false))
+  (s/push mouse-drag-signal true))
 
-(def mouse-down
-  (z/sample-on (z/keep-if identity mouse-down-signal)
-                canvas-coordinates-signal))
-
-(def mouse-up
-  (z/sample-on (z/drop-if identity mouse-down-signal)
-                canvas-coordinates-signal))
-
-(def mouse-drag
-  (z/keep-when mouse-down-signal mouse/delta))
+(defn on-drag-end
+  [e]
+  (s/push mouse-drag-signal false))

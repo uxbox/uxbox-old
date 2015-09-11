@@ -1,35 +1,38 @@
 (ns uxbox.workspace.signals
   (:require
-   [jamesmacaulay.zelkova.signal :as z]
-   [cljs.core.async :as async]
+   [uxbox.streams :as s]
    [uxbox.mouse :as mouse]))
 
 (def workspace-scroll-signal
-  (z/write-port {:top 0
-                 :left 0}))
+  (s/bus))
 
 (def workspace-top-scroll-signal
-  (z/drop-repeats (z/map :top workspace-scroll-signal)))
+  (s/dedupe (s/map :top workspace-scroll-signal)))
 
 (def workspace-left-scroll-signal
-  (z/drop-repeats (z/map :left workspace-scroll-signal)))
+  (s/dedupe (s/map :left workspace-scroll-signal)))
 
-(defonce scroll-top (z/pipe-to-atom workspace-top-scroll-signal))
-(defonce scroll-left (z/pipe-to-atom workspace-left-scroll-signal))
+(defn- scroll-event
+  [e]
+  (let [t (.-target e)]
+    {:top (.-scrollTop t)
+     :left (.-scrollLeft t)}))
 
 (defn on-workspace-scroll
   [e]
-  (let [t (.-target e)]
-    (async/put! workspace-scroll-signal
-                {:top (.-scrollTop t)
-                 :left (.-scrollLeft t)})
-    e))
+  (s/push workspace-scroll-signal
+          (scroll-event e)))
+
+(defonce scroll-top (s/pipe-to-atom workspace-top-scroll-signal))
+(defonce scroll-left (s/pipe-to-atom workspace-left-scroll-signal))
 
 (def selected-tool-signal
-  (z/write-port :none))
+  (s/bus))
+
+(defonce selected-tool (s/pipe-to-atom selected-tool-signal))
 
 (defn select-tool!
   [tool]
-  (async/put! selected-tool-signal (:key tool)))
-
-(defonce selected-tool (z/pipe-to-atom selected-tool-signal))
+  (if (= @selected-tool tool)
+    (s/push selected-tool-signal :none)
+    (s/push selected-tool-signal tool)))

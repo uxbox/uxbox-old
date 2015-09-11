@@ -74,6 +74,11 @@
                           :strokeDasharray "5,5"}}]))
 
 (defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
+  ;; FIXME: arbitrary to make datascript happy
+  IComparable
+  (-compare [_ other]
+    (compare cx (.-cx other)))
+
   proto/Shape
   (intersect
     [{:keys [cx cy r]} px py]

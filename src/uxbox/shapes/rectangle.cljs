@@ -1,7 +1,8 @@
 (ns uxbox.shapes.rectangle
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!]]
+   [uxbox.workspace.tools :refer [register-drawing-tool!
+                                  start-drawing]]
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.shapes.protocols :as proto]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
@@ -141,3 +142,8 @@
                          :text "Box (Ctrl + B)" ;; TODO: i18n
                          :menu :tools
                          :priority 10})
+
+
+(defmethod start-drawing :rect
+  [_ [x y]]
+  (new-rectangle x y 0 0))

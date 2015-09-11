@@ -1,6 +1,8 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
               [datascript :as d]
+              [uxbox.streams :as s]
+              [uxbox.mouse :as mouse]
               [uxbox.db :as db]
               [uxbox.data.db :refer [conn]]
               [uxbox.data.queries :as q]
@@ -35,5 +37,10 @@
   [location]
   (start-history!)
   (rum/mount (ui location) $el))
+
+
+#_(s/log :client mouse/client-position)
+
+#_(s/pr-log :delta mouse/delta)
 
 (start! nav/location)
