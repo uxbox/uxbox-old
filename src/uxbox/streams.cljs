@@ -12,7 +12,8 @@
                             take
                             not
                             and
-                            next]))
+                            next
+                            concat]))
 
 ;; core
 
@@ -242,6 +243,39 @@
 (def more js/Bacon.more)
 (def no-more js/Bacon.noMore)
 
+;; ops
+
+(defn concat
+  ([one other]
+   (.concat one other))
+  ([one other & others]
+   (cljs.core/reduce concat
+                     (.concat one other)
+                     others)))
+
+(defn merge
+  ([one other]
+   (.merge one other))
+  ([one other & others]
+   (cljs.core/reduce merge
+                     (.merge one other)
+                     others)))
+
+(defn hold-when
+  [stream valve]
+  (.holdWhen stream valve))
+
+(defn skip-while
+  {:pre [(or (property? p)
+             (fn? p))]}
+  [stream p]
+  (.skipWhile stream p))
+
+(defn skip-until
+  {:pre [(event-stream? s)]}
+  [stream s]
+  (.skipUntil stream s))
+
 ;; cats integration
 
 (def event-stream-context
@@ -394,3 +428,12 @@
 (extend-type js/Bacon.Bus
   p/Context
   (-get-context [_] bus-context))
+
+
+;;
+
+(defn observable?
+  [o]
+  (or (property? o)
+      (event-stream? o)
+      (bus? o)))

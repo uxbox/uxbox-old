@@ -33,6 +33,8 @@
 
 ;; event stream
 
+;; - TODO: startWith
+
 (t/deftest event-stream-from-vector
   (t/async done
     (let [coll [1 2 3]
@@ -210,12 +212,85 @@
                        (t/is (s/end? ev))
                        (done))))))
 
-;; - concat
-;; - merge
-;; - holdWhen
-;; - startWith
-;; - skipWhile
-;; - skipUntil
+(t/deftest event-stream-concat
+  (t/async done
+    (let [b1 (s/bus)
+          b2 (s/bus)
+          s1 (s/to-event-stream b1)
+          s2 (s/to-event-stream b2)
+          cs (s/concat s1 s2)]
+      (drain! cs #(t/is (= % [1 2 3 4])))
+      (s/on-end cs done)
+      (s/push! b1 1)
+      (s/push! b1 2)
+      (s/push! b2 :discarded)
+      (s/push! b2 :discarded)
+      (s/end! b1)
+      (s/push! b2 3)
+      (s/push! b2 4)
+      (s/end! b2))))
+
+(t/deftest event-stream-merge
+  (t/async done
+    (let [s1 (s/sequentially 10 [1 2 3])
+          s2 (s/sequentially 10 [:1 :2 :3])
+          ms (s/merge s1 s2)]
+      (drain! ms #(t/is (= % [1 :1 2 :2 3 :3])))
+      (s/on-end ms done))))
+
+(t/deftest event-stream-hold-when
+  (t/async done
+    (let [b (s/bus)
+          s (s/to-event-stream b)
+          pb (s/bus)
+          valve (s/to-property pb)
+          hs (s/hold-when s valve)]
+      (drain! hs #(t/is (= % [1 2 3])))
+      (s/on-end hs done)
+      ;; open valve
+      (s/push! pb false)
+      ;; push values onto stream
+      (s/push! b 1)
+      (s/push! b 2)
+      ;; close valve
+      (s/push! pb true)
+      ;; push some more
+      (s/push! b 3)
+      ;; reopen valve
+      (s/push! pb false)
+      ;; end
+      (s/end! b)
+      (s/end! pb))))
+
+(t/deftest event-stream-skip-while
+  (t/async done
+    (let [nums (s/from-coll [1 1 1 2 3 4 5])
+          sample (s/skip-while nums odd?)]
+      (drain! sample #(t/is (= % [2 3 4 5])))
+      (s/on-end sample done))))
+
+(t/deftest event-stream-skip-until
+  (t/async done
+    (let [b (s/bus)
+          s (s/to-event-stream b)
+          bv (s/bus)
+          switch (s/to-event-stream bv)
+          sample (s/skip-until s switch)]
+      (drain! sample #(t/is (= % [3 4 5])))
+      (s/on-end sample done)
+      ;; push values onto stream
+      (s/push! b 1)
+      (s/push! b 2)
+      ;; open switch
+      (s/push! bv :value)
+      ;; push some more
+      (s/push! b 3)
+      (s/push! b 4)
+      (s/push! b 5)
+      ;; end
+      (s/end! b)
+      (s/end! bv))))
+
 ;; - bufferWithTime
 ;; - bufferWithTimeOrCount
 ;; - toProperty
