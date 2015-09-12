@@ -1,8 +1,53 @@
 (ns uxbox.streams
-  (:require [bacon])
-  (:refer-clojure :exclude [map filter reduce zip dedupe drop take not and next]))
+  (:require [bacon]
+            [cats.protocols :as p]
+            [cats.context :as ctx])
+  (:refer-clojure :exclude [map
+                            filter
+                            reduce
+                            repeatedly
+                            zip
+                            dedupe
+                            drop
+                            take
+                            not
+                            and
+                            next]))
 
 ;; core
+
+(defn flat-map
+  [obs f]
+  (.flatMap obs f))
+
+;;;;; coercions
+
+;; observable -> property
+(defn to-property
+  [obs]
+  (.toProperty obs))
+
+(defn to-event-stream
+  [p]
+  (.toEventStream p))
+
+(defn to-promise
+  ([obs]
+   (.toPromise obs))
+  ([obs ctr]
+   (.toPromise obs ctr)))
+
+(defn first-to-promise
+  ([obs]
+   (.firstToPromise obs))
+  ([obs ctr]
+   (.firstToPromise obs ctr)))
+
+;;;;; transformations
+
+(defn reduce
+  [rf seed obs]
+  (.reduce obs seed rf))
 
 (defn take
   [n obs]
@@ -28,32 +73,25 @@
   ([zf o1 o2]
    (.zip o1 o2 (comp zf vector))))
 
-;; creation
+;; subscription
 
-;; Fn -> Observable
-(defn from-callback
-  [cb]
-  (js/Bacon.fromCallback cb))
 
-;; interval -> Fn -> Observable
-(defn from-poll
-  [interval pf]
-  (js/Bacon.fromPoll interval pf))
 
-;; Observable -> Fn -> ()
 (defn on-value
   [obs f]
   (.onValue obs f))
 
-;; Observable -> Fn -> ()
 (defn on-error
   [obs f]
   (.onError obs f))
 
-;; Observable -> Fn -> ()
 (defn on-end
   [obs f]
   (.onEnd obs f))
+
+(defn subscribe
+  [obs sf]
+  (.subscribe obs sf))
 
 ;;; transformations
 
@@ -97,15 +135,93 @@
   [s]
   (instance? js/Bacon.EventStream s))
 
-;; low-level
+
+;; creation
+
+(defn once
+  [v]
+  (js/Bacon.once v))
+
+(defn never
+  []
+  (js/Bacon.never))
+
+(defn repeat
+  [rf]
+  (js/Bacon.repeat rf))
+
+(defn interval
+  ([ms]
+   (js/Bacon.interval ms))
+  ([ms v]
+   (js/Bacon.interval ms v)))
+
+(defn later
+  [ms v]
+   (js/Bacon.later ms v))
+
+(defn sequentially
+  [ms coll]
+  (js/Bacon.sequentially ms (into-array coll)))
+
+(defn repeatedly
+  [ms coll]
+  (js/Bacon.repeatedly ms (into-array coll)))
+
+(defn from-coll
+  [coll]
+  (js/Bacon.fromArray (into-array coll)))
+
+(defn from-callback
+  [cb]
+  (js/Bacon.fromCallback cb))
+
+(defn from-poll
+  [interval pf]
+  (js/Bacon.fromPoll interval pf))
+
+(defn from-binder
+  [bf]
+  (js/Bacon.fromBinder bf))
+
+(defn initial
+  [v]
+  (js/Bacon.Initial. v))
+
+(defn initial?
+  [i]
+  (instance? js/Bacon.Initial i))
+
+(extend-type js/Bacon.Initial
+  IDeref
+  (-deref [ev]
+    (.-valueInternal ev)))
 
 (defn next
   [v]
   (js/Bacon.Next. v))
 
+(defn next?
+  [v]
+  (instance? js/Bacon.Next v))
+
+(extend-type js/Bacon.Next
+  IDeref
+  (-deref [ev]
+    (.value ev)))
+
 (defn error
   [e]
   (js/Bacon.Error. e))
+
+(extend-type js/Bacon.Error
+  IDeref
+  (-deref [err]
+    (.-error err)))
+
+(defn error?
+  [e]
+  (instance? js/Bacon.Error e))
 
 (defn initial
   [v]
@@ -114,6 +230,46 @@
 (defn end
   []
   (js/Bacon.End.))
+
+(defn end?
+  [e]
+  (instance? js/Bacon.End e))
+
+(defn has-value?
+  [ev]
+  (.hasValue ev))
+
+(def more js/Bacon.more)
+(def no-more js/Bacon.noMore)
+
+;; cats integration
+
+(def event-stream-context
+  (reify
+    p/ContextClass
+    (-get-level [_] ctx/+level-default+)
+
+    p/Functor
+    (-fmap [_ f obs]
+      (.map obs f))
+
+    p/Applicative
+    (-pure [_ v]
+      (once v))
+
+    (-fapply [_ pf pv]
+      (js/Bacon.zipWith #(%1 %2) pf pv))
+
+    p/Monad
+    (-mreturn [_ v]
+      (once v))
+
+    (-mbind [_ mv f]
+      (.flatMap mv f))))
+
+(extend-type js/Bacon.EventStream
+  p/Context
+  (-get-context [_] event-stream-context))
 
 ;;
 ;; tocino.property
@@ -127,11 +283,6 @@
 (defn constant
   [v]
   (js/Bacon.constant v))
-
-;; observable -> property
-(defn to-property
-  [obs]
-  (.toProperty obs))
 
 ;; miliseconds -> property -> event-stream
 (defn sample
@@ -171,10 +322,75 @@
                      (or p1 p2)
                      ps)))
 
-;;
+;; cats integration
+
+(def property-context
+  (reify
+    p/ContextClass
+    (-get-level [_] ctx/+level-default+)
+
+    p/Functor
+    (-fmap [_ f obs]
+      (.map obs f))
+
+    p/Applicative
+    (-pure [_ v]
+      (constant v))
+
+    (-fapply [_ pf pv]
+      (to-property (js/Bacon.zipWith #(%1 %2) pf pv)))
+
+    p/Monad
+    (-mreturn [_ v]
+      (constant v))
+
+    (-mbind [_ p f]
+      (to-property (.flatMap p f)))))
+
+(extend-type js/Bacon.Property
+  p/Context
+  (-get-context [_] property-context))
+
 ;; tocino.bus
 
 ;; any -> boolean
 (defn bus?
   [b]
   (instance? js/Bacon.Bus b))
+
+(defn bus
+  []
+  (js/Bacon.Bus.))
+
+(defn push!
+  [b v]
+  (.push b v))
+
+(defn error!
+  [b e]
+  (.error b e))
+
+(defn plug!
+  [b obs]
+  (.plug b obs))
+
+(defn end!
+  [b]
+  (.end b))
+
+(def bus-context
+  (reify
+    p/ContextClass
+    (-get-level [_] ctx/+level-default+)
+
+    p/Functor
+    (-fmap [_ f b]
+      (let [nb (bus)]
+        (on-value b #(push! nb (f %)))
+        (on-error b #(error! nb %))
+        (on-end b #(end! nb %))
+        nb))))
+
+(extend-type js/Bacon.Bus
+  p/Context
+  (-get-context [_] bus-context))

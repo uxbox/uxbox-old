@@ -23,6 +23,8 @@
                  [datascript "0.11.6"]
                  ;; Persistence
                  [funcool/hodgepodge "0.1.4"]
+                 ;; Misc
+                 [funcool/cats "1.0.0-SNAPSHOT"]
                  ;; Development
                  [ring "1.4.0"]]
 
