@@ -52,6 +52,14 @@
       (drain! s #(t/is (= (set %) coll)))
       (s/on-end s done))))
 
+(t/deftest event-stream-from-map
+  (t/async done
+    (let [coll #{:a "a" :b "b"}
+          s (s/from-coll coll)]
+      (t/is (s/event-stream? s))
+      (drain! s #(t/is (= (set %) #{:a "a" :b "b"})))
+      (s/on-end s done))))
+
 (t/deftest event-stream-from-callback
   (t/async done
     (let [s (s/from-callback (fn [sink]
@@ -591,3 +599,34 @@
      (s/push! b 1)
      (s/push! b 2)
      (s/end! b))))
+
+;; interop
+
+(t/deftest pipe-to-atom
+  (t/async done
+    (let [st (s/from-coll [1 2 3])
+          a (s/pipe-to-atom st)]
+      (s/on-end st #(do (t/is (= @a 3))
+                        (done))))))
+
+(t/deftest pipe-to-atom-with-atom
+  (t/async done
+    (let [st (s/from-coll [1 2 3])
+          vacc (volatile! [])
+          a (atom 0)]
+      (add-watch a
+                 :acc
+                 (fn [_ _ _ v]
+                   (vswap! vacc conj v)))
+      (s/pipe-to-atom a st)
+      (s/on-end st #(do (t/is (= @a 3))
+                        (t/is (= @vacc [1 2 3]))
+                        (done))))))
+
+(t/deftest pipe-to-atom-with-atom-and-function
+  (t/async done
+    (let [st (s/from-coll [1 2 3])
+          a (atom [])]
+      (s/pipe-to-atom a st conj)
+      (s/on-end st #(do (t/is (= @a [1 2 3]))
+                        (done))))))

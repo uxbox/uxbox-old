@@ -440,3 +440,16 @@
   (or (property? o)
       (event-stream? o)
       (bus? o)))
+
+;; interop
+
+(defn pipe-to-atom
+  ([obs]
+   (let [a (atom nil)]
+     (pipe-to-atom a obs)))
+  ([a obs]
+   (on-value obs #(reset! a %))
+   a)
+  ([a obs f]
+   (on-value obs #(swap! a f %))
+   a))
