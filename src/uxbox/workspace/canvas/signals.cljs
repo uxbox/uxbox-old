@@ -23,18 +23,18 @@
 
 (defn on-mouse-down
   [e]
-  (s/push mouse-down-signal
-          (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
+  (s/push! mouse-down-signal
+           (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
 
 (defn on-mouse-up
   [e]
-  (s/push mouse-up-signal
-          (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
+  (s/push! mouse-up-signal
+           (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
 
 (defn on-drag-start
   [e]
-  (s/push mouse-drag-signal true))
+  (s/push! mouse-drag-signal true))
 
 (defn on-drag-end
   [e]
-  (s/push mouse-drag-signal false))
+  (s/push! mouse-drag-signal false))

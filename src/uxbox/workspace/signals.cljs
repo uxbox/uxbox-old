@@ -20,8 +20,8 @@
 
 (defn on-workspace-scroll
   [e]
-  (s/push workspace-scroll-signal
-          (scroll-event e)))
+  (s/push! workspace-scroll-signal
+           (scroll-event e)))
 
 (defonce scroll-top (s/pipe-to-atom workspace-top-scroll-signal))
 (defonce scroll-left (s/pipe-to-atom workspace-left-scroll-signal))
@@ -34,5 +34,5 @@
 (defn select-tool!
   [tool]
   (if (= @selected-tool tool)
-    (s/push selected-tool-signal :none)
-    (s/push selected-tool-signal tool)))
+    (s/push! selected-tool-signal :none)
+    (s/push! selected-tool-signal tool)))

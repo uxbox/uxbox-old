@@ -89,7 +89,8 @@
 ;;  [tool coords])
 
 (def start-drawing-signal
-  (s/flat-map-latest wsigs/selected-tool-signal
+  signals/mouse-down-signal
+  #_(s/flat-map-latest wsigs/selected-tool-signal
                      (fn [tool]
                        (s/combine vector
                                   (if (= tool :none)
@@ -112,7 +113,8 @@
 (def drawing (s/pipe-to-atom
               (s/map second
                (s/filter first
-                         (s/combine-with vector
+                         signals/mouse-drag-signal
+                         #_(s/combine-with vector
                                          signals/mouse-drag-signal
                                          zd)))))
 
