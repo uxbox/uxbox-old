@@ -302,6 +302,7 @@
       (s/end! bv))))
 
 ;; - bufferWithTime
+;; - bufferWithCount
 ;; - bufferWithTimeOrCount
 ;; - toProperty
 
@@ -341,7 +342,7 @@
       (s/on-end (s/zip epsamples ep2samples)
                 done))))
 
-(t/deftest property-sampled-by-combining-function
+#_(t/deftest property-sampled-by-combining-function
   (t/async done
     (let [clock (s/to-property (tick 10))
           same-time? (fn [t1 t2]
@@ -650,3 +651,5 @@
                           s)]
       (drain! ts #(t/is (= % [[1 2] [3 4]])))
       (s/on-end ts done))))
+
+;; TODO: test clojurey aliases

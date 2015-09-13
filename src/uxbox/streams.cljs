@@ -65,7 +65,7 @@
   [pred obs]
   (.filter obs pred))
 
-(defn dedupe
+(defn skip-duplicates
   [obs]
   (.skipDuplicates obs))
 
@@ -102,24 +102,6 @@
 (defn subscribe
   [obs sf]
   (.subscribe obs sf))
-
-;; debugging
-
-#_(defn log
-  ([stream]
-   (.log stream)
-   stream)
-  ([logger stream]
-   (.log (map logger stream))
-   stream))
-
-#_(defn pr-log
-  ([stream]
-   (log #(pr-str %) stream)
-   stream)
-  ([prefix stream]
-   (log #(pr-str prefix %) stream)
-   stream))
 
 ;; Types
 
@@ -178,6 +160,12 @@
 (defn from-binder
   [bf]
   (js/Bacon.fromBinder bf))
+
+(defn from-event
+  ([target ev]
+   (js/Bacon.fromEvent target ev))
+  ([target ev tf]
+   (js/Bacon.fromEvent target ev tf)))
 
 (defn initial
   [v]
@@ -464,3 +452,35 @@
                                     (fn []
                                       (unsub)))))]
     ns))
+
+;; debugging
+
+(defn log
+  ([stream]
+   (.log stream)
+   stream)
+  ([logger stream]
+   (.log (map logger stream))
+   stream))
+
+(defn pr-log
+  ([stream]
+   (log #(pr-str %) stream)
+   stream)
+  ([prefix stream]
+   (log #(pr-str prefix %) stream)
+   stream))
+
+;; buffering
+
+(defn buffer-with-count
+  [stream n]
+  (.bufferWithCount stream n))
+
+;; clojury aliases
+
+(defn partition
+  [n stream]
+  (buffer-with-count stream n))
+
+(def dedupe skip-duplicates)

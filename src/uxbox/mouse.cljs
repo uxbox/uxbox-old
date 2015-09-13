@@ -19,6 +19,5 @@
     [(- newx oldx) (- newy oldy)]))
 
 (def ^{:doc "A stream of mouse coordinate deltas as `[dx dy]` vectors."}
-  delta client-position #_(s/map
-           coords-delta
-           (s/zip client-position (s/drop 1 client-position))))
+  delta
+  (s/map coords-delta (s/partition 2 client-position)))
