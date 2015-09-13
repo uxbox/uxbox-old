@@ -103,20 +103,6 @@
   [obs sf]
   (.subscribe obs sf))
 
-;;; transformations
-
-#_(defn transform
-  [stream xform]
-  (let [ns (js/Bacon.fromBinder (fn [sink]
-                                  (let [step (xform (fn [_ input]
-                                                      ;; TODO: completion step, respect reduced
-                                                      (sink input)
-                                                      input))
-                                        unsub (.onValue stream #(step nil %))]
-                                    (fn []
-                                      (unsub)))))]
-    ns))
-
 ;; debugging
 
 #_(defn log
@@ -453,3 +439,28 @@
   ([a obs f]
    (on-value obs #(swap! a f %))
    a))
+
+(defn- sink-step
+  [sink]
+  (fn
+    ([r]
+     (sink (end))
+     r)
+    ([_ input]
+     (sink input)
+     input)))
+
+(defn transform
+  [xform stream]
+  (let [ns (js/Bacon.fromBinder (fn [sink]
+                                  (let [xsink (xform (sink-step sink))
+                                        step (fn [input]
+                                               (let [v (xsink nil input)]
+                                                 (when (reduced? v)
+                                                   (xsink @v))))
+                                        unsub (.onValue stream step)]
+                                    (.onEnd stream #(do (xsink nil)
+                                                        (sink (end))))
+                                    (fn []
+                                      (unsub)))))]
+    ns))
