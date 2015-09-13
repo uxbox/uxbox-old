@@ -1,4 +1,6 @@
-(require '[cljs.build.api :as b])
+(require '[cljs.build.api :as b]
+         '[cljs.repl :as repl]
+         '[cljs.repl.node :as node])
 
 ;; Base compiler configuration
 (def compiler-config {:main 'uxbox.core
@@ -74,3 +76,9 @@
 (defn build-prod
   []
   (b/build "prod" prod-config))
+
+(defn node-repl
+  []
+  (repl/repl (node/repl-env)
+             :output-dir "out"
+             :cache-analysis true))
