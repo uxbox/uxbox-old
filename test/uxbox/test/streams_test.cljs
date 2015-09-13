@@ -9,7 +9,8 @@
 
 (def no-op (fn [& args]))
 
-(defmacro with-timeout [ms & body]
+(defmacro with-timeout
+  [ms & body]
   `(js/setTimeout
     (fn []
       (do
@@ -27,7 +28,7 @@
 
 (defn tick
   [interval]
-  (s/from-poll interval #(s/next (int (js/Date.)))))
+  (s/from-poll interval #(s/next (.getTime (js/Date.)))))
 
 ;; ---
 
@@ -55,7 +56,8 @@
   (t/async done
     (let [s (s/from-callback (fn [sink]
                                (with-timeout 10
-                                 (sink 1))))]
+                                 (sink 1)
+                                 no-op)))]
       (t/is (s/event-stream? s))
       (drain! s #(t/is (= % [1])))
       (s/on-end s done))))
@@ -523,12 +525,16 @@
       (s/on-value life #(do (t/is (= % 42))
                             (done))))))
 
+(defn kw-range
+  [n]
+  (map (comp keyword str) (range 1 (inc n))))
+
 (t/deftest property-as-monad
   (t/async done
     (let [pn (s/to-property (s/from-coll [1 2 3]))
           pnks (m/mlet [n pn
-                        k (s/from-coll (map (comp keyword str) (range 1 (inc n))))]
-                 (m/return [n k]))
+                        k (s/from-coll (kw-range n))]
+                 (s/constant [n k]))
           sample (s/take 6 pnks)]
       (t/is (s/property? pnks))
       (drain! sample #(t/is (= % [[1 :1]

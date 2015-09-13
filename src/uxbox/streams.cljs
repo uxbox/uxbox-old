@@ -5,6 +5,8 @@
   (:refer-clojure :exclude [map
                             filter
                             reduce
+                            merge
+                            repeat
                             repeatedly
                             zip
                             dedupe
@@ -12,6 +14,7 @@
                             take
                             not
                             and
+                            or
                             next
                             concat]))
 
@@ -58,6 +61,14 @@
   [f obs]
   (.map obs f))
 
+(defn filter
+  [pred obs]
+  (.filter obs pred))
+
+(defn dedupe
+  [obs]
+  (.skipDuplicates obs))
+
 (defn not
   [obs]
   (.not obs))
@@ -75,8 +86,6 @@
    (.zip o1 o2 (comp zf vector))))
 
 ;; subscription
-
-
 
 (defn on-value
   [obs f]
@@ -135,7 +144,6 @@
 (defn event-stream?
   [s]
   (instance? js/Bacon.EventStream s))
-
 
 ;; creation
 
@@ -224,10 +232,6 @@
   [e]
   (instance? js/Bacon.Error e))
 
-(defn initial
-  [v]
-  (js/Bacon.Initial. v))
-
 (defn end
   []
   (js/Bacon.End.))
@@ -280,7 +284,7 @@
 
 (def event-stream-context
   (reify
-    p/ContextClass
+    p/Context
     (-get-level [_] ctx/+level-default+)
 
     p/Functor
@@ -302,7 +306,7 @@
       (.flatMap mv f))))
 
 (extend-type js/Bacon.EventStream
-  p/Context
+  p/Contextual
   (-get-context [_] event-stream-context))
 
 ;;
@@ -360,7 +364,7 @@
 
 (def property-context
   (reify
-    p/ContextClass
+    p/Context
     (-get-level [_] ctx/+level-default+)
 
     p/Functor
@@ -382,7 +386,7 @@
       (to-property (.flatMap p f)))))
 
 (extend-type js/Bacon.Property
-  p/Context
+  p/Contextual
   (-get-context [_] property-context))
 
 ;; tocino.bus
@@ -414,7 +418,7 @@
 
 (def bus-context
   (reify
-    p/ContextClass
+    p/Context
     (-get-level [_] ctx/+level-default+)
 
     p/Functor
@@ -422,13 +426,12 @@
       (let [nb (bus)]
         (on-value b #(push! nb (f %)))
         (on-error b #(error! nb %))
-        (on-end b #(end! nb %))
+        (on-end b #(end! nb))
         nb))))
 
 (extend-type js/Bacon.Bus
-  p/Context
+  p/Contextual
   (-get-context [_] bus-context))
-
 
 ;;
 

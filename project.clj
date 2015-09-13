@@ -5,7 +5,7 @@
             :url ""}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.48"]
+                 [org.clojure/clojurescript "1.7.122"]
                  ;; String
                  [funcool/cuerdas "0.5.0"]
                  ;; Rendering
@@ -24,12 +24,12 @@
                  ;; Persistence
                  [funcool/hodgepodge "0.1.4"]
                  ;; Misc
-                 [funcool/cats "1.0.0-SNAPSHOT"]
+                 [funcool/cats "1.0.0"]
                  ;; Development
                  [ring "1.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.0"]
-            [lein-figwheel "0.3.3"]
+            [lein-figwheel "0.3.9"]
             [hiccup-bridge "1.0.1"]]
 
   :source-paths ["src"]
