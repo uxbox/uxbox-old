@@ -40,20 +40,20 @@
 (rum/defc selected-circlec < rum/static
   [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
   [:g
-      [:rect {:x (- cx r 4)
-              :y (- cy r 4)
-              :width (+ 8 (* r 2))
-              :height (+ 8 (* r 2))
-              :fill "transparent"
-              :stroke "#4af7c3"
-              :strokeWidth 2
-              :strokeDasharray "5,5"
-              :fill-opacity "0.5"
-              :transform (generate-transformation {:rotate rotate :center {:x cx :y cy}})}]
-      [:rect {:x (- cx r 8) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ cx r) :y (+ cy r) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ cx r) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (- cx r 8) :y (+ cy r) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
+   [:rect {:x (- cx r 4)
+           :y (- cy r 4)
+           :width (+ 8 (* r 2))
+           :height (+ 8 (* r 2))
+           :fill "transparent"
+           :stroke "#4af7c3"
+           :strokeWidth 2
+           :strokeDasharray "5,5"
+           :fill-opacity "0.5"
+           :transform (generate-transformation {:rotate rotate :center {:x cx :y cy}})}]
+   [:rect {:x (- cx r 8) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+   [:rect {:x (+ cx r)   :y (+ cy r)   :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+   [:rect {:x (+ cx r)   :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
+   [:rect {:x (- cx r 8) :y (+ cy r)   :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
 (rum/defc drawing-circlec < rum/static
   [cx cy r]

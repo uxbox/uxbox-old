@@ -16,6 +16,10 @@
                                :shape/locked? false
                                :shape/visible? true}))
 
+(defn update-shapes
+  [shapes]
+  (record :uxbox/update-shapes shapes))
+
 ;;; TODO: review and delete
 
 (defn drawing-shape

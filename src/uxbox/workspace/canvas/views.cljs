@@ -69,7 +69,7 @@
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
-(defonce canvas-coordinates (s/pipe-to-atom signals/canvas-coordinates-signal))
+(def canvas-coordinates (s/pipe-to-atom signals/canvas-coordinates-signal))
 (rum/defc debug-coordinates < rum/reactive
   []
   (let [[x y] (rum/react canvas-coordinates)]
@@ -94,47 +94,13 @@
     :height "100%"
     :fill "white"}])
 
-(defn- sub-all
-  [sigs args]
-  (into {} (map (fn [[k signal eff]]
-                  [k (s/on-value signal #(eff args %))])
-                sigs)))
+(def draw! (s/pipe-to-atom signals/draw-signal))
+(def move! (s/pipe-to-atom signals/move-signal))
+(def drawing (s/pipe-to-atom signals/draw-in-progress))
+(def selected-shapes (s/pipe-to-atom (s/map vals signals/selected)))
+(def selected-ids (s/pipe-to-atom (s/map (comp set keys) signals/selected)))
 
-(defn- unsub-all
-  [subs]
-  (doseq [unsub (vals subs)]
-    (unsub)))
-
-(defn signals-mixin
-  [& sigs]
-  {:will-mount (fn [state]
-                 (let [args (:rum/args state)
-                       page (second args)
-                       subs (sub-all sigs args)]
-                   (merge state {::subs subs
-                                 ::signals sigs})))
-   :transfer-state (fn [old new]
-                     (let [args (:rum/args new)
-                           oldsubs (::subs old)
-                           sigs (::signals old)]
-                      (unsub-all oldsubs)
-                      (merge new {::subs (sub-all sigs args)
-                                  ::signals sigs})))
-   :wrap-render (fn [render-fn]
-                  (fn [state]
-                    (let [[dom next-state] (render-fn state)]
-                      [dom (merge next-state (select-keys state [::subs ::signals]))])))
-   :will-unmount (fn [state]
-                   (unsub-all (::subs state))
-                   (-> (dissoc state ::subs)
-                       (dissoc state ::signals)))})
-
-(def canvas-mixin (signals-mixin [::draw signals/draw-signal (fn [[_ page] shape]
-                                                               (actions/draw-shape page shape))]))
-
-(defonce drawing (s/pipe-to-atom signals/draw-in-progress))
-
-(rum/defc canvas < rum/reactive canvas-mixin
+(rum/defc canvas < rum/reactive
   [conn
    page
    shapes
@@ -142,9 +108,24 @@
            viewport-width
            document-start-x
            document-start-y]}]
+
+  (signals/set-current-shapes! shapes)
+
+  (add-watch draw!
+             :draw!
+             (fn [_ _ _ shape]
+               (actions/draw-shape page shape)))
+  (add-watch move!
+             :move!
+             (fn [_ _ _ selections]
+               (actions/update-shapes selections)))
+
   (let [page-width (:page/width page)
         page-height (:page/height page)
-        raw-shapes (map :shape/data shapes)]
+        selection-uuids (rum/react selected-ids)
+        selected-shapes (rum/react selected-shapes)
+        shapes-to-draw (filter :shape/visible? shapes)
+        raw-shapes (map :shape/data (filter #(not (contains? selection-uuids (:shape/uuid %))) shapes-to-draw))]
     [:svg#page-canvas
      {:x document-start-x
       :y document-start-y
@@ -156,16 +137,9 @@
      (apply vector :svg#page-layout (map shapes/shape->svg raw-shapes))
      (when-let [shape (rum/react drawing)]
        (shapes/shape->drawing-svg shape))
-     #_(when-let [selected-shapes (get page :selected)]
-       (map shapes/selected-svg selected-shapes)
-       (shapes/shape->selected-svg (get shapes selected-uuid)))]))
-
-;; mouse down -> selcted-tool? - no -> intersection? - yes -> select
-;;                                                    - no -> deselect
-;; toggle-selection-signal
-
-;; mouse drag -> drawing? - no -> selected stuff? - yes -> move selections
-;; mouse up -> drawing? - yes -> end drawing (implies selection of just drawn?)
-
-;; shape-select :: mouse click -> (intersects with shape) -> (shape is not selected) -> selection shape
-;; shape-deselect :: mouse click -> (doesn't intersect with shape) -> (shapes are selected) -> deselect all shapes
+     (when-not (empty? selected-shapes)
+       (let [rs selected-shapes]
+         (vec (cons :g
+                    (concat
+                     (map shapes/shape->selected-svg rs)
+                     (map shapes/shape->svg rs))))))]))

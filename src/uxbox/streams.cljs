@@ -33,7 +33,7 @@
 
 (defn flat-map-first
   [obs f]
-  (.flatMapLatest obs f))
+  (.flatMapFirst obs f))
 
 ;;;;; coercions
 
@@ -81,8 +81,10 @@
   (.filter obs pred))
 
 (defn skip-duplicates
-  [obs]
-  (.skipDuplicates obs))
+  ([obs]
+   (.skipDuplicates obs =))
+  ([obs cf]
+   (.skipDuplicates obs cf)))
 
 (defn not
   [obs]
@@ -267,6 +269,10 @@
 (defn take-while
   [stream p]
   (.takeWhile stream p))
+
+(defn take-until
+  [stream p]
+  (.takeUntil stream p))
 
 (defn skip-while
   {:pre [(or (property? p)
@@ -508,7 +514,9 @@
   [n stream]
   (buffer-with-count stream n))
 
-(def dedupe skip-duplicates)
+(defn dedupe
+  [obs]
+  (skip-duplicates obs))
 
 (defn true?
   [obs]

@@ -86,6 +86,15 @@
                                attr
                                value)]])))
 
+(defmethod persist! :uxbox/update-shapes
+  [_ nshapes conn]
+  (d/transact! conn
+               (into [] (for [[uuid
+                               data
+                               :as shape] nshapes
+                               :let [s (q/shape-by-id uuid @conn)]]
+                            [:db/add s :shape/data data]))))
+
 (defmethod persist! :uxbox/toggle-shape-visibility
   [_ uuid conn]
   (let [{visible? :shape/visible?

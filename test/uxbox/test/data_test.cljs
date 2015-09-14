@@ -165,14 +165,9 @@
           (t/is (= suuid shape1))
           (t/is (= sdata rshape))))
 
-      ;; Move shape
-      (log/persist! :uxbox/move-shape
-                    [shape1 10 20]
-                    conn)
-
       (let [{suuid :shape/uuid
              sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
-          (t/is (= sdata (Line. 10 20 11 21))))
+          (t/is (= sdata (Line. 0 0 1 1))))
 
       ;; Delete shape
       (log/persist! :uxbox/delete-shape
@@ -181,7 +176,7 @@
 
       (t/is (= 0 (q/shape-count-by-page-id page1 @conn)))))
 
-  (t/testing "Shapes can be moved"
+  (t/testing "Shapes can be updated in bulk"
     (let [conn (d/create-conn s/schema)
           pid (random-uuid)
           name "A project"
@@ -201,18 +196,21 @@
       (log/persist! :uxbox/create-page
                     (p/create-page page1 pid title1 width height)
                     conn)
+
       ;; Add shape to page
-      (log/persist! :uxbox/create-shape
+      (let [rshape (Line. 0 0 1 1)]
+        (log/persist! :uxbox/create-shape
                       (p/create-shape shape1 page1 (Line. 0 0 1 1))
                       conn)
 
-      ;; Move shape
-      (log/persist! :uxbox/move-shape
-                    [shape1 10 20]
-                    conn)
-
-      (let [{sdata :shape/data} (q/pull-shape-by-id shape1 @conn)]
-          (t/is (= sdata (Line. 10 20 11 21))))))
+        (let [{sdata :shape/data
+               :as shape} (q/pull-shape-by-id shape1 @conn)
+              ndata (assoc sdata ::foo ::foo)
+              _ (log/persist! :uxbox/update-shapes
+                              [[shape1 ndata]]
+                              conn)
+              nshape (q/pull-shape-by-id shape1 @conn)]
+          (t/is (= ndata (:shape/data nshape)))))))
 
   (t/testing "Shape attributes can be changed"
     (let [conn (d/create-conn s/schema)

@@ -26,40 +26,64 @@
 (rum/defc rectanglec < rum/static
   [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible]}]
   [:rect
-     {:x x
-      :y y
-      :width width
-      :height height
-      :fill fill
-      :fillOpacity fill-opacity
-      :rx rx
-      :ry ry
-      :stroke stroke
-      :strokeWidth stroke-width
-      :stroke-opacity stroke-opacity
-      :rotate rotate
-      :style #js {:visibility (if visible "visible" "hidden")}
-      :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
+   {:x x
+    :y y
+    :width width
+    :height height
+    :fill fill
+    :fillOpacity fill-opacity
+    :rx rx
+    :ry ry
+    :stroke stroke
+    :strokeWidth stroke-width
+    :stroke-opacity stroke-opacity
+    :rotate rotate
+    :style #js {:visibility (if visible "visible" "hidden")}
+    :transform (generate-transformation {:rotate rotate
+                                         :center {:x (+ x (/ width 2))
+                                                  :y (+ y (/ height 2))}})}])
 
 (rum/defc selected-rectanglec < rum/static
   [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
   [:g
-     [:rect {:x (- x 4)
-             :y (- y 4)
-             :width (+ width 8)
-             :height (+ height 8)
-             :fill "transparent"
-             :stroke "#4af7c3"
-             :strokeWidth 2
-             :strokeDasharray "5,5"
-             :fill-opacity "0.5"
-             :rotate rotate
-             :transform (generate-transformation {:rotate rotate :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}]
-
-      [:rect {:x (- x 8) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ x width) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
-      [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
+     [:rect
+      {:x (- x 4)
+       :y (- y 4)
+       :width (+ width 8)
+       :height (+ height 8)
+       :fill "transparent"
+       :stroke "#4af7c3"
+       :strokeWidth 2
+       :strokeDasharray "5,5"
+       :fill-opacity "0.5"
+       :rotate rotate
+       :transform (generate-transformation {:rotate rotate
+                                            :center {:x (+ x (/ width 2))
+                                                     :y (+ y (/ height 2))}})}]
+      [:rect {:x (- x 8)
+              :y (- y 8)
+              :width 8
+              :height 8
+              :fill "#4af7c3"
+              :fill-opacity "0.75"}]
+      [:rect {:x (+ x width)
+              :y (+ y height)
+              :width 8
+              :height 8
+              :fill "#4af7c3"
+              :fill-opacity "0.75"}]
+      [:rect {:x (+ x width)
+              :y (- y 8)
+              :width 8
+              :height 8
+              :fill "#4af7c3"
+              :fill-opacity "0.75"}]
+      [:rect {:x (- x 8)
+              :y (+ y height)
+              :width 8
+              :height 8
+              :fill "#4af7c3"
+              :fill-opacity "0.75"}]])
 
 (rum/defc drawing-rectanglec < rum/static
   [{:keys [x y width height]}]
@@ -108,6 +132,7 @@
         (assoc :y (+ y delta-y))))
 
   (draw
+    ;; FIXME: not working as expected
     [{:keys [x y] :as shape} mouse-x mouse-y]
     (let [[nx ny width height] (geo/coords->rect x y mouse-x mouse-y)]
       (merge shape {:x nx

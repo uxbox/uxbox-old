@@ -1,5 +1,11 @@
 (ns uxbox.geometry)
 
+(defn clamp
+  [[x y]]
+  (let [cx (max 0 x)
+        cy (max 0 y)]
+    [cx cy]))
+
 (defn coords->rect
   "Given the (x1,y1) and (x2,y2) coordinates return the rectangle that
   define as (top-left corner, width, height)"

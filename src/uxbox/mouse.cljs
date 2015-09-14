@@ -11,12 +11,12 @@
                             [(.-clientX e)
                              (.-clientY e)]))))
 
-;; [[x y], [x y]] -> [dx dy]
 (defn coords-delta
   [[old new]]
   (let [[oldx oldy] old
         [newx newy] new]
-    [(- newx oldx) (- newy oldy)]))
+    [(* 2 (- newx oldx))
+     (* 2 (- newy oldy))]))
 
 (def ^{:doc "A stream of mouse coordinate deltas as `[dx dy]` vectors."}
   delta
