@@ -8,6 +8,7 @@
    [uxbox.forms.data :refer [set-lightbox! close-lightbox!]]
    [uxbox.data.db :refer [conn]]
    [uxbox.data.queries :as q]
+   [uxbox.data.mixins :as mx]
    [uxbox.user.views :refer [user]]
    [uxbox.activity :refer [activity-timeline]]
    [uxbox.projects.actions :as actions]
@@ -185,8 +186,8 @@
                      %)}
      icons/trash]]])
 
-(rum/defc new-project
-  [lightbox-kind]
+(rum/defc new-project < rum/static
+  []
   [:div.grid-item.add-project
    {:on-click #(set-lightbox! :new-project)}
    [:span "+ New project"]])
@@ -210,15 +211,17 @@
                               (rum/react sort-order))))]])
 
 (rum/defcs dashboard* < (rum/local :project/name :project-sort-order)
-                        rum/reactive
-  [{sort-order :project-sort-order} conn]
-  (let [projects (q/pull-projects (rum/react conn))] ;; todo: only when afects query
-    [:main.dashboard-main
-     (header)
-     [:section.dashboard-content
-      (dashboard-bar sort-order (count projects))
-      (dashboard-grid projects sort-order)]
-     (activity-timeline conn)]))
+                        (mx/query q/pull-projects :projects)
+                        (mx/query q/project-count :project-count)
+  [{sort-order :project-sort-order
+    projects :projects
+    project-count :project-count} conn]
+  [:main.dashboard-main
+   (header)
+   [:section.dashboard-content
+    (dashboard-bar sort-order @project-count)
+    (dashboard-grid @projects sort-order)]
+   (activity-timeline conn)])
 
 (rum/defc dashboard
   [conn]

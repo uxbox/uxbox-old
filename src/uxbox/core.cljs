@@ -32,12 +32,18 @@
 
 (def $el (.getElementById js/document "app"))
 
+(defn render!
+  [$el location conn]
+  (let [component (ui location)]
+    (rum/mount component $el)))
+
 (defn start!
   [location]
   (start-history!)
   (db/init-db! db/conn local-storage)
   (db/persist-to! db/conn local-storage)
-  (rum/mount (ui location) $el))
+  (render! $el location db/conn)
+  )
 
 
 #_(s/log :client mouse/client-position)

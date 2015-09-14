@@ -74,12 +74,7 @@
 
 (defn project-count
   [db]
-  (first
-   (d/q
-    '[:find [(count ?e)]
-      :where
-      [?e :project/uuid ?u]]
-    db)))
+  (count (d/q projects-query db)))
 
 (defn shape-by-id
   [sid db]
