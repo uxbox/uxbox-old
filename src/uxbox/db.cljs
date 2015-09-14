@@ -1,11 +1,6 @@
 (ns uxbox.db)
 
-
-
-(def initial-state {;; Activity
-                    :activity []
-
-                    ;; Lightbox
-                    :lightbox nil})
+;; FIXME: delete
+(def initial-state {})
 
 (defonce app-state (atom initial-state))

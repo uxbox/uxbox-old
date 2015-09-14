@@ -3,7 +3,6 @@
               [datascript :as d]
               [uxbox.streams :as s]
               [uxbox.mouse :as mouse]
-              [uxbox.db :as db]
               [uxbox.data.db :refer [conn]]
               [uxbox.data.queries :as q]
               [uxbox.data.projects :as proj]
