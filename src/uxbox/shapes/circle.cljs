@@ -55,26 +55,16 @@
       [:rect {:x (+ cx r) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
       [:rect {:x (- cx r 8) :y (+ cy r) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
-(rum/defc drawing-circlec < rum/reactive
-  [cx cy]
-  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)
-         r (geo/distance cx cy mouse-x mouse-y)
-         r (if (js/isNaN r) 0 r)
-         dx (- (geo/distance cx cy cx 0) r)
-         dy (- (geo/distance cx cy 0 cy) r)
-         r (if (or (< dx 0)
-                   (< dy 0))
-             (- r (Math/abs (min dx dy)))
-             r)]
-    [:circle {:cx cx
-              :cy cy
-              :r r
-              :style #js {:fill "transparent"
-                          :stroke "gray"
-                          :strokeDasharray "5,5"}}]))
+(rum/defc drawing-circlec < rum/static
+  [cx cy r]
+  [:circle {:cx cx
+            :cy cy
+            :r r
+            :style #js {:fill "transparent"
+                        :stroke "gray"
+                        :strokeDasharray "5,5"}}])
 
 (defrecord Circle [name cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
-  ;; FIXME: arbitrary to make datascript happy
   IComparable
   (-compare [_ other]
     (compare cx (.-cx other)))
@@ -100,16 +90,26 @@
     (selected-circlec shape))
 
   (shape->drawing-svg
-    [{:keys [cx cy]}]
-    (drawing-circlec cx cy))
+    [{:keys [cx cy r]}]
+    (drawing-circlec cx cy r))
 
-  (move-delta [{:keys [cx cy] :as shape} delta-x delta-y]
+  (move-delta
+    [{:keys [cx cy] :as shape} delta-x delta-y]
     (-> shape
         (assoc :cx (+ cx delta-x))
         (assoc :cy (+ cy delta-y))))
 
-  (drag-delta
-    [this dx dy])
+  (draw
+    [{:keys [cx cy] :as shape} x y]
+    (let [r (geo/distance cx cy x y)
+          r (if (js/isNaN r) 0 r)
+          dx (- (geo/distance cx cy cx 0) r)
+          dy (- (geo/distance cx cy 0 cy) r)
+          nr (if (or (< dx 0)
+                    (< dy 0))
+              (- r (Math/abs (min dx dy)))
+              r)]
+      (assoc shape :r nr)))
 
   (menu-info
     [shape]
@@ -145,10 +145,7 @@
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".")
                              uxbox.shapes.circle/map->Circle)
 
-(register-drawing-tool! {:shape Circle
-                         :new new-circle
-                         :drawing drawing-circle
-                         :key :circle
+(register-drawing-tool! {:key :circle
                          :icon icons/circle
                          :text "Circle (Ctrl + E)" ;; TODO: i18n
                          :menu :tools
@@ -156,4 +153,4 @@
 
 (defmethod start-drawing :circle
   [_ [x y]]
-  (new-circle x y 0))
+  (new-circle x y 10))

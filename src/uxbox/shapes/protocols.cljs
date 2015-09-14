@@ -20,8 +20,8 @@
   (move-delta [shape delta-x delta-y]
     "Moves the shape to an increment given by the delta-x and delta-y coordinates")
 
-  (drag-delta [shape delta-x delta-y] ;; todo: clamp
-    "Moves the drawing shape to an increment given by the delta-x and delta-y coordinates")
+  (draw [shape x y]
+    "TODO")
 
   (menu-info [shape]
     "Get the info to build the shape menu")

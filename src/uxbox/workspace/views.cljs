@@ -133,7 +133,7 @@
         :class (when (= (rum/react signals/selected-tool)
                         [:icon @current-icons-set icon-key])
                  "selected")
-        :on-click #(signals/select-tool! [:icon @current-icons-set icon-key])}
+        :on-click #(signals/toggle-tool! [:icon @current-icons-set icon-key])}
        [:svg (:svg icon)]])]])
 
 (rum/defc components < rum/cursored rum/reactive
@@ -154,7 +154,7 @@
                         (:key tool))
                  "selected")
         :key (:key tool)
-        :on-click #(signals/select-tool! (:key tool))} (:icon tool)])]])
+        :on-click #(signals/toggle-tool! (:key tool))} (:icon tool)])]])
 
 
 (rum/defcs element-options < (rum/local :options) rum/cursored
@@ -214,7 +214,7 @@
 (rum/defc tools < rum/cursored rum/reactive
   [open-toolboxes]
   [:div#form-tools.tool-window
-    [:div.tool-window-bar
+     [:div.tool-window-bar
      [:div.tool-window-icon
       icons/window]
      [:span "Tools"]
@@ -228,7 +228,7 @@
          :class (when (= (rum/react signals/selected-tool) (:key tool))
                   "selected")
          :key (:key tool)
-         :on-click #(signals/select-tool! (:key tool))}
+         :on-click #(signals/toggle-tool! (:key tool))}
         (:icon tool)])]])
 
 (rum/defc layers

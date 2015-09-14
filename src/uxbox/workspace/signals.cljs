@@ -31,8 +31,16 @@
 
 (defonce selected-tool (s/pipe-to-atom selected-tool-signal))
 
-(defn select-tool!
+(def tool-selected?
+  (s/to-property (s/map #(not= % :none)
+                        selected-tool-signal)))
+
+(defn toggle-tool!
   [tool]
   (if (= @selected-tool tool)
     (s/push! selected-tool-signal :none)
     (s/push! selected-tool-signal tool)))
+
+(defn deselect-tool!
+  []
+  (s/push! selected-tool-signal :none))

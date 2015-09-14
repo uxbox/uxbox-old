@@ -61,22 +61,22 @@
       [:rect {:x (+ x width) :y (- y 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
       [:rect {:x (- x 8) :y (+ y height) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]])
 
-(rum/defc drawing-rectanglec < rum/reactive
-  [x y]
-  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)
-        [rect-x rect-y rect-width rect-height] (geo/coords->rect x y mouse-x mouse-y)]
-    (when (and (> rect-width 0)
-               (> rect-height 0))
-      [:rect
-       {:x rect-x
-        :y rect-y
-        :width rect-width
-        :height rect-height
-        :style #js {:fill "transparent"
-                    :stroke "gray"
-                    :strokeDasharray "5,5"}}])))
+(rum/defc drawing-rectanglec < rum/static
+  [{:keys [x y width height]}]
+  [:rect
+   {:x x
+    :y y
+    :width width
+    :height height
+    :style #js {:fill "transparent"
+                :stroke "gray"
+                :strokeDasharray "5,5"}}])
 
 (defrecord Rectangle [name x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible locked]
+  IComparable
+  (-compare [_ other]
+    (compare x (.-x other)))
+
   proto/Shape
   (intersect [{:keys [x y width height]} px py]
     (and (>= px x)
@@ -97,14 +97,23 @@
     [shape]
     (selected-rectanglec shape))
 
-  (shape->drawing-svg [{:keys [x y]}]
-    (drawing-rectanglec x y))
+  (shape->drawing-svg
+    [shape]
+    (drawing-rectanglec shape))
 
   (move-delta
     [{:keys [x y] :as shape} delta-x delta-y]
     (-> shape
         (assoc :x (+ x delta-x))
         (assoc :y (+ y delta-y))))
+
+  (draw
+    [{:keys [x y] :as shape} mouse-x mouse-y]
+    (let [[nx ny width height] (geo/coords->rect x y mouse-x mouse-y)]
+      (merge shape {:x nx
+                    :y ny
+                    :width width
+                    :height height})))
 
   (menu-info
     [shape]
@@ -134,10 +143,7 @@
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.rectangle/Rectangle) "/" ".")
                              uxbox.shapes.rectangle/map->Rectangle)
 
-(register-drawing-tool! {:shape Rectangle
-                         :new new-rectangle
-                         :drawing drawing-rectangle
-                         :key :rect
+(register-drawing-tool! {:key :rect
                          :icon icons/box
                          :text "Box (Ctrl + B)" ;; TODO: i18n
                          :menu :tools

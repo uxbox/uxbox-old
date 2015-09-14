@@ -1,13 +1,15 @@
 (ns uxbox.workspace.canvas.views
   (:require
    rum
+   [cats.core :as m]
    [uxbox.streams :as s]
    [uxbox.mouse :as mouse]
+   [uxbox.keyboard :as k]
    [uxbox.data.log :refer [record]]
    [uxbox.workspace.tools :as tools]
    [uxbox.workspace.signals :as wsigs]
-   [cljs.core.async :as async]
    [uxbox.workspace.canvas.actions :as actions]
+   [cljs.core.async :as async]
    [uxbox.workspace.canvas.signals :as signals]
    [uxbox.geometry :as geo]
    [cuerdas.core :as str]
@@ -67,9 +69,10 @@
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
+(defonce canvas-coordinates (s/pipe-to-atom signals/canvas-coordinates-signal))
 (rum/defc debug-coordinates < rum/reactive
   []
-  (let [[x y] (rum/react signals/canvas-coordinates)]
+  (let [[x y] (rum/react canvas-coordinates)]
     [:div
      {:style #js {:position "absolute"
                   :left "80px"
@@ -82,61 +85,6 @@
        [:td "Y:"]
        [:td y]]]]))
 
-;; mouse down -> selected-tool? - yes -> start drawing! (implies deselect)
-
-;;(mlet [tool wsigs/selected-tool-signal
-;;       coords signals/mouse-down]
-;;  [tool coords])
-
-(def start-drawing-signal
-  signals/mouse-down-signal
-  #_(s/flat-map-latest wsigs/selected-tool-signal
-                     (fn [tool]
-                       (s/combine vector
-                                  (if (= tool :none)
-                                    (s/never)
-                                    (s/constant tool))
-                                  signals/mouse-down-signal))))
-
-;; todo: stop on mouse up
-(def drawing-signal
-  (s/map
-   (fn [[tool coords]]
-     (tools/start-drawing tool coords))
-   start-drawing-signal))
-
-(def zd (s/flat-map drawing-signal
-                    (fn [shape]
-                      (s/map (fn [[dx dy]] (shapes/move-delta shape dx dy))
-                             mouse/delta))))
-
-(def drawing (s/pipe-to-atom
-              (s/map second
-               (s/filter first
-                         signals/mouse-drag-signal
-                         #_(s/combine-with vector
-                                         signals/mouse-drag-signal
-                                         zd)))))
-
-(def drawn-signal
-  (s/dedupe (s/sampled-by drawing-signal
-                          signals/mouse-up-signal)))
-
-
-;; mouse down -> selcted-tool? - no -> intersection? - yes -> select
-;;                                                    - no -> deselect
-;; toggle-selection-signal
-
-;; mouse drag -> drawing? - yes -> update drawing!
-;;
-;;                        - no -> selected stuff? - yes -> move selections
-;;                                                - no ->
-
-;; mouse up -> drawing? - yes -> end drawing (implies selection of just drawn?)
-
-;; shape-select :: mouse click -> (intersects with shape) -> (shape is not selected) -> selection shape
-;; shape-deselect :: mouse click -> (doesn't intersect with shape) -> (shapes are selected) -> deselect all shapes
-
 (rum/defc background < rum/static
   []
   [:rect
@@ -146,37 +94,47 @@
     :height "100%"
     :fill "white"}])
 
-(defn draw-shape
-  [page shape]
-  (record :uxbox/create-shape {:shape/data shape
-                               :shape/uuid (random-uuid)
-                               :shape/page (:page/uuid page)
-                               :shape/locked? false
-                               :shape/visible? true}))
+(defn- sub-all
+  [sigs args]
+  (into {} (map (fn [[k signal eff]]
+                  [k (s/on-value signal #(eff args %))])
+                sigs)))
 
-(def canvas-signals
+(defn- unsub-all
+  [subs]
+  (doseq [unsub (vals subs)]
+    (unsub)))
+
+(defn signals-mixin
+  [& sigs]
   {:will-mount (fn [state]
                  (let [args (:rum/args state)
                        page (second args)
-                       unsub (s/on-value drawn-signal #(draw-shape page %))]
-                   (assoc state ::unsub unsub)))
-   :transfer-state (fn [old-state state]
-                     (let [oldargs (:rum/args state)
-                           oldpage (second oldargs)
-                           args (:rum/args state)
-                           page (second args)]
-                      (if-not (= (:page/uuid oldpage) (:page/uuid page))
-                        (let [unsub (::unsub old-state)
-                              nunsub (s/on-value drawn-signal #(draw-shape page %))]
-                          (unsub)
-                          (assoc state ::unsub nunsub))
-                        state)))
+                       subs (sub-all sigs args)]
+                   (merge state {::subs subs
+                                 ::signals sigs})))
+   :transfer-state (fn [old new]
+                     (let [args (:rum/args new)
+                           oldsubs (::subs old)
+                           sigs (::signals old)]
+                      (unsub-all oldsubs)
+                      (merge new {::subs (sub-all sigs args)
+                                  ::signals sigs})))
+   :wrap-render (fn [render-fn]
+                  (fn [state]
+                    (let [[dom next-state] (render-fn state)]
+                      [dom (merge next-state (select-keys state [::subs ::signals]))])))
    :will-unmount (fn [state]
-                   (let [unsub (::unsub state)]
-                     (unsub)
-                     (dissoc state ::unsub)))})
+                   (unsub-all (::subs state))
+                   (-> (dissoc state ::subs)
+                       (dissoc state ::signals)))})
 
-(rum/defc canvas < rum/reactive canvas-signals
+(def canvas-mixin (signals-mixin [::draw signals/draw-signal (fn [[_ page] shape]
+                                                               (actions/draw-shape page shape))]))
+
+(defonce drawing (s/pipe-to-atom signals/draw-in-progress))
+
+(rum/defc canvas < rum/reactive canvas-mixin
   [conn
    page
    shapes
@@ -201,3 +159,13 @@
      #_(when-let [selected-shapes (get page :selected)]
        (map shapes/selected-svg selected-shapes)
        (shapes/shape->selected-svg (get shapes selected-uuid)))]))
+
+;; mouse down -> selcted-tool? - no -> intersection? - yes -> select
+;;                                                    - no -> deselect
+;; toggle-selection-signal
+
+;; mouse drag -> drawing? - no -> selected stuff? - yes -> move selections
+;; mouse up -> drawing? - yes -> end drawing (implies selection of just drawn?)
+
+;; shape-select :: mouse click -> (intersects with shape) -> (shape is not selected) -> selection shape
+;; shape-deselect :: mouse click -> (doesn't intersect with shape) -> (shapes are selected) -> deselect all shapes

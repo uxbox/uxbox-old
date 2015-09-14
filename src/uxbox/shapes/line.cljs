@@ -63,17 +63,16 @@
                  :fill "#4af7c3"
                  :fill-opacity "0.75"}]]))
 
-(rum/defc drawing-linec < rum/reactive
-  [x y]
-  (let [[mouse-x mouse-y] (rum/react canvas-coordinates)]
-    [:line {:x1 x
-            :y1 y
-            :x2 mouse-x
-            :y2 mouse-y
-            :style #js {:fill "transparent"
-                        :stroke "gray"
-                        :strokeWidth 2
-                        :strokeDasharray "5,5"}}]))
+(rum/defc drawing-linec < rum/static
+  [x1 y1 x2 y2]
+  [:line {:x1 x1
+          :y1 y1
+          :x2 x2
+          :y2 y2
+          :style #js {:fill "transparent"
+                      :stroke "gray"
+                      :strokeWidth 2
+                      :strokeDasharray "5,5"}}])
 
 (defrecord Line [name x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible locked]
   ;; FIXME: arbitrary to make datascript happy
@@ -105,7 +104,7 @@
 
   (shape->drawing-svg
     [{:keys [x1 y1 x2 y2]}]
-    (drawing-linec x1 y1))
+    (drawing-linec x1 y1 x2 y2))
 
   (move-delta
     [this dx dy]
@@ -115,13 +114,11 @@
             :y1 (+ y1 dy)
             :y2 (+ y2 dy)}))
 
-  (drag-delta
-    [this dx dy]
+  (draw
+    [this x y]
     (merge this
-           {:x1 x1
-            :x2 (+ x2 dx)
-            :y1 y1
-            :y2 (+ y2 dy)}))
+           {:x2 x
+            :y2 y}))
 
   (menu-info
     [shape]

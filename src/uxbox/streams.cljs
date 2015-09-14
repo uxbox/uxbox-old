@@ -2,7 +2,8 @@
   (:require [bacon]
             [cats.protocols :as p]
             [cats.context :as ctx])
-  (:refer-clojure :exclude [map
+  (:refer-clojure :exclude [true?
+                            map
                             filter
                             reduce
                             merge
@@ -12,17 +13,27 @@
                             dedupe
                             drop
                             take
+                            take-while
                             not
                             and
                             or
                             next
-                            concat]))
+                            concat
+                            partition]))
 
 ;; core
 
 (defn flat-map
   [obs f]
   (.flatMap obs f))
+
+(defn flat-map-latest
+  [obs f]
+  (.flatMapLatest obs f))
+
+(defn flat-map-first
+  [obs f]
+  (.flatMapLatest obs f))
 
 ;;;;; coercions
 
@@ -53,6 +64,10 @@
   [rf seed obs]
   (.reduce obs seed rf))
 
+(defn scan
+  [rf seed obs]
+  (.scan obs seed rf))
+
 (defn take
   [n obs]
   (.take obs n))
@@ -79,11 +94,17 @@
 
 ;; combination
 
+(defn combine
+  [cf o1 o2]
+  (.combine o1 o2 cf))
+
 (defn zip
-  ([o1 o2]
-   (.zip  o1 o2 vector))
-  ([zf o1 o2]
-   (.zip o1 o2 (comp zf vector))))
+  [o1 o2]
+  (.zip o1 o2 vector))
+
+(defn zip-with
+  [zf & os]
+  (js/Bacon.zipWith zf (into-array os)))
 
 ;; subscription
 
@@ -242,6 +263,10 @@
 (defn hold-when
   [stream valve]
   (.holdWhen stream valve))
+
+(defn take-while
+  [stream p]
+  (.takeWhile stream p))
 
 (defn skip-while
   {:pre [(or (property? p)
@@ -484,3 +509,7 @@
   (buffer-with-count stream n))
 
 (def dedupe skip-duplicates)
+
+(defn true?
+  [obs]
+  (filter cljs.core/true? obs))

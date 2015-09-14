@@ -1,11 +1,22 @@
 (ns uxbox.workspace.canvas.actions
   (:require [uxbox.pubsub :as pubsub]
+            [uxbox.data.log :refer [record]]
             [uxbox.geometry :as geo]
             [uxbox.shapes.protocols :as shapes]
             [uxbox.shapes.line :refer [new-line map->Line]]
             [uxbox.shapes.rectangle :refer [new-rectangle map->Rectangle]]
             [uxbox.shapes.circle :refer [new-circle map->Circle]]
             [uxbox.shapes.path :refer [new-path-shape map->Path drawing-path]]))
+
+(defn draw-shape
+  [page shape]
+  (record :uxbox/create-shape {:shape/data shape
+                               :shape/uuid (random-uuid)
+                               :shape/page (:page/uuid page)
+                               :shape/locked? false
+                               :shape/visible? true}))
+
+;;; TODO: review and delete
 
 (defn drawing-shape
   [coordinates]
