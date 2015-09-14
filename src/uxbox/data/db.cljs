@@ -1,9 +1,19 @@
 (ns uxbox.data.db
   (:require
-   [uxbox.data.schema :as sch]
-   [datascript :as d]))
+   [datascript :as d]
+   [uxbox.data.schema :as sch]))
 
 
 (def conn (d/create-conn sch/schema))
 
-;; TODO: restore from local storage?
+(defn init-db!
+  [conn storage]
+  (when-let [old-db (get storage ::datoms)]
+    (reset! conn old-db)))
+
+(defn persist-to!
+  [conn storage]
+  (d/listen! conn
+             ::persitence
+             (fn [_]
+               (assoc! storage ::datoms @conn))))

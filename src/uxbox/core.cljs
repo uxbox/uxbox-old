@@ -3,7 +3,7 @@
               [datascript :as d]
               [uxbox.streams :as s]
               [uxbox.mouse :as mouse]
-              [uxbox.data.db :refer [conn]]
+              [uxbox.data.db :as db]
               [uxbox.data.queries :as q]
               [uxbox.data.projects :as proj]
               [uxbox.navigation :as nav :refer [start-history!]]
@@ -26,15 +26,17 @@
       :register (register)
       :recover-password (recover-password)
       ;; Home
-      :dashboard (dashboard conn)
+      :dashboard (dashboard db/conn)
       ;; Workspace
-      :workspace (workspace conn params))))
+      :workspace (workspace db/conn params))))
 
 (def $el (.getElementById js/document "app"))
 
 (defn start!
   [location]
   (start-history!)
+  (db/init-db! db/conn local-storage)
+  (db/persist-to! db/conn local-storage)
   (rum/mount (ui location) $el))
 
 
