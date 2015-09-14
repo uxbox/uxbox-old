@@ -17,13 +17,6 @@
    [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
    [uxbox.time :refer [ago]]))
 
-;; Materialized queries
-
-(def projects-atom
-  (q/pipe-to-atom q/pull-projects conn :projects))
-(def project-count-atom
-  (q/pipe-to-atom q/project-count conn :project-count))
-
 ;; Config
 ;; TODO: i18nized names
 (def project-orderings {:project/name "name"
@@ -143,9 +136,9 @@
     (link "/" logo)]
    (user)])
 
-(rum/defc project-count < rum/reactive
-  []
-  [:span.dashboard-projects (rum/react project-count-atom) " projects"])
+(rum/defc project-count < rum/static
+  [n]
+  [:span.dashboard-projects n " projects"])
 
 (rum/defc project-sort-selector < rum/reactive
   [sort-order]
@@ -158,10 +151,10 @@
        [:option {:key name} name])]))
 
 (rum/defc dashboard-bar
-  [sort-order]
+  [sort-order pcount]
   [:section#dashboard-bar.dashboard-bar
     [:div.dashboard-info
-     (project-count)
+     (project-count pcount)
      [:span "Sort by"]
      (project-sort-selector sort-order)]
     [:div.dashboard-search
@@ -206,24 +199,26 @@
       (reverse project-cards))))
 
 (rum/defc dashboard-grid < rum/reactive
-  [sort-order]
+  [projects sort-order]
   [:section.dashboard-grid
     [:h2 "Your projects"]
    [:div.dashboard-grid-content
     (vec
      (concat [:div.dashboard-grid-content
               (new-project)]
-             (sorted-projects (rum/react projects-atom)
+             (sorted-projects projects
                               (rum/react sort-order))))]])
 
 (rum/defcs dashboard* < (rum/local :project/name :project-sort-order)
+                        rum/reactive
   [{sort-order :project-sort-order} conn]
-  [:main.dashboard-main
-    (header)
-    [:section.dashboard-content
-     (dashboard-bar sort-order)
-     (dashboard-grid sort-order)]
-    (activity-timeline conn)])
+  (let [projects (q/pull-projects (rum/react conn))] ;; todo: only when afects query
+    [:main.dashboard-main
+     (header)
+     [:section.dashboard-content
+      (dashboard-bar sort-order (count projects))
+      (dashboard-grid projects sort-order)]
+     (activity-timeline conn)]))
 
 (rum/defc dashboard
   [conn]
