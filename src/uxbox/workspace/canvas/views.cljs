@@ -100,7 +100,54 @@
 (def selected-shapes (s/pipe-to-atom (s/map vals signals/selected)))
 (def selected-ids (s/pipe-to-atom (s/map (comp set keys) signals/selected)))
 
+(defn- sub-all
+  [cmds args]
+  (let [subs (into [] (for [[key action eff :as cmd] cmds]
+                        [key action]))]
+    (doseq [[key action eff :as cmd] cmds]
+      (add-watch action
+                 key
+                 (fn [_ _ _ v]
+                   (eff args v))))
+    subs))
+
+(defn unsub-all
+  [subs]
+  (doseq [[skey action] subs]
+    (remove-watch action skey)))
+
+(defn cmds-mixin
+  [& cmds]
+  {:will-mount (fn [state]
+                 (let [args (:rum/args state)
+                       subs (sub-all cmds args)]
+                   (assoc state ::cmds subs)))
+   :transfer-state (fn [old new]
+                     (let [args (:rum/args new)
+                           [_ _ shapes] args
+                           oldsubs (::cmds old)]
+                       (unsub-all oldsubs)
+                       (assoc new ::cmds (sub-all cmds args))))
+   :wrap-render (fn [render-fn]
+                  (fn [state]
+                    (let [[dom next-state] (render-fn state)]
+                      [dom (assoc next-state ::cmds (::cmds state))])))
+   :will-unmount (fn [state]
+                   (unsub-all (::cmds state))
+                   (dissoc state ::cmds))})
+
+(def shapes-push-mixin
+  {:transfer-state (fn [old new]
+                     (let [[_ _ shapes] (:rum/args new)]
+                       (signals/set-current-shapes! shapes)
+                       new))})
+
 (rum/defc canvas < rum/reactive
+                   (cmds-mixin [::draw draw! (fn [[_ page] shape]
+                                               (actions/draw-shape page shape))]
+                               [::move move! (fn [[_ _ shapes] selections]
+                                               (actions/update-shapes selections))])
+                   shapes-push-mixin
   [conn
    page
    shapes
@@ -108,18 +155,6 @@
            viewport-width
            document-start-x
            document-start-y]}]
-
-  (signals/set-current-shapes! shapes)
-
-  (add-watch draw!
-             :draw!
-             (fn [_ _ _ shape]
-               (actions/draw-shape page shape)))
-  (add-watch move!
-             :move!
-             (fn [_ _ _ selections]
-               (actions/update-shapes selections)))
-
   (let [page-width (:page/width page)
         page-height (:page/height page)
         selection-uuids (rum/react selected-ids)
