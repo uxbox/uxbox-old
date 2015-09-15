@@ -7,7 +7,6 @@
    [uxbox.mouse :as mouse]
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.shapes.protocols :as proto]
-   [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
    [uxbox.icons :as icons]
@@ -121,26 +120,6 @@
   "Retrieves a circle with the default parameters"
   [cx cy r]
   (Circle. "Circle" cx cy r "#cacaca" 1 "gray" 5 1 0 true false))
-
-(defn drawing-circle [state [x y]]
-  (if-let [drawing-val (get-in state [:page :drawing])]
-    (let [shape-uuid (random-uuid)
-          cx (:cx drawing-val)
-          cy (:cy drawing-val)
-          r (geo/distance x y cx cy)
-          ;;Avoid drawing circles with negatives coordinates
-          dx (- (geo/distance cx cy cx 0) r)
-          dy (- (geo/distance cx cy 0 cy) r)
-          r (if (or (< dx 0) (< dy 0)) (- r (Math/abs (min dx dy))) r)
-          shape-val (new-circle (:cx drawing-val) (:cy drawing-val) r)]
-
-      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
-          (-> state
-              (assoc-in [:page :drawing] nil)
-              (assoc-in [:page :selected] shape-uuid)
-              (assoc-in [:workspace :selected-tool] nil))))
-
-    (assoc-in state [:page :drawing] (map->Circle {:cx x :cy y}))))
 
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".")
                              uxbox.shapes.circle/map->Circle)

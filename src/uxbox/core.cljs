@@ -1,12 +1,8 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
               [datascript :as d]
-              [cljs.pprint :refer [pprint]]
-              [uxbox.streams :as s]
               [uxbox.mouse :as mouse]
               [uxbox.data.db :as db]
-              [uxbox.data.queries :as q]
-              [uxbox.data.projects :as proj]
               [uxbox.navigation :as nav :refer [start-history!]]
               [uxbox.dashboard.views :refer [dashboard]]
               [uxbox.workspace.views :refer [workspace]]

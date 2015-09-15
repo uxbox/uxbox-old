@@ -6,13 +6,11 @@
    [uxbox.icons :as i]
    [uxbox.forms.views :refer [lightbox render-lightbox]]
    [uxbox.forms.data :refer [set-lightbox! close-lightbox!]]
-   [uxbox.data.db :refer [conn]]
    [uxbox.data.queries :as q]
    [uxbox.data.mixins :as mx]
    [uxbox.user.views :refer [user]]
    [uxbox.activity :refer [activity-timeline]]
    [uxbox.projects.actions :as actions]
-   [uxbox.projects.actions :refer [delete-project]]
    [uxbox.dashboard.icons :as icons]
    [uxbox.icons :refer [chat logo]]
    [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
@@ -182,7 +180,7 @@
      [:span comment-count]]
     [:div.project-th-icon.delete
      {:on-click #(do (.stopPropagation %)
-                     (delete-project uuid)
+                     (actions/delete-project uuid)
                      %)}
      icons/trash]]])
 
@@ -211,8 +209,10 @@
                               (rum/react sort-order))))]])
 
 (rum/defcs dashboard* < (rum/local :project/name :project-sort-order)
-                        (mx/query q/pull-projects :projects)
-                        (mx/query q/project-count :project-count)
+                        (mx/query :projects
+                                  q/pull-projects)
+                        (mx/query :project-count
+                                  q/project-count)
   [{sort-order :project-sort-order
     projects :projects
     project-count :project-count} conn]

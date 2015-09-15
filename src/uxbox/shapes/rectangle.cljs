@@ -6,7 +6,6 @@
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.shapes.protocols :as proto]
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
    [uxbox.icons :as icons]
@@ -150,20 +149,6 @@
   "Retrieves a line with the default parameters"
   [x y width height]
   (Rectangle. "Rectangle" x y width height 0 0 "#cacaca" 1 "gray" 5 1 0 true false))
-
-(defn drawing-rectangle [state [x y]]
-  (if-let [drawing-val (get-in state [:page :drawing])]
-    (let [shape-uuid (random-uuid)
-          [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-          shape-val (new-rectangle rect-x rect-y rect-width rect-height)]
-
-      (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
-          (-> state
-              (assoc-in [:page :drawing] nil)
-              (assoc-in [:page :selected] shape-uuid)
-              (assoc-in [:workspace :selected-tool] nil))))
-
-   (assoc-in state [:page :drawing] (map->Rectangle {:x x :y y}))))
 
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.rectangle/Rectangle) "/" ".")
                              uxbox.shapes.rectangle/map->Rectangle)

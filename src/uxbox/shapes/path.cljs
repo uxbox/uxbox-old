@@ -4,7 +4,6 @@
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.shapes.protocols :as proto]
    [uxbox.shapes.core :refer [generate-transformation actions-menu fill-menu]]
-   [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
    [cljs.reader :as reader]))
@@ -114,20 +113,6 @@
   "Retrieves a path with the default parameters"
   [x y width height path icowidth icoheight]
   (Path. "Path" path icowidth icoheight x y width height "black" 1 0 true false))
-
-(defn drawing-path [state [x y] symbol]
- (if-let [drawing-val (get-in state [:page :drawing])]
-   (let [shape-uuid (random-uuid)
-         [rect-x rect-y rect-width rect-height] (geo/coords->rect x y (:x drawing-val) (:y drawing-val))
-         shape-val (new-path-shape rect-x rect-y rect-width rect-height (-> symbol :svg second :d) 48 48)]
-
-     (do (pubsub/publish! [:insert-shape [shape-uuid shape-val]])
-         (-> state
-              (assoc-in [:page :drawing] nil)
-              (assoc-in [:page :selected] shape-uuid)
-              (assoc-in [:workspace :selected-tool] nil))))
-
-   (assoc-in state [:page :drawing] (map->Path {:x x :y y}))))
 
 (reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.path/Path) "/" ".")
                              uxbox.shapes.path/map->Path)

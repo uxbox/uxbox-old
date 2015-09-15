@@ -2,28 +2,34 @@
   (:require rum
             [datascript :as d]
             [uxbox.navigation :refer [navigate! workspace-page-route workspace-route]]
-            [uxbox.data.queries :as q]
             [uxbox.data.mixins :as mx]
+            [uxbox.log.queries :as q]
             [uxbox.time :refer [ago]]))
 
+;; data
+
+;; views
+
 (rum/defc create-page-activity < rum/static
-  [{page :event/payload
+  [{{project :page/project
+     :as page} :event/payload
     author :event/author
     timestamp :event/timestamp
     :as event}]
-  [:div.activity-content
-    [:span.bold (:user/fullname author)]
-    [:span "created new page"]
-    [:div.activity-project
-     [:a
-      {:on-click #(navigate! (workspace-page-route {:project-uuid (:page/project page)
-                                                    :page-uuid (:page/uuid page)}))}
-      (:page/title page)]
-     [:span "in"]
-     [:a
-      {:on-click #(navigate! (workspace-route {:project-uuid (:page/project page)}))}
-      (:project/name (:page/project page))]]
-    [:span.activity-time (ago timestamp)]])
+  (let [puuid (:project/uuid project)]
+    [:div.activity-content
+     [:span.bold (:user/fullname author)]
+     [:span "created new page"]
+     [:div.activity-project
+      [:a
+       {:on-click #(navigate! (workspace-page-route {:project-uuid puuid
+                                                     :page-uuid (:page/uuid page)}))}
+       (:page/title page)]
+      [:span "in"]
+      [:a
+       {:on-click #(navigate! (workspace-route {:project-uuid puuid}))}
+       (:project/name project)]]
+     [:span.activity-time (ago timestamp)]]))
 
 (rum/defc create-project-activity < rum/static
   [{project :event/payload
@@ -56,16 +62,14 @@
   [a]
    (.toDateString (:event/timestamp a)))
 
-;; todo: push down to query
 (defn- activities-by-date
   [es]
   (->> es
-       (sort-by :event/timestamp)
-       (reverse)
        (take 15)
+       reverse
        (group-by activity-date)))
 
-(rum/defcs activity-timeline < (mx/query q/events :events)
+(rum/defcs activity-timeline < (mx/query :events q/events)
   [{events :events} conn]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside

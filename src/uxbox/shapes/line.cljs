@@ -6,7 +6,6 @@
    [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
    [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
    [uxbox.shapes.protocols :as proto]
-   [uxbox.pubsub :as pubsub]
    [uxbox.icons :as icons]
    [uxbox.geometry :as geo]
    [uxbox.icons :as icons]

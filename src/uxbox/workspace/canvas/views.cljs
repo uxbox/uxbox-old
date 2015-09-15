@@ -5,7 +5,6 @@
    [uxbox.streams :as s]
    [uxbox.mouse :as mouse]
    [uxbox.keyboard :as k]
-   [uxbox.data.log :refer [record]]
    [uxbox.workspace.tools :as tools]
    [uxbox.workspace.signals :as wsigs]
    [uxbox.workspace.canvas.actions :as actions]

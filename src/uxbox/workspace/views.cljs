@@ -7,13 +7,12 @@
             [uxbox.user.views :refer [user]]
             [uxbox.icons :as icons]
             [uxbox.navigation :refer [link workspace-page-route navigate!]]
-            [uxbox.projects.actions :refer [create-simple-page change-page-title delete-page]]
-            [uxbox.workspace.actions :as actions]
+            [uxbox.projects.actions :refer [create-page change-page-title delete-page]]
+            [uxbox.workspace.canvas.actions :as actions]
             [uxbox.workspace.canvas.views :refer [canvas grid debug-coordinates]]
             [uxbox.workspace.signals :as signals]
             [uxbox.geometry :as geo]
-            [uxbox.shapes.protocols :as shapes]
-            [uxbox.pubsub :as pubsub]))
+            [uxbox.shapes.protocols :as shapes]))
 
 ;; Actions
 
@@ -201,11 +200,9 @@
                            (= (:type input) :text)   "text"
                            (= (:type input) :color)  "text")
                    :value (get selected-shape (:shape-key input))
-                   :on-change #(actions/change-shape-attr project-uuid
-                                                          page-uuid
-                                                          selected-uuid
-                                                          (:shape-key input)
-                                                          ((:value-filter input) (->> % .-target .-value )))}]
+                   :on-change #(actions/change-shape selected-uuid
+                                                     (:shape-key input)
+                                                     ((:value-filter input) (->> % .-target .-value )))}]
                  (= :lock (:type input))
                  [:div.lock-size
                   {:key (str (:key menu) "-" (:name option) "-lock")}
@@ -253,7 +250,7 @@
                                 :on-click #(actions/toggle-shape-lock shape-id)} icons/lock]
            [:div.element-icon
             (shapes/icon shape)]
-           [:span {:on-click #(actions/toggle-select-shape shape-id)} (:name shape)]]))]]])
+           [:span (:name shape)]]))]]])
 
 (rum/defc toolbar < rum/reactive
   [open-toolboxes]
@@ -304,8 +301,7 @@
         :on-key-up #(cond
                       (k/enter? %)
                       (when (not (empty? (str/trim (.-value (.-target %)))))
-                        (change-page-title project
-                                           page
+                        (change-page-title page
                                            (str/trim (.-value (.-target %))))
                         (reset! editing? false))
 
@@ -328,7 +324,7 @@
         [:div
          {:class (when-not deletable?
                    "hide")
-          :on-click #(do (.stopPropagation %) (delete-page project page))}
+          :on-click #(do (.stopPropagation %) (delete-page page))}
          icons/trash]]])))
 
 (rum/defc project-pages < rum/static
@@ -354,7 +350,7 @@
         :on-key-up #(cond
                       (k/enter? %)
                       (when (not (empty? (str/trim new-page-title)))
-                        (create-simple-page project (str/trim new-page-title))
+                        (create-page project (str/trim new-page-title))
                         (reset! local-state {:adding-new? false
                                              :new-page-title ""}))
                       (k/esc? %)
