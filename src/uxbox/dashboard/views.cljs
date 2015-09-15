@@ -21,7 +21,7 @@
 ;; Config
 ;; TODO: i18nized names
 (def project-orderings {:project/name "name"
-                        :project/last-update "date updated"
+                        :project/last-updated "date updated"
                         :project/created "date created"})
 
 (def project-layouts {:mobile {:name "Mobile"
@@ -163,7 +163,7 @@
 
 (rum/defc project-card < rum/static
   [{uuid :project/uuid
-    last-update :project/last-update
+    last-update :project/last-updated
     name :project/name
     pages :project/pages
     comment-count :project/comment-count}]

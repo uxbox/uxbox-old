@@ -1,6 +1,7 @@
 (ns ^:figwheel-always uxbox.core
     (:require rum
               [datascript :as d]
+              [cljs.pprint :refer [pprint]]
               [uxbox.streams :as s]
               [uxbox.mouse :as mouse]
               [uxbox.data.db :as db]
@@ -42,12 +43,6 @@
   (start-history!)
   (db/init-db! db/conn local-storage)
   (db/persist-to! db/conn local-storage)
-  (render! $el location db/conn)
-  )
-
-
-#_(s/log :client mouse/client-position)
-
-#_(s/pr-log :delta mouse/delta)
+  (render! $el location db/conn))
 
 (start! nav/location)

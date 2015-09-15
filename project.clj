@@ -14,7 +14,7 @@
                  ;; Compositional Event Streams
                  ;;[funcool/tocino "0.1.0"]
                  ;; Datetime
-                 [cljsjs/moment "2.9.0-0"]
+                 [cljsjs/moment "2.10.5-0"]
                  ;; Routing
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
                  ;; Asynchrony & Communication

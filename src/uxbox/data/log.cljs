@@ -1,5 +1,6 @@
 (ns uxbox.data.log
   (:require
+   [uxbox.user.data :refer [user]]
    [uxbox.data.queries :as q]
    [uxbox.shapes.protocols :as p]
    [uxbox.data.db :as db]
@@ -113,8 +114,20 @@
                         :shape/locked?
                         (not locked?)]])))
 
+(extend-protocol IComparable
+  PersistentArrayMap
+  (-compare [one other]
+    (compare (vec one) (vec other)))
+
+  PersistentHashMap
+  (-compare [one other]
+    (compare (vec one) (vec other))))
+
 (defn record
   [key data]
-  (d/transact! db/conn [{:event/key key
-                         :event/payload (pr-str data)}])
+  (let [now (js/Date.)]
+    (d/transact! db/conn [{:event/type key
+                           :event/timestamp now
+                           :event/payload data
+                           :event/author @user}]))
   (persist! key data db/conn))
