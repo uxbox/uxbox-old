@@ -1,6 +1,6 @@
 (ns uxbox.projects.data
   (:require
-   [uxbox.log.core :refer [to-datoms materialize]]
+   [uxbox.log.core :refer [to-datoms]]
    [uxbox.shapes.protocols :as p]
    [uxbox.projects.queries :as q]))
 
@@ -54,8 +54,3 @@
     (q/page-by-id (:page/uuid page) db)
     :page/title
     new-title]])
-
-(defmethod materialize :uxbox/create-page
-  [{page :event/payload :as ev} db]
-  (let [project (q/pull-project-by-id (:page/project page) db)]
-    (assoc-in ev [:event/payload :page/project] project)))

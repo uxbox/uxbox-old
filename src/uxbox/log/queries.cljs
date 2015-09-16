@@ -24,6 +24,4 @@
 
 (defn events
   [db]
-  (map (fn [ev]
-         (log/materialize ev db))
-       (d/pull-many db '[*] (all-events db))))
+  (d/pull-many db '[*] (all-events db)))

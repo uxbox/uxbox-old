@@ -2,11 +2,21 @@
   (:require rum
             [uxbox.navigation :refer [navigate! workspace-page-route workspace-route]]
             [uxbox.log.queries :as q]
+            [uxbox.projects.queries :as pq]
             [uxbox.time :refer [ago day]]
             [uxbox.ui.mixins :as mx]))
 
 (def shown-events
   #{:uxbox/create-project :uxbox/create-page})
+
+(defn materialize
+  [ev conn]
+  (case (:event/type ev)
+    :uxbox/create-project
+    (let [path [:event/payload :page/project]
+          project (pq/pull-project-by-id (get-in ev path) @conn)]
+      (assoc-in ev path project))
+    ev))
 
 (rum/defc create-page-activity < rum/static
   [{{project :page/project
@@ -43,18 +53,18 @@
     [:span.activity-time (ago timestamp)]])
 
 (rum/defc activity-item < rum/static
-  [event]
+  [conn ev]
   [:div.activity-input
    {:key uuid}
    [:img.activity-author
     {:border "0"
      :src "../../images/avatar.jpg"}]
-   (case (:event/type event)
+   (case (:event/type ev)
      :uxbox/create-page
-     (create-page-activity event)
+     (create-page-activity (materialize ev conn))
 
      :uxbox/create-project
-     (create-project-activity event))])
+     (create-project-activity (materialize ev conn)))])
 
 (defn- activity-date
   [a]
@@ -69,7 +79,13 @@
          reverse
          (group-by activity-date))))
 
-(rum/defcs activity-timeline < (mx/query :events q/events)
+(rum/defcs activity-timeline < (mx/pull-query
+                                :events
+                                q/all-events
+                                '[:event/type
+                                  :event/payload
+                                  :event/author
+                                  :event/timestamp])
   [{events :events} conn]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
@@ -79,4 +95,4 @@
        [[:span.date-ribbon
          {:key date}
          (day date)]]
-       (map activity-item items)))]])
+       (map #(activity-item conn %) items)))]])

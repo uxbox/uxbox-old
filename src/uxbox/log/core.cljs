@@ -25,13 +25,6 @@
 
 (defmethod to-datoms :uxbox/no-op [_ _] [])
 
-;; materialize :: Event -> DB -> Event
-(defmulti  materialize (fn [event db]
-                         (:event/type event))
-           :default :uxbox/no-op)
-
-(defmethod materialize :uxbox/no-op [event _] event)
-
 ;; Type -> Payload -> User -> Event
 (defn event
   [type payload author]
