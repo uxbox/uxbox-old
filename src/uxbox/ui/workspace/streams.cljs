@@ -1,7 +1,7 @@
 (ns uxbox.ui.workspace.streams
   (:require
    [uxbox.streams :as s]
-   [uxbox.mouse :as mouse]))
+   [uxbox.ui.streams.mouse :as mouse]))
 
 (def workspace-scroll-bus
   (s/bus))

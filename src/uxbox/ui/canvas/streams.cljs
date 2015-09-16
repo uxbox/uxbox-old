@@ -1,7 +1,7 @@
 (ns uxbox.ui.canvas.streams
   (:require
    [uxbox.streams :as s]
-   [uxbox.mouse :as mouse]
+   [uxbox.ui.streams.mouse :as mouse]
    [uxbox.ui.workspace.streams :as ws]
    [uxbox.ui.tools :as tools]
    [uxbox.shapes.protocols :as shapes]

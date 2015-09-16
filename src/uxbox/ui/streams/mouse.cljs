@@ -1,4 +1,4 @@
-(ns uxbox.mouse
+(ns uxbox.ui.streams.mouse
   (:require
    [uxbox.streams :as s])
   (:import [goog.events EventType]))
