@@ -48,9 +48,10 @@
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true
                          :warnings {:single-segment-namespace false}
-                         :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
-                                         :provides ["bacon"]}]}
-              }
+                         :externs ["externs/bacon.js"]
+                         :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                         :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
+                                         :provides ["bacon"]}]}}
 
              {:id "test"
               :source-paths ["src" "test"]
@@ -65,7 +66,9 @@
                           :target :nodejs
                           :pretty-print true
                           :warnings {:single-segment-namespace false}
-                          :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
+                          :externs ["externs/bacon.js"]
+                          :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                          :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
                                           :provides ["bacon"]}]}}
 
              {:id "min"
@@ -75,7 +78,9 @@
                          :optimizations :advanced
                          :pretty-print false
                          :warnings {:single-segment-namespace false}
-                         :foreign-libs [{:file "./node_modules/baconjs/dist/Bacon.js"
+                         :externs ["externs/bacon.js"]
+                         :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                         :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
                                          :provides ["bacon"]}]}}]}
 
   :figwheel {

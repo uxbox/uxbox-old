@@ -7,7 +7,7 @@
 
 (defn day
   [time]
-  (.calendar (js/moment. date)
+  (.calendar (js/moment. time)
              nil
              #js {:sameDay "[Today]"
                   :sameElse "[Today]"
