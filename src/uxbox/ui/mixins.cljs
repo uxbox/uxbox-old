@@ -39,7 +39,7 @@
             query! (fn [db]
                      (let [eids (query db)]
                        (cond
-                         (seq? eids)
+                         (sequential? eids)
                          (d/pull-many db pull eids)
 
                          (not (nil? eids))

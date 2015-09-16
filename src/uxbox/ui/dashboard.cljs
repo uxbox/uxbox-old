@@ -212,10 +212,10 @@
                               (rum/react sort-order))))]])
 
 (rum/defcs dashboard* < (rum/local :project/name :project-sort-order)
-                        (mx/query :projects
-                                  q/pull-projects)
-                        (mx/query :project-count
-                                  q/project-count)
+                        (mx/pull-query :projects
+                                       q/all-projects
+                                       '[*])
+                        (mx/query :project-count q/project-count)
   [{sort-order :project-sort-order
     projects :projects
     project-count :project-count} conn]
