@@ -10,12 +10,15 @@
   #{:uxbox/create-project :uxbox/create-page})
 
 (defn materialize
-  [ev conn]
+  [conn ev]
   (case (:event/type ev)
+
     :uxbox/create-project
     (let [path [:event/payload :page/project]
           project (pq/pull-project-by-id (get-in ev path) @conn)]
       (assoc-in ev path project))
+
+    ;; else
     ev))
 
 (defn activity-date
@@ -68,7 +71,7 @@
     [:span.activity-time (ago timestamp)]])
 
 (rum/defc activity-item < rum/static
-  [conn ev]
+  [ev]
   [:div.activity-input
    {:key uuid}
    [:img.activity-author
@@ -76,10 +79,10 @@
      :src "../../images/avatar.jpg"}]
    (case (:event/type ev)
      :uxbox/create-page
-     (create-page-activity (materialize ev conn))
+     (create-page-activity ev)
 
      :uxbox/create-project
-     (create-project-activity (materialize ev conn)))])
+     (create-project-activity ev))])
 
 (rum/defcs activity-timeline < (mx/pull-query
                                 :events
@@ -92,9 +95,9 @@
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
     [:h4 "ACTIVITY"]
-    (for [[date items] (activities-by-date @events)]
+    (for [[date evs] (activities-by-date @events)]
       (concat
        [[:span.date-ribbon
          {:key date}
          (day date)]]
-       (map #(activity-item conn %) items)))]])
+       (map #(activity-item (materialize conn %)) evs)))]])
