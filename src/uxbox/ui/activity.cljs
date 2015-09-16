@@ -3,7 +3,7 @@
             [uxbox.navigation :refer [navigate! workspace-page-route workspace-route]]
             [uxbox.data.mixins :as mx]
             [uxbox.log.queries :as q]
-            [uxbox.time :refer [ago]]))
+            [uxbox.time :refer [ago day]]))
 
 (def shown-events
   #{:uxbox/create-project :uxbox/create-page})
@@ -78,12 +78,5 @@
       (concat
        [[:span.date-ribbon
          {:key date}
-         (do
-           (.calendar (js/moment. date)
-                      nil
-                      #js {:sameDay "[Today]"
-                           :sameElse "[Today]"
-                           :lastDay "[Yesterday]"
-                           :lastWeek "[Last] dddd"
-                           }))]]
+         (day date)]]
        (map activity-item items)))]])
