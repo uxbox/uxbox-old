@@ -3,7 +3,7 @@
    rum
    [datascript :as d]
    [cuerdas.core :refer [trim]]
-   [uxbox.data.mixins :as mx]
+   [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as i]
    [uxbox.ui.users :refer [user]]
    [uxbox.ui.lightbox :refer [lightbox

@@ -1,9 +1,9 @@
 (ns uxbox.ui.activity
   (:require rum
             [uxbox.navigation :refer [navigate! workspace-page-route workspace-route]]
-            [uxbox.data.mixins :as mx]
             [uxbox.log.queries :as q]
-            [uxbox.time :refer [ago day]]))
+            [uxbox.time :refer [ago day]]
+            [uxbox.ui.mixins :as mx]))
 
 (def shown-events
   #{:uxbox/create-project :uxbox/create-page})

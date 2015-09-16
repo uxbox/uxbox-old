@@ -1,4 +1,4 @@
-(ns uxbox.data.mixins
+(ns uxbox.ui.mixins
   (:require [rum]
             [datascript :as d]))
 

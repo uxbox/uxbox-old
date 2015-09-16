@@ -2,7 +2,7 @@
   (:require
    rum
    [uxbox.users.queries :as q]
-   [uxbox.data.mixins :as mx]
+   [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as icons]
    [uxbox.navigation :as nav :refer [link navigate!]]))
 
