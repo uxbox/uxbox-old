@@ -1,26 +1,9 @@
 (ns uxbox.shapes.rectangle
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!
-                                  start-drawing]]
-   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.svg :as svg]
    [uxbox.shapes.protocols :as proto]
-   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.icons :as icons]
-   [uxbox.geometry :as geo]
-   [uxbox.icons :as icons]
-   [cljs.reader :as reader]))
-
-(def rectangle-menu {:name "Size and position"
-                     :icon icons/infocard
-                     :key :options
-                     :options [{:name "Position"
-                                :inputs [{:name "X" :type :number :shape-key :x :value-filter int}
-                                         {:name "Y" :type :number :shape-key :y :value-filter int}]}
-                               {:name "Size"
-                                :inputs [{:name "Width" :type :number :shape-key :width :value-filter int}
-                                         {:name "lock" :type :lock}
-                                         {:name "Height" :type :number :shape-key :height :value-filter int}]}]})
+   [uxbox.geometry :as geo]))
 
 (rum/defc rectanglec < rum/static
   [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate visible]}]
@@ -38,9 +21,8 @@
     :stroke-opacity stroke-opacity
     :rotate rotate
     :style #js {:visibility (if visible "visible" "hidden")}
-    :transform (generate-transformation {:rotate rotate
-                                         :center {:x (+ x (/ width 2))
-                                                  :y (+ y (/ height 2))}})}])
+    :transform (svg/transform {:rotate rotate
+                               :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}])
 
 (rum/defc selected-rectanglec < rum/static
   [{:keys [x y width height rx ry fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
@@ -56,9 +38,8 @@
        :strokeDasharray "5,5"
        :fill-opacity "0.5"
        :rotate rotate
-       :transform (generate-transformation {:rotate rotate
-                                            :center {:x (+ x (/ width 2))
-                                                     :y (+ y (/ height 2))}})}]
+       :transform (svg/transform {:rotate rotate
+                                  :center {:x (+ x (/ width 2)) :y (+ y (/ height 2))}})}]
       [:rect {:x (- x 8)
               :y (- y 8)
               :width 8
@@ -101,7 +82,8 @@
     (compare x (.-x other)))
 
   proto/Shape
-  (intersect [{:keys [x y width height]} px py]
+  (intersect
+    [{:keys [x y width height]} px py]
     (and (>= px x)
          (<= px (+ x width))
          (>= py y)
@@ -110,7 +92,7 @@
   (toolbar-coords [{:keys [x y width height]}]
     (let [vx (+ x width 50)
           vy (- y 50)]
-      (geo/viewportcoord->clientcoord vx vy)))
+      [vx vy]))
 
   (shape->svg
     [shape]
@@ -137,29 +119,9 @@
       (merge shape {:x nx
                     :y ny
                     :width width
-                    :height height})))
-
-  (menu-info
-    [shape]
-    [rectangle-menu stroke-menu fill-menu actions-menu])
-
-  (icon [_] icons/box))
+                    :height height}))))
 
 (defn new-rectangle
   "Retrieves a line with the default parameters"
   [x y width height]
   (Rectangle. "Rectangle" x y width height 0 0 "#cacaca" 1 "gray" 5 1 0 true false))
-
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.rectangle/Rectangle) "/" ".")
-                             uxbox.shapes.rectangle/map->Rectangle)
-
-(register-drawing-tool! {:key :rect
-                         :icon icons/box
-                         :text "Box (Ctrl + B)" ;; TODO: i18n
-                         :menu :tools
-                         :priority 10})
-
-
-(defmethod start-drawing :rect
-  [_ [x y]]
-  (new-rectangle x y 0 0))

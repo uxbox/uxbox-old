@@ -1,8 +1,7 @@
 (ns uxbox.log.core
   (:require
    [datascript :as d]
-   [uxbox.data.db :as db]
-   [uxbox.user.data :refer [user]]))
+   [uxbox.users.queries :as uq]))
 
 (def event-types #{:uxbox/create-project
                    :uxbox/delete-project
@@ -33,14 +32,14 @@
 
 (defmethod materialize :uxbox/no-op [event _] event)
 
-;; Type -> Payload -> Event
+;; Type -> Payload -> User -> Event
 (defn event
-  [type payload]
+  [type payload author]
   (let [now (js/Date.)]
     {:event/type type
      :event/timestamp now
      :event/payload payload
-     :event/author @user}))
+     :event/author author}))
 
 ;; needed to make possible to insert arbitrary maps in Datascript
 (extend-protocol IComparable
@@ -59,9 +58,8 @@
     (d/transact! conn ds)))
 
 (defn record!
-  ([type payload]
-   (record! type payload db/conn))
-  ([conn type payload]
-   (let [ev (event type payload)]
-     (persist! conn ev)
-     (d/transact! conn [ev]))))
+  [conn type payload]
+  (let [author (uq/pull-current-user @conn)
+        ev (event type payload author)]
+    (persist! conn ev)
+    (d/transact! conn [ev])))

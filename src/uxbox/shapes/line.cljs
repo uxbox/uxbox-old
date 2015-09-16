@@ -1,26 +1,9 @@
 (ns uxbox.shapes.line
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!
-                                  start-drawing]]
-   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.svg :as svg]
    [uxbox.shapes.protocols :as proto]
-   [uxbox.icons :as icons]
-   [uxbox.geometry :as geo]
-   [uxbox.icons :as icons]
-   [cljs.reader :as reader]))
-
-(def line-menu {:name "Position"
-                :icon icons/infocard
-                :key :options
-                :options [{:name "Start"
-                           :inputs [{:name "X" :type :number :shape-key :x1 :value-filter int}
-                                    {:name "Y" :type :number :shape-key :y1 :value-filter int}]}
-                          {:name "End"
-                           :inputs [{:name "X" :type :number :shape-key :x2 :value-filter int}
-                                    {:name "Y" :type :number :shape-key :y2 :value-filter int}]}]})
-
+   [uxbox.geometry :as geo]))
 
 (rum/defc linec < rum/static
   [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate visible]}]
@@ -38,7 +21,7 @@
               :strokeWidth stroke-width
               :stroke-opacity stroke-opacity
               :style #js {:visibility (if visible "visible" "hidden")}
-              :transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}]))
+              :transform (svg/transform {:rotate rotate :center {:x center-x :y center-y}})}]))
 
 (rum/defc selected-linec < rum/static
   [{:keys [x1 y1 x2 y2 stroke stroke-width stroke-opacity rotate]}]
@@ -48,7 +31,7 @@
           min-y (min y1 y2)
           center-x (+ min-x (/ length-x 2))
           center-y (+ min-y (/ length-y 2))]
-      [:g {:transform (generate-transformation {:rotate rotate :center {:x center-x :y center-y}})}
+      [:g {:transform (svg/transform {:rotate rotate :center {:x center-x :y center-y}})}
         [:rect {:x (- x1 4)
                  :y (- y1 4)
                  :width 8
@@ -91,7 +74,7 @@
           min-y (if (< y1 y2) y1 y2)
           vx (+ max-x 50)
           vy min-y]
-      (geo/viewportcoord->clientcoord vx vy)))
+      [vx vy]))
 
   (shape->svg
     [shape]
@@ -117,30 +100,9 @@
     [this x y]
     (merge this
            {:x2 x
-            :y2 y}))
-
-  (menu-info
-    [shape]
-    [line-menu stroke-menu actions-menu])
-
-  (icon [_] icons/line))
+            :y2 y})))
 
 (defn new-line
   "Retrieves a line with the default parameters"
   [x1 y1 x2 y2]
   (Line. "Line" x1 y1 x2 y2 "gray" 4 1 0 true false))
-
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.line/Line) "/" ".")
-                             uxbox.shapes.line/map->Line)
-
-(register-drawing-tool! {;;:shape Line
-                         ;;:new new-line
-                         :key :line
-                         :icon icons/line
-                         :text "Line (Ctrl + L)"
-                         :menu :tools
-                         :priority 30}) ;; pure data, can be in database (for example for configurable priority)
-
-(defmethod start-drawing :line
-  [_ [x y]]
-  (new-line x y x y))

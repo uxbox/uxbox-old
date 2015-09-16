@@ -1,25 +1,9 @@
 (ns uxbox.shapes.circle
   (:require
    rum
-   [uxbox.workspace.tools :refer [register-drawing-tool!
-                                  start-drawing]]
-   [uxbox.workspace.canvas.signals :refer [canvas-coordinates]]
-   [uxbox.mouse :as mouse]
-   [uxbox.shapes.core :refer [generate-transformation fill-menu actions-menu stroke-menu]]
+   [uxbox.svg :as svg]
    [uxbox.shapes.protocols :as proto]
-   [uxbox.icons :as icons]
-   [uxbox.geometry :as geo]
-   [uxbox.icons :as icons]
-   [cljs.reader :as reader]))
-
-(def circle-menu {:name "Size and position"
-                  :icon icons/infocard
-                  :key :options
-                  :options [{:name "Position"
-                             :inputs [{:name "X" :type :number :shape-key :cx :value-filter int}
-                                      {:name "Y" :type :number :shape-key :cy :value-filter int}]}
-                            {:name "Radius"
-                             :inputs [{:name "Radius" :type :number :shape-key :r :value-filter int}]}]})
+   [uxbox.geometry :as geo]))
 
 (rum/defc circlec < rum/static
   [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate visible]}]
@@ -32,9 +16,8 @@
             :strokeWidth stroke-width
             :stroke-opacity stroke-opacity
             :style #js {:visibility (if visible "visible" "hidden")}
-            :transform (generate-transformation {:rotate rotate
-                                                 :center {:x cx
-                                                          :y cy}})}])
+            :transform (svg/transform {:rotate rotate
+                                       :center {:x cx :y cy}})}])
 
 (rum/defc selected-circlec < rum/static
   [{:keys [cx cy r fill fill-opacity stroke stroke-width stroke-opacity rotate]}]
@@ -48,7 +31,7 @@
            :strokeWidth 2
            :strokeDasharray "5,5"
            :fill-opacity "0.5"
-           :transform (generate-transformation {:rotate rotate :center {:x cx :y cy}})}]
+           :transform (svg/transform {:rotate rotate :center {:x cx :y cy}})}]
    [:rect {:x (- cx r 8) :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
    [:rect {:x (+ cx r)   :y (+ cy r)   :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
    [:rect {:x (+ cx r)   :y (- cy r 8) :width 8 :height 8 :fill "#4af7c3" :fill-opacity "0.75"}]
@@ -78,7 +61,7 @@
     [{:keys [cx cy r]}]
     (let [vx (+ cx r 20)
           vy (- cy r 40)]
-      (geo/viewportcoord->clientcoord vx vy)))
+      [vx vy]))
 
   (shape->svg
     [shape]
@@ -108,28 +91,9 @@
                     (< dy 0))
               (- r (Math/abs (min dx dy)))
               r)]
-      (assoc shape :r nr)))
-
-  (menu-info
-    [shape]
-    [circle-menu stroke-menu fill-menu actions-menu])
-
-  (icon [_] icons/circle))
+      (assoc shape :r nr))))
 
 (defn new-circle
   "Retrieves a circle with the default parameters"
   [cx cy r]
   (Circle. "Circle" cx cy r "#cacaca" 1 "gray" 5 1 0 true false))
-
-(reader/register-tag-parser! (clojure.string/replace (pr-str uxbox.shapes.circle/Circle) "/" ".")
-                             uxbox.shapes.circle/map->Circle)
-
-(register-drawing-tool! {:key :circle
-                         :icon icons/circle
-                         :text "Circle (Ctrl + E)" ;; TODO: i18n
-                         :menu :tools
-                         :priority 20})
-
-(defmethod start-drawing :circle
-  [_ [x y]]
-  (new-circle x y 10))

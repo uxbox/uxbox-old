@@ -1,5 +1,7 @@
 (ns uxbox.geometry)
 
+;; TODO: consider goog.math
+
 (defn clamp
   [[x y]]
   (let [cx (max 0 x)
@@ -15,28 +17,6 @@
         rect-width (if (> x1 x2) (- x1 x2) (- x2 x1))
         rect-height (if (> y1 y2) (- y1 y2) (- y2 y1))]
     [rect-x rect-y rect-width rect-height]))
-
-(defn client-coords->canvas-coords
-  [[client-x client-y]]
-  (if-let [canvas-element (.getElementById js/document "page-canvas")]
-    (let [bounding-rect (.getBoundingClientRect canvas-element)
-          offset-x (.-left bounding-rect)
-          offset-y (.-top bounding-rect)
-          new-x (- client-x offset-x)
-          new-y (- client-y offset-y)]
-      [new-x new-y])
-    [client-x client-y]))
-
-(defn viewportcoord->clientcoord
-  [viewport-x viewport-y]
-  (if-let [canvas-element (.getElementById js/document "page-canvas")]
-      (let [bounding-rect (.getBoundingClientRect canvas-element)
-            offset-x (.-left bounding-rect)
-            offset-y (.-top bounding-rect)
-            new-x (+ viewport-x offset-x)
-            new-y (+ viewport-y offset-y)]
-        [new-x new-y])
-      [viewport-x viewport-y]))
 
 (defn slope [x1 y1 x2 y2]
   (/ (- y1 y2) (- x1 x2)))

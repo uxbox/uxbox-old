@@ -21,10 +21,8 @@
     "Moves the shape to an increment given by the delta-x and delta-y coordinates")
 
   (draw [shape x y]
-    "TODO")
+    "TODO"))
 
-  (menu-info [shape]
-    "Get the info to build the shape menu")
-
-  (icon [shape]
-    "Get the icon of the shape"))
+;; FIXME: deprecate in favor of drawing tools as data
+(defprotocol Icon
+  (icon [shape] "Return the icon for the shape"))
