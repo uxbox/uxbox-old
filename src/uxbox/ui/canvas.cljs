@@ -63,7 +63,7 @@
      (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
      (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
 
-(def canvas-coordinates (s/pipe-to-atom cs/canvas-coordinates-signal))
+(defonce canvas-coordinates (s/pipe-to-atom cs/canvas-coordinates))
 (rum/defc debug-coordinates < rum/reactive
   []
   (let [[x y] (rum/react canvas-coordinates)]
