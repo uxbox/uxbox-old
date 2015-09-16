@@ -47,6 +47,7 @@
 
 (extend-type rect/Rectangle
   proto/Icon
+  (name [s] (:name s))
   (icon [_] icons/box))
 
 (defmethod start-drawing :rect
@@ -79,6 +80,7 @@
 
 (extend-type circle/Circle
   proto/Icon
+  (name [s] (:name s))
   (icon [_] icons/circle))
 
 (defmethod start-drawing :circle
@@ -108,6 +110,7 @@
 
 (extend-type line/Line
   proto/Icon
+  (name [s] (:name s))
   (icon [_] icons/line))
 
 (defmethod start-drawing :line
@@ -138,8 +141,15 @@
 
 (extend-type icon/SvgIcon
   proto/Icon
-  (icon [shape]
-    (get-in shape [:icon :svg])))
+  (name [s]
+    (get-in s [:icon :name]))
+
+  (icon
+    [shape]
+    (let [i (get-in shape [:icon :svg])]
+      [:svg
+       {:viewBox "0 0 50 50"}
+       i])))
 
 (defmethod start-drawing :icon
   [[_ icon] [x y]]

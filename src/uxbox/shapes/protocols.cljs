@@ -25,4 +25,5 @@
 
 ;; FIXME: deprecate in favor of drawing tools as data
 (defprotocol Icon
-  (icon [shape] "Return the icon for the shape"))
+  (name [shape] "The name of the shape.")
+  (icon [shape] "The icon of the shape."))

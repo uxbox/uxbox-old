@@ -258,7 +258,7 @@
              :on-click #(actions/toggle-shape-lock conn shape-id)} icons/lock]
            [:div.element-icon
             (shapes/icon raw-shape)]
-           [:span (:name raw-shape)]]))]]])
+           [:span (shapes/name raw-shape)]]))]]])
 
 (rum/defc toolbar < rum/reactive
   [open-toolboxes]
