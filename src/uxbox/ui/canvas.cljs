@@ -102,7 +102,7 @@
                     [::draw draw! (fn [[conn page] shape]
                                     (actions/draw-shape conn page shape))]
 
-                    [::move move! (fn [[conn _ shapes] selections]
+                    [::move move! (fn [[conn] selections]
                                     (actions/update-shapes conn selections))])
   [conn
    page
