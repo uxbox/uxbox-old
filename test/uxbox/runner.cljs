@@ -10,7 +10,7 @@
 (defn main
   []
   (test/run-tests (test/empty-env)
-                  ;;'uxbox.test.data-test
+                  'uxbox.test.data-test
                   'uxbox.test.projects.data-test
                   'uxbox.test.shapes.data-test
                   'uxbox.test.streams-test))
