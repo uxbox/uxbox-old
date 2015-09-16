@@ -151,7 +151,7 @@
       [:div.tool-btn.tooltip.tooltip-hover
        {:alt (:text tool)
         :class (when (= (rum/react ws/selected-tool)
-                        (:key tool))
+                        [(:key tool)])
                  "selected")
         :key (:key tool)
         :on-click #(ws/toggle-tool! [(:key tool)])} (:icon tool)])]])
@@ -224,7 +224,8 @@
      (for [tool (t/sorted-tools (rum/react t/drawing-tools))]
        [:div.tool-btn.tooltip.tooltip-hover
         {:alt (:text tool)
-         :class (when (= (rum/react ws/selected-tool) (:key tool))
+         :class (when (= (rum/react ws/selected-tool)
+                         [(:key tool)])
                   "selected")
          :key (:key tool)
          :on-click #(ws/toggle-tool! [(:key tool)])}
