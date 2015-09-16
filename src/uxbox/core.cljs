@@ -9,12 +9,10 @@
 
 (def $el (.getElementById js/document "app"))
 
-(defonce dev-storage (transient {}))
-
 (defn start!
   [location]
   (let [conn (db/create)
-        storage dev-storage]
+        storage local-storage]
     (nav/start-history!)
     (db/init! conn storage)
     (ui/render! $el location conn)))
