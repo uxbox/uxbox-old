@@ -10,7 +10,6 @@
                    :uxbox/delete-page
                    :uxbox/create-shape
                    :uxbox/delete-shape
-                   :uxbox/move-shape
                    :uxbox/change-shape
                    :uxbox/toggle-shape-visibility
                    :uxbox/toggle-shape-lock
@@ -25,14 +24,13 @@
 
 (defmethod to-datoms :uxbox/no-op [_ _] [])
 
-;; Type -> Payload -> User -> Event
+;; Type -> Payload -> User -> Date -> Event
 (defn event
-  [type payload author]
-  (let [now (js/Date.)]
-    {:event/type type
-     :event/timestamp now
-     :event/payload payload
-     :event/author author}))
+  [type payload author timestamp]
+  {:event/type type
+   :event/timestamp timestamp
+   :event/payload payload
+   :event/author author})
 
 ;; needed to make possible to insert arbitrary maps in Datascript
 (extend-protocol IComparable
@@ -53,6 +51,6 @@
 (defn record!
   [conn type payload]
   (let [author (uq/pull-current-user @conn)
-        ev (event type payload author)]
+        ev (event type payload author (js/Date.))]
     (persist! conn ev)
     (d/transact! conn [ev])))
