@@ -22,76 +22,77 @@
   [obs]
   (s/dedupe (s/map geo/clamp obs)))
 
-(def canvas-coordinates-signal
+(def canvas-coordinates-stream
   (s/map client-coords->canvas-coords mouse/client-position))
 
 (defonce canvas-coordinates
-  (s/to-property canvas-coordinates-signal))
+  (s/to-property canvas-coordinates-stream))
 
-(def mouse-down-signal
+(def mouse-down-stream
   (s/bus))
 
-(def mouse-up-signal
+(def mouse-up-stream
   (s/bus))
 
 (def mouse-down?
-  (s/to-property (s/merge (s/map (constantly true) mouse-down-signal)
-                          (s/map (constantly false) mouse-up-signal))))
+  (s/to-property (s/merge (s/map (constantly true) mouse-down-stream)
+                          (s/map (constantly false) mouse-up-stream))))
 
 (def mouse-up? (s/not mouse-down?))
 
-(def mouse-drag-signal
+(def mouse-drag-stream
   (s/flat-map-latest (s/true? mouse-down?)
                      (fn [_]
                        (s/take-until
-                        (clamp-coords canvas-coordinates-signal)
-                        mouse-up-signal))))
+                        (clamp-coords canvas-coordinates-stream)
+                        mouse-up-stream))))
 
 (defn on-mouse-down
   [e]
   (let [coords (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])]
-    (s/push! mouse-down-signal coords)))
+    (s/push! mouse-down-stream coords)))
 
 (defn on-mouse-up
   [e]
-  (s/push! mouse-up-signal
+  (s/push! mouse-up-stream
            (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
 
 (def start-drawing? (s/and ws/tool-selected?
                            mouse-down?))
 
-(def start-drawing-signal
+(def start-drawing-stream
   (s/sampled-by
    (s/combine
     (fn [tool coords]
       (tools/start-drawing tool coords))
-    ws/selected-tool-signal
-    canvas-coordinates-signal)
+    ws/selected-tool-stream
+    canvas-coordinates-stream)
    (s/true? start-drawing?)))
 
-(def stroke-signal (s/flat-map-latest
+(def stroke-stream (s/flat-map-latest
                     (s/true? mouse-down?)
                     (clamp-coords canvas-coordinates)))
 
-(def drawing-signal (s/flat-map start-drawing-signal
+(def drawing-stream (s/flat-map start-drawing-stream
                                 (fn [shape]
-                                  (let [drag (s/take-while stroke-signal mouse-down?)]
+                                  (let [stroke (s/take-while (clamp-coords canvas-coordinates)
+                                                             mouse-down?)]
                                     (s/scan (fn [s [x y]]
                                               (shapes/draw s x y))
                                             shape
-                                            drag)))))
+                                            stroke)))))
 
-(def draw-signal (s/dedupe (s/sampled-by drawing-signal
-                                         (s/true? mouse-up?))))
+(def draw-stream (s/sampled-by drawing-stream
+                               (s/true? mouse-up?)))
 
-(def draw-in-progress (s/merge drawing-signal
+(def draw-in-progress (s/merge drawing-stream
                                (s/map (constantly nil)
-                                      mouse-up-signal)))
+                                      mouse-up-stream)))
 
 (def shapes-bus
   (s/bus))
 
-(def shapes-signal
+(def shapes-stream
   (s/dedupe shapes-bus))
 
 (defn set-current-shapes!
@@ -110,8 +111,8 @@
                                  (map (juxt :shape/uuid :shape/data))
                                  (filter #(shapes/intersect (second %) x y)))
                                shapes))
-                       (clamp-coords canvas-coordinates-signal)
-                       shapes-signal)
+                       (clamp-coords canvas-coordinates-stream)
+                       shapes-stream)
                     (s/true? start-selection)))
 
 (def selections
@@ -127,7 +128,7 @@
            (merge intersections selected selected-shapes))))
    {}
    (s/combine vector
-              shapes-signal
+              shapes-stream
               intersections)))
 
 (defn move-selections
@@ -142,6 +143,6 @@
                  (let [drag (s/take-while mouse/delta mouse-down?)]
                    (s/scan move-selections sels drag)))))
 
-(def move-signal (s/sampled-by
+(def move-stream (s/sampled-by
                   selected
                   (s/true? mouse-up?)))

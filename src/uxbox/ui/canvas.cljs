@@ -84,8 +84,8 @@
     :height "100%"
     :fill "white"}])
 
-(def draw! (s/pipe-to-atom cs/draw-signal))
-(def move! (s/pipe-to-atom cs/move-signal))
+(def draw! (s/pipe-to-atom cs/draw-stream))
+(def move! (s/pipe-to-atom cs/move-stream))
 (def drawing (s/pipe-to-atom cs/draw-in-progress))
 (def selected-shapes (s/pipe-to-atom (s/map vals cs/selected)))
 (def selected-ids (s/pipe-to-atom (s/map (comp set keys) cs/selected)))

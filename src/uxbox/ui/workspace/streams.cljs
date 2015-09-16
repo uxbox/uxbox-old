@@ -6,10 +6,10 @@
 (def workspace-scroll-bus
   (s/bus))
 
-(def workspace-top-scroll-signal
+(def workspace-top-scroll-stream
   (s/dedupe (s/map :top workspace-scroll-bus)))
 
-(def workspace-left-scroll-signal
+(def workspace-left-scroll-stream
   (s/dedupe (s/map :left workspace-scroll-bus)))
 
 (defn- scroll-event
@@ -23,20 +23,20 @@
   (s/push! workspace-scroll-bus
            (scroll-event e)))
 
-(defonce scroll-top (s/pipe-to-atom workspace-top-scroll-signal))
-(defonce scroll-left (s/pipe-to-atom workspace-left-scroll-signal))
+(defonce scroll-top (s/pipe-to-atom workspace-top-scroll-stream))
+(defonce scroll-left (s/pipe-to-atom workspace-left-scroll-stream))
 
 (def selected-tool-bus
   (s/bus))
 
-(def selected-tool-signal
+(def selected-tool-stream
   (s/to-event-stream selected-tool-bus))
 
-(defonce selected-tool (s/pipe-to-atom selected-tool-signal))
+(defonce selected-tool (s/pipe-to-atom selected-tool-stream))
 
 (def tool-selected?
   (s/to-property (s/map #(not= % :none)
-                        selected-tool-signal)))
+                        selected-tool-stream)))
 
 (defn toggle-tool!
   [tool]
