@@ -20,4 +20,4 @@
         (db/restore! nconn storage)
         (t/is :bar (first (d/q '[:find [?v]
                                :where [?e :foo ?v]]
-                             @conn)))))))
+                             @nconn)))))))
