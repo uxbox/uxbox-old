@@ -9,13 +9,7 @@
    [cljs.test :as t]))
 
 
-(defrecord Line [x1 y1 x2 y2]
-  proto/Shape
-  (move-delta [_ dx dy]
-    (Line. (+ x1 dx)
-           (+ y1 dy)
-           (+ x2 dx)
-           (+ y2 dy))))
+(defrecord Line [x1 y1 x2 y2])
 
 (t/deftest shapes
   (t/testing "Shapes can be added to and removed from a page"

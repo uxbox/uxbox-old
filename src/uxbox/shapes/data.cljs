@@ -25,14 +25,6 @@
   [{uuid :event/payload} db]
   [[:db.fn/retractEntity (q/shape-by-id uuid db)]])
 
-(defmethod to-datoms :uxbox/move-shape
-  [{[uuid dx dy] :event/payload} db]
-  (let [s (q/shape-by-id uuid db)]
-    [[:db/add
-      s
-      :shape/data
-      (p/move-delta (:shape/data (q/pull-shape-by-id uuid db)) dx dy)]]))
-
 (defmethod to-datoms :uxbox/change-shape
   [{[uuid attr value] :event/payload} db]
   (let [s (q/shape-by-id uuid db)]
