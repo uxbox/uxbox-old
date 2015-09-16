@@ -17,8 +17,6 @@
                  [cljsjs/moment "2.10.6-0"]
                  ;; Routing
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
-                 ;; Asynchrony & Communication
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  ;; Storage and Querying
                  [datascript "0.11.6"]
                  ;; Persistence
