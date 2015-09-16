@@ -1,7 +1,7 @@
 (ns uxbox.ui.workspace
   (:require rum
             [cuerdas.core :as str]
-            [uxbox.keyboard :as k]
+            [uxbox.ui.keyboard :as k]
             [uxbox.ui.icons :as icons]
             [uxbox.navigation :refer [link workspace-page-route navigate!]]
             [uxbox.ui.tools :as t]

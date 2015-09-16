@@ -1,4 +1,4 @@
-(ns uxbox.keyboard
+(ns uxbox.ui.keyboard
   (:require [goog.events :as events])
   (:import [goog.events EventType KeyCodes]
            [goog.ui KeyboardShortcutHandler]))

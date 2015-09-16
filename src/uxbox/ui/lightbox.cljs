@@ -1,7 +1,7 @@
 (ns uxbox.ui.lightbox
   (:require
    rum
-   [uxbox.keyboard :as k]
+   [uxbox.ui.keyboard :as k]
    [goog.events :as events])
   (:import goog.events.EventType))
 

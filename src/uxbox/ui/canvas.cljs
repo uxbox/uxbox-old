@@ -3,7 +3,7 @@
    rum
    [uxbox.streams :as s]
    [uxbox.ui.streams.mouse :as mouse]
-   [uxbox.keyboard :as k]
+   [uxbox.ui.keyboard :as k]
    [uxbox.shapes.actions :as actions]
    [cljs.core.async :as async]
    [uxbox.ui.canvas.streams :as cs]
