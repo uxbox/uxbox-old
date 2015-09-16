@@ -18,6 +18,21 @@
       (assoc-in ev path project))
     ev))
 
+(defn activity-date
+  [a]
+   (.toDateString (:event/timestamp a)))
+
+(def last-activities-xform
+  (comp
+   (filter #(shown-events (:event/type %)))
+   (take 15)))
+
+(defn activities-by-date
+  [es]
+  (->> (into [] last-activities-xform es)
+       reverse
+       (group-by activity-date)))
+
 (rum/defc create-page-activity < rum/static
   [{{project :page/project
      :as page} :event/payload
@@ -65,19 +80,6 @@
 
      :uxbox/create-project
      (create-project-activity (materialize ev conn)))])
-
-(defn- activity-date
-  [a]
-   (.toDateString (:event/timestamp a)))
-
-(defn- activities-by-date
-  [es]
-  (let [xform (comp
-               (filter #(shown-events (:event/type %)))
-               (take 15))]
-    (->> (sequence xform es)
-         reverse
-         (group-by activity-date))))
 
 (rum/defcs activity-timeline < (mx/pull-query
                                 :events

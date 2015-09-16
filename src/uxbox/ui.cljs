@@ -1,7 +1,6 @@
 (ns uxbox.ui
   (:require rum
             [uxbox.ui.shapes]
-;;            [uxbox.icon-sets.core]
             [uxbox.ui.users :as u]
             [uxbox.ui.dashboard :as d]
             [uxbox.ui.workspace :as w]))
