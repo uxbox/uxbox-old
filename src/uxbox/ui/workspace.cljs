@@ -322,7 +322,7 @@
                  "current")
         :on-click #(when (not= page-uuid current-page-uuid)
                      (nav/navigate! :page {:project-uuid (:project/uuid project)
-                                                :page-uuid page-uuid}))
+                                           :page-uuid page-uuid}))
         :key page-uuid}
        [:div.tree-icon icons/page]
        [:span page-title]

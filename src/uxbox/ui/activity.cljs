@@ -49,7 +49,7 @@
      [:div.activity-project
       [:a
        {:on-click #(nav/navigate! :page {:project-uuid puuid
-                                              :page-uuid (:page/uuid page)})}
+                                         :page-uuid (:page/uuid page)})}
        (:page/title page)]
       [:span "in"]
       [:a
