@@ -4,7 +4,7 @@
    [uxbox.users.queries :as q]
    [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as icons]
-   [uxbox.navigation :as nav :refer [link navigate!]]))
+   [uxbox.navigation :as nav]))
 
 (rum/defc user-menu < rum/static
   [open?]
@@ -56,10 +56,10 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (nav/dashboard-route))}]
+     :on-click #(nav/navigate! :dashboard)}]
    [:div.login-links
     [:a
-     {:on-click #(navigate! (nav/login-route))}
+     {:on-click #(nav/navigate! :login)}
      "You already have an account?"]]])
 
 (rum/defc register < rum/static
@@ -80,13 +80,13 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (nav/dashboard-route))}]
+     :on-click #(nav/navigate! :dashboard)}]
    [:div.login-links
     [:a
-     {:on-click #(navigate! (nav/login-route))}
-     "You have rememered your password?"]
+     {:on-click #(nav/navigate! :login)}
+     "You have remembered your password?"]
     [:a
-     {:on-click #(navigate! (nav/register-route))}
+     {:on-click #(nav/navigate! :register)}
      "Don't have an account?"]]])
 
 (rum/defc recover-password < rum/static
@@ -115,10 +115,10 @@
     {:name "login"
      :value "Continue"
      :type "submit"
-     :on-click #(navigate! (nav/dashboard-route))}]
+     :on-click #(nav/navigate! :dashboard)}]
    [:div.login-links
-    [:a {:on-click #(navigate! (nav/recover-password-route))} "Forgot your password?"]
-    [:a {:on-click #(navigate! (nav/register-route))} "Don't have an account?"]]])
+    [:a {:on-click #(nav/navigate! :recover-password)} "Forgot your password?"]
+    [:a {:on-click #(nav/navigate! :register)} "Don't have an account?"]]])
 
 (rum/defc login
   []

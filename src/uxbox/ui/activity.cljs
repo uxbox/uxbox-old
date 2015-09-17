@@ -1,6 +1,6 @@
 (ns uxbox.ui.activity
   (:require rum
-            [uxbox.navigation :refer [navigate! workspace-page-route workspace-route]]
+            [uxbox.navigation :as nav]
             [uxbox.log.queries :as q]
             [uxbox.projects.queries :as pq]
             [uxbox.time :refer [ago day]]
@@ -48,12 +48,12 @@
      [:span "created new page"]
      [:div.activity-project
       [:a
-       {:on-click #(navigate! (workspace-page-route {:project-uuid puuid
-                                                     :page-uuid (:page/uuid page)}))}
+       {:on-click #(nav/navigate! :page {:project-uuid puuid
+                                              :page-uuid (:page/uuid page)})}
        (:page/title page)]
       [:span "in"]
       [:a
-       {:on-click #(navigate! (workspace-route {:project-uuid puuid}))}
+       {:on-click #(nav/navigate! :project {:project-uuid puuid})}
        (:project/name project)]]
      [:span.activity-time (ago timestamp)]]))
 
@@ -66,7 +66,7 @@
     [:span.bold (:user/fullname author)]
     [:span "created new project"]
      [:a
-      {:on-click #(navigate! (workspace-route {:project-uuid (:project/uuid project)}))}
+      {:on-click #(nav/navigate! :project {:project-uuid (:project/uuid project)})}
       (:project/name project)]
     [:span.activity-time (ago timestamp)]])
 

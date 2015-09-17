@@ -16,7 +16,7 @@
                  ;; Datetime
                  [cljsjs/moment "2.10.6-0"]
                  ;; Routing
-                 [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
+                 [bidi "1.20.3"]
                  ;; Storage and Querying
                  [datascript "0.11.6"]
                  ;; Persistence

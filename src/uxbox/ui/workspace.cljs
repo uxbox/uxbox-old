@@ -3,7 +3,7 @@
             [cuerdas.core :as str]
             [uxbox.ui.keyboard :as k]
             [uxbox.ui.icons :as icons]
-            [uxbox.navigation :refer [link workspace-page-route navigate!]]
+            [uxbox.navigation :as nav]
             [uxbox.ui.tools :as t]
             [uxbox.ui.users :refer [user]]
             [uxbox.ui.canvas :refer [canvas grid debug-coordinates]]
@@ -58,8 +58,7 @@
          page-height :page/height} page]
     [:header#workspace-bar.workspace-bar
      [:div.main-icon
-      (link "/dashboard"
-            icons/logo-icon)]
+      (nav/link (nav/route-for :dashboard) icons/logo-icon)]
      (project-tree page-title project-bar-visible?)
      [:div.workspace-options
       [:ul.options-btn
@@ -322,8 +321,8 @@
        {:class (when (= page-uuid current-page-uuid)
                  "current")
         :on-click #(when (not= page-uuid current-page-uuid)
-                     (navigate! (workspace-page-route {:project-uuid (:project/uuid project)
-                                                       :page-uuid page-uuid})))
+                     (nav/navigate! :page {:project-uuid (:project/uuid project)
+                                                :page-uuid page-uuid}))
         :key page-uuid}
        [:div.tree-icon icons/page]
        [:span page-title]
@@ -513,8 +512,7 @@
                                    :grid? false
                                    :zoom 1
                                    :project-bar-visible? false})
-                       rum/cursored-watch
-  [{local-state :rum/local} conn [project-uuid page-uuid]]
+  [{local-state :rum/local} conn {:keys [project-uuid page-uuid]}]
   (let [page-uuid (or page-uuid (q/first-page-id-by-project-id project-uuid @conn))
 
         open-toolboxes (rum/cursor local-state [:open-toolboxes])
