@@ -1,18 +1,56 @@
-(ns uxbox.projects.data)
+(ns uxbox.projects.data
+  (:require
+   [uxbox.log.core :refer [to-datoms]]
+   [uxbox.shapes.protocols :as p]
+   [uxbox.projects.queries :as q]))
+
+;; creation
 
 (defn create-project
-  [name width height layout]
-  {:name name
-   :width width
-   :height height
-   :layout layout
-   :uuid (random-uuid)})
+  [uuid name width height layout]
+  (let [now (js/Date.)]
+    {:project/name name
+     :project/width width
+     :project/height height
+     :project/layout layout
+     :project/uuid uuid
+     :project/created now
+     :project/last-updated now}))
 
 (defn create-page
-  [project-uuid title width height]
-  {:title title
-   :root []
-   :uuid (random-uuid)
-   :width width
-   :height height
-   :project-uuid project-uuid})
+  [uuid project-uuid title width height]
+  (let [now (js/Date.)]
+    {:page/title title
+     :page/width width
+     :page/height height
+     :page/project project-uuid
+     :page/uuid uuid
+     :page/created now
+     :page/last-updated now}))
+
+;; persistence
+
+(defmethod to-datoms :uxbox/create-project
+  [{project :event/payload} _]
+  [project])
+
+(defmethod to-datoms :uxbox/delete-project
+  [{uuid :event/payload} db]
+  [[:db.fn/retractEntity (q/project-by-id uuid db)]])
+
+(defmethod to-datoms :uxbox/create-page
+  [{page :event/payload} db]
+  [(assoc page
+           :page/project
+           (q/project-by-id (:page/project page) db))])
+
+(defmethod to-datoms :uxbox/delete-page
+  [{uuid :event/payload} db]
+  [[:db.fn/retractEntity (q/page-by-id uuid db)]])
+
+(defmethod to-datoms :uxbox/change-page-title
+  [{[page new-title] :event/payload} db]
+  [[:db/add
+    (q/page-by-id (:page/uuid page) db)
+    :page/title
+    new-title]])

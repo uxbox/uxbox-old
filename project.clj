@@ -5,25 +5,29 @@
             :url ""}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.48"]
+                 [org.clojure/clojurescript "1.7.122"]
+                 ;; String
+                 [funcool/cuerdas "0.5.0"]
                  ;; Rendering
                  [rum "0.3.0"]
                  [cljsjs/react-with-addons "0.13.3-0"]
                  ;; Compositional Event Streams
-                 [jamesmacaulay/zelkova "0.4.0"]
+                 ;;[funcool/tocino "0.1.0"]
                  ;; Datetime
-                 [cljsjs/moment "2.9.0-0"]
+                 [cljsjs/moment "2.10.6-0"]
                  ;; Routing
                  [secretary "1.2.3" :exclusions [org.clojure/clojurescript]]
-                 ;; Asynchrony & Communication
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 ;; Storage and Querying
+                 [datascript "0.11.6"]
                  ;; Persistence
                  [funcool/hodgepodge "0.1.4"]
-                 ;; String
-                 [funcool/cuerdas "0.5.0"]]
+                 ;; Misc
+                 [funcool/cats "1.0.0"]
+                 ;; Development
+                 [ring "1.4.0"]]
 
-  :plugins [[lein-cljsbuild "1.0.5"]
-            [lein-figwheel "0.3.3"]
+  :plugins [[lein-cljsbuild "1.1.0"]
+            [lein-figwheel "0.3.9"]
             [hiccup-bridge "1.0.1"]]
 
   :source-paths ["src"]
@@ -41,7 +45,11 @@
                          :output-to "resources/public/js/compiled/uxbox.js"
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true
-                         :warnings {:single-segment-namespace false}}}
+                         :warnings {:single-segment-namespace false}
+                         :externs ["externs/bacon.js"]
+                         :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                         :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
+                                         :provides ["bacon"]}]}}
 
              {:id "test"
               :source-paths ["src" "test"]
@@ -55,7 +63,11 @@
                           :optimizations :none
                           :target :nodejs
                           :pretty-print true
-                          :warnings {:single-segment-namespace false}}}
+                          :warnings {:single-segment-namespace false}
+                          :externs ["externs/bacon.js"]
+                          :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                          :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
+                                          :provides ["bacon"]}]}}
 
              {:id "min"
               :source-paths ["src"]
@@ -63,7 +75,11 @@
                          :main uxbox.core
                          :optimizations :advanced
                          :pretty-print false
-                         :warnings {:single-segment-namespace false}}}]}
+                         :warnings {:single-segment-namespace false}
+                         :externs ["externs/bacon.js"]
+                         :foreign-libs [{:file "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.js"
+                                         :file-min "http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.73/Bacon.min.js"
+                                         :provides ["bacon"]}]}}]}
 
   :figwheel {
              ;; :http-server-root "public" ;; default and assumes "resources"

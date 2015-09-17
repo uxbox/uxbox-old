@@ -1,7 +1,5 @@
 (ns uxbox.navigation
   (:require
-   [uxbox.pubsub :refer [publish!]]
-   [uxbox.storage.api :as storage]
    [secretary.core :as s :refer-macros [defroute]]
    [goog.events :as events])
   (:import [goog.history Html5History]
@@ -43,8 +41,7 @@
 
 (defroute workspace-route "/workspace/:project-uuid" [project-uuid]
   (let [puuid (uuid project-uuid)]
-    (reset! location [:workspace [puuid
-                                  (:uuid (storage/get-first-page puuid))]])))
+    (reset! location [:workspace [puuid]])))
 
 ;; Components
 
@@ -61,11 +58,4 @@
   []
   (events/listen history EventType.NAVIGATE dispatch-uri)
   (.setEnabled history true)
-
-  ;; FIXME: remove as soon as we can query the data and not put it in a place
-  (add-watch location
-             :history
-             (fn [_ _ _ new-location]
-               (publish! [:location new-location])))
-
   (s/dispatch! js/window.location.href))
