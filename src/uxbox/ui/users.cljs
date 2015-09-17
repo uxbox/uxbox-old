@@ -4,7 +4,7 @@
    [uxbox.users.queries :as q]
    [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as icons]
-   [uxbox.navigation :as nav]))
+   [uxbox.ui.navigation :as nav]))
 
 (rum/defc user-menu < rum/static
   [open?]

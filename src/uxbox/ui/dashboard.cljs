@@ -3,6 +3,7 @@
    rum
    [datascript :as d]
    [cuerdas.core :refer [trim]]
+   [uxbox.ui.navigation :as nav]
    [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as i]
    [uxbox.ui.users :refer [user]]
@@ -14,7 +15,6 @@
    [uxbox.ui.icons.dashboard :as icons]
    [uxbox.projects.queries :as q]
    [uxbox.projects.actions :as actions]
-   [uxbox.navigation :as nav]
    [uxbox.time :refer [ago]]))
 
 ;; Config

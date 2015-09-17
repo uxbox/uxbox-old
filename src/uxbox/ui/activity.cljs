@@ -1,9 +1,9 @@
 (ns uxbox.ui.activity
   (:require rum
-            [uxbox.navigation :as nav]
             [uxbox.log.queries :as q]
             [uxbox.projects.queries :as pq]
             [uxbox.time :refer [ago day]]
+            [uxbox.ui.navigation :as nav]
             [uxbox.ui.mixins :as mx]))
 
 (def shown-events

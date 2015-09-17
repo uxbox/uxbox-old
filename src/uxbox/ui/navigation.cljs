@@ -1,4 +1,4 @@
-(ns uxbox.navigation
+(ns uxbox.ui.navigation
   (:require
    [bidi.bidi :as bidi]
    [goog.events :as events])
@@ -82,8 +82,8 @@
   ([location params]
    (if-let [uri (route-for location params)]
      (set-uri! uri)
-     404 ;; todo
-     )))
+     ;; TODO
+     404)))
 
 ;; Components
 

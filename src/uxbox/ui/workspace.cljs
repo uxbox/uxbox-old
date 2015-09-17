@@ -1,9 +1,9 @@
 (ns uxbox.ui.workspace
   (:require rum
             [cuerdas.core :as str]
+            [uxbox.ui.navigation :as nav]
             [uxbox.ui.keyboard :as k]
             [uxbox.ui.icons :as icons]
-            [uxbox.navigation :as nav]
             [uxbox.ui.tools :as t]
             [uxbox.ui.users :refer [user]]
             [uxbox.ui.canvas :refer [canvas grid debug-coordinates]]
