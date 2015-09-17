@@ -112,8 +112,8 @@
         (assoc :x (+ x delta-x))
         (assoc :y (+ y delta-y))))
 
+  ;; FIXME: not working as expected
   (draw
-    ;; FIXME: not working as expected
     [{:keys [x y] :as shape} mouse-x mouse-y]
     (let [[nx ny width height] (geo/coords->rect x y mouse-x mouse-y)]
       (merge shape {:x nx
