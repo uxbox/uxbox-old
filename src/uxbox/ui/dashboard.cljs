@@ -3,6 +3,7 @@
    rum
    [datascript :as d]
    [cuerdas.core :refer [trim]]
+   [uxbox.ui.navigation :as nav]
    [uxbox.ui.mixins :as mx]
    [uxbox.ui.icons :as i]
    [uxbox.ui.users :refer [user]]
@@ -14,7 +15,6 @@
    [uxbox.ui.icons.dashboard :as icons]
    [uxbox.projects.queries :as q]
    [uxbox.projects.actions :as actions]
-   [uxbox.navigation :refer [navigate! link workspace-page-route workspace-route]]
    [uxbox.time :refer [ago]]))
 
 ;; Config
@@ -133,7 +133,7 @@
   [conn]
   [:header#main-bar.main-bar
    [:div.main-logo
-    (link "/" i/logo)]
+    (nav/link "/" i/logo)]
    (user conn)])
 
 (rum/defc project-count < rum/static
@@ -168,7 +168,7 @@
     pages :project/pages
     comment-count :project/comment-count}]
   [:div.grid-item.project-th
-   {:on-click #(navigate! (workspace-route {:project-uuid uuid}))
+   {:on-click #(nav/navigate! :project {:project-uuid uuid})
     :key uuid}
    [:h3
     name]

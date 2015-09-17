@@ -16,7 +16,8 @@
       ;; Home
       :dashboard (d/dashboard conn)
       ;; Workspace
-      :workspace (w/workspace conn params))))
+      :project (w/workspace conn params)
+      :page    (w/workspace conn params))))
 
 (defn render!
   [$el location conn]
