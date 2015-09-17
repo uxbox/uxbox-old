@@ -1,5 +1,6 @@
 (ns uxbox.ui.workspace
   (:require rum
+            [goog.events :as events]
             [cuerdas.core :as str]
             [uxbox.ui.navigation :as nav]
             [uxbox.ui.keyboard :as k]
@@ -13,7 +14,9 @@
             [uxbox.projects.queries :as q]
             [uxbox.projects.actions :refer [create-page change-page-title delete-page]]
             [uxbox.shapes.actions :as actions]
-            [uxbox.shapes.queries :as sq]))
+            [uxbox.shapes.queries :as sq])
+  (:import [goog.events EventType]
+           [goog.ui KeyboardShortcutHandler]))
 
 ;; Actions
 
@@ -51,7 +54,7 @@
    icons/project-tree
    [:span page-title]])
 
-(rum/defc header < rum/cursored
+(rum/defc header < rum/cursored rum/reactive
   [conn page grid? project-bar-visible?]
   (let [{page-title :page/title
          page-width :page/width
@@ -91,9 +94,8 @@
         icons/ruler]
        [:li.tooltip.tooltip-bottom
         {:alt "Grid (Ctrl + G)"
-         :class (when @grid?
-                  "selected")
-         :on-click #(swap! grid? not)}
+         :class (when (rum/react ws/grid?) "selected")
+         :on-click ws/toggle-grid!}
         icons/grid]
        [:li.tooltip.tooltip-bottom
         {:alt "Align (Ctrl + A)"}
@@ -509,15 +511,14 @@
 
 ;; TODO: reset local state when project changes!
 (rum/defcs workspace < (rum/local {:open-toolboxes #{:tools :layers}
-                                   :grid? false
-                                   :zoom 1
                                    :project-bar-visible? false})
+                       rum/cursored-watch
+                       rum/reactive
+                       (k/keyboard-keypress k/workspace-event-keys)
   [{local-state :rum/local} conn {:keys [project-uuid page-uuid]}]
   (let [page-uuid (or page-uuid (q/first-page-id-by-project-id project-uuid @conn))
 
         open-toolboxes (rum/cursor local-state [:open-toolboxes])
-        grid? (rum/cursor local-state [:grid?])
-        zoom (rum/cursor local-state [:zoom]) ;; FIXME
         project-bar-visible? (rum/cursor local-state [:project-bar-visible?])
 
         project (q/pull-project-by-id project-uuid @conn)
@@ -525,7 +526,7 @@
         page (q/pull-page-by-id page-uuid @conn)
         shapes (sq/pull-shapes-by-page-id page-uuid @conn)]
     [:div
-     (header conn page grid? project-bar-visible?)
+     (header conn page ws/grid? project-bar-visible?)
      [:main.main-content
       [:section.workspace-content
        ;; Toolbar
@@ -533,10 +534,10 @@
        ;; Project bar
        (project-bar conn project page pages @project-bar-visible?)
        ;; Rules
-       (horizontal-rule @zoom)
-       (vertical-rule @zoom)
+       (horizontal-rule (rum/react ws/zoom))
+       (vertical-rule (rum/react ws/zoom))
        ;; Working area
-       (working-area conn @open-toolboxes page project shapes @zoom @grid?)
+       (working-area conn @open-toolboxes page project shapes (rum/react ws/zoom) (rum/react ws/grid?))
        ;; Aside
        (when-not (empty? @open-toolboxes)
          (aside conn open-toolboxes page shapes))]]]))

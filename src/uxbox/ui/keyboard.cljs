@@ -1,5 +1,6 @@
 (ns uxbox.ui.keyboard
-  (:require [goog.events :as events])
+  (:require [goog.events :as events]
+            [uxbox.ui.workspace.streams :as ws])
   (:import [goog.events EventType KeyCodes]
            [goog.ui KeyboardShortcutHandler]))
 
@@ -12,40 +13,28 @@
 (def esc? (is-keycode? 27))
 (def enter? (is-keycode? 13))
 
-;; (def event-keys
-;;   {"DELETE"  [:delete-key-pressed]
-;;    "ESC"     [:set-tool nil]
-;;    "CTRL+C"  [:copy-selected]
-;;    "CTRL+V"  [:paste-selected]
-;;    "CTRL+B"  [:set-tool :rect]
-;;    "CTRL+E"  [:set-tool :circle]
-;;    "CTRL+L"  [:set-tool :line]
-;;    "SHIFT+Q" [:set-tool :rect]
-;;    "SHIFT+W" [:set-tool :circle]
-;;    "SHIFT+E" [:set-tool :line]
-;;    "CTRL+SHIFT+I" [:open-setting-box :icons]
-;;    "CTRL+SHIFT+F" [:open-setting-box :tools]
-;;    "CTRL+SHIFT+C" [:open-setting-box :components]
-;;    "CTRL+SHIFT+L" [:open-setting-box :layers]
-;;    "CTRL+G" [:toggle-grid]
-;;    "CTRL+UP" [:move-layer-up]
-;;    "CTRL+DOWN" [:move-layer-down]
-;;    "CTRL+SHIFT+UP" [:move-layer-to-bottom]
-;;    "CTRL+SHIFT+DOWN" [:move-layer-to-top]
-;;    "SHIFT+I" [:zoom-in]
-;;    "SHIFT+0" [:zoom-reset]
-;;    "SHIFT+O" [:zoom-out]
-;;    })
+(def workspace-event-keys
+  ["DELETE" "ESC" "CTRL+C" "CTRL+V" "CTRL+B" "CTRL+E" "CTRL+L" "SHIFT+Q"
+   "SHIFT+W" "SHIFT+E" "CTRL+SHIFT+I" "CTRL+SHIFT+F" "CTRL+SHIFT+C"
+   "CTRL+SHIFT+L" "CTRL+G" "CTRL+UP" "CTRL+DOWN" "CTRL+SHIFT+UP"
+   "CTRL+SHIFT+DOWN" "SHIFT+I" "SHIFT+0" "SHIFT+O"])
 
-;; (defn dispatch-key [e]
-;;   (let [event (get event-keys (.-identifier e))]
-;;     (pubsub/publish! event)))
+;; Mixins
 
-;; (defn start-keyboard! []
-;;   (let [handler (KeyboardShortcutHandler. js/document)]
-;;     (doseq [[shortcut key] event-keys]
-;;       (.registerShortcut handler shortcut shortcut))
+(defn keyboard-keypress
+  "A mixin for capture keyboard events."
+  [event-keys]
+  (let [handler (KeyboardShortcutHandler. js/document)]
+    (doseq [shortcut event-keys]
+      (.registerShortcut handler shortcut shortcut))
 
-;;     (events/listen handler
-;;                    KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
-;;                    dispatch-key)))
+    {:will-mount (fn [state]
+                   (events/listen handler
+                                  KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
+                                  ws/on-workspace-keypress)
+                   state)
+     :will-unmount (fn [state]
+                   (events/unlisten js/document
+                                    EventType.KEYDOWN
+                                    ws/on-workspace-keypress)
+                     state)}))
