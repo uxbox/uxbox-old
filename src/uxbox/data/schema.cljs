@@ -37,8 +37,7 @@
    :shape/visible? {:db/cardinality :db.cardinality/one}})
 
 (def user-schema
-  {:user/uuid {:db/unique :db.unique/identity}
-   :user/fullname {:db/cardinality :db.cardinality/one
+  {:user/fullname {:db/cardinality :db.cardinality/one
                    :db/valueType :db.type/string}
    :user/avatar {:db/cardinality :db.cardinality/one
                  :db/valueType :db.type/string}})
