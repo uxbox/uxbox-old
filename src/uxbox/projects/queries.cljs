@@ -63,7 +63,3 @@
   [db]
   (let [eids (all-projects db)]
     (d/pull-many db '[*] eids)))
-
-(defn project-count
-  [db]
-  (count (d/q projects-query db)))
