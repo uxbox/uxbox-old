@@ -3,12 +3,16 @@
    [datascript :as d]
    [uxbox.streams :as s]))
 
+(defn- query
+  [q db]
+  (d/q q db))
+
 ;; reactive query
 
 (defn- eids-changed?
   [q tx-report]
-  (let [before (d/q q (:db-before tx-report))
-        after (d/q q (:db-after tx-report))]
+  (let [before (query q (:db-before tx-report))
+        after (query q (:db-after tx-report))]
     (when (not= before after)
       after)))
 
@@ -17,7 +21,7 @@
   (let [k (gensym)]
     (s/from-binder (fn [sink]
                      ;; put first
-                     (sink (d/q q @conn))
+                     (sink (query q @conn))
                      ;; put subsequent
                      (d/listen! conn
                                 k
@@ -45,12 +49,12 @@
         pulls
         (s/from-binder (fn [sink]
                          ;; put first
-                         (sink (pull-one-or-many (d/q q @conn) p @conn))
+                         (sink (pull-one-or-many (query q @conn) p @conn))
                          ;; put subsequent
                          (d/listen! conn
                                     k
                                     (fn [txr]
-                                      (let [after (d/q q (:db-after txr))]
+                                      (let [after (query q (:db-after txr))]
                                         (sink (pull-one-or-many after p (:db-after txr))))))
                          ;; unsub fn
                          (fn []
