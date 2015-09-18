@@ -10,6 +10,8 @@
                    :db/valueType    :db.type/long}
    :project/layout {:db/cardinality :db.cardinality/one
                     :db/valueType   :db.type/keyword}
+   :project/pages {:db/cardinality :db.cardinality/many
+                   :db/valueType :db.type/ref}
    :project/last-updated {:db/cardinality :db.cardinality/one}
    :project/created {:db/cardinality :db.cardinality/one}})
 
@@ -22,16 +24,18 @@
    :page/height {:db/cardinality :db.cardinality/one
                  :db/valueType   :db.type/long}
    :page/project {:db/cardinality :db.cardinality/one
-                  :db/valueType   :db.type/ref}
+                  :db/valueType   :db.type/ref} ;; todo: delete?
+   :page/shapes {:db/cardinality :db.cardinality/many
+                 :db/valueType   :db.type/ref}
    :page/created {:db/cardinality :db.cardinality/one}
    :page/last-updated {:db/cardinality :db.cardinality/one}})
 
 (def shape-schema
   {:shape/uuid {:db/unique :db.unique/identity}
    :shape/name {:db/cardinality :db.cardinality/one}
+   :shape/data {:db/cardinality :db.cardinality/one}
    :shape/page {:db/cardinality :db.cardinality/one
                 :db/valueType   :db.type/ref}
-   :shape/data {:db/cardinality :db.cardinality/one}
    :shape/created {:db/cardinality :db.cardinality/one}
    :shape/locked? {:db/cardinality :db.cardinality/one}
    :shape/visible? {:db/cardinality :db.cardinality/one}})
