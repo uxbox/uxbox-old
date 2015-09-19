@@ -129,7 +129,7 @@
   [_ conn]
   (new-project-lightbox conn))
 
-(rum/defc header < rum/static
+(rum/defc header
   [conn]
   [:header#main-bar.main-bar
    [:div.main-logo
@@ -166,7 +166,8 @@
     last-update :project/last-updated
     name :project/name
     pages :project/pages
-    comment-count :project/comment-count}]
+    comment-count :project/comment-count
+    id :db/id}]
   [:div.grid-item.project-th
    {:on-click #(nav/navigate! :project {:project-uuid uuid})
     :key uuid}
