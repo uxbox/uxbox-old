@@ -244,7 +244,7 @@
       icons/close]]
     [:div.tool-window-content
      [:ul.element-list
-      (for [shape shapes]
+      (for [shape (reverse shapes)]
         (let [{shape-id :shape/uuid
                selected? :shape/selected?
                locked? :shape/locked?
