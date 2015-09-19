@@ -49,8 +49,8 @@
    :event/user {:db/cardinality :db.cardinality/one}})
 
 (def schema
-  {:uxbox/project project-schema
-   :uxbox/page page-schema
-   :uxbox/shape shape-schema
-   :uxbox/user user-schema
-   :uxbox/event event-schema})
+  {:project project-schema
+   :page page-schema
+   :shape shape-schema
+   :user user-schema
+   :yevent event-schema})
