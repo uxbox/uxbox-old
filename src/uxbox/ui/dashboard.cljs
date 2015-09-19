@@ -11,7 +11,7 @@
                               render-lightbox
                               set-lightbox!
                               close-lightbox!]]
-   [uxbox.ui.activity :refer [activity-timeline]]
+   [uxbox.ui.activity :refer [timeline]]
    [uxbox.ui.icons.dashboard :as icons]
    [uxbox.projects.queries :as q]
    [uxbox.projects.actions :as actions]
@@ -166,8 +166,7 @@
     last-update :project/last-updated
     name :project/name
     pages :project/pages
-    comment-count :project/comment-count
-    id :db/id}]
+    comment-count :project/comment-count}]
   [:div.grid-item.project-th
    {:on-click #(nav/navigate! :project {:project-uuid uuid})
     :key uuid}
@@ -225,7 +224,7 @@
    [:section.dashboard-content
     (dashboard-bar sort-order @project-count)
     (dashboard-grid conn @projects sort-order)]
-   (activity-timeline conn)])
+   (timeline conn)])
 
 (rum/defc dashboard
   [conn]

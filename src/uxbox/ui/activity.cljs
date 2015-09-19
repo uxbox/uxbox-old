@@ -84,13 +84,12 @@
      :uxbox/create-project
      (create-project-activity ev))])
 
-(rum/defcs activity-timeline < (mx/pull-query
-                                :events
-                                q/all-events
-                                '[:event/type
-                                  :event/payload
-                                  :event/author
-                                  :event/timestamp])
+(rum/defcs timeline < (mx/pull-query :events
+                                     q/all-events
+                                     '[:event/type
+                                       :event/payload
+                                       :event/author
+                                       :event/timestamp])
   [{events :events} conn]
   [:aside#activity-bar.activity-bar
    [:div.activity-bar-inside
