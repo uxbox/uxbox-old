@@ -18,19 +18,15 @@
 
 (defn rquery
   [q conn]
-  (let [k (gensym)]
-    (s/from-binder (fn [sink]
-                     ;; put first
-                     (sink (query q @conn))
-                     ;; put subsequent
-                     (d/listen! conn
-                                k
-                                (fn [txr]
-                                  (when-let [after (eids-changed? q txr)]
-                                    (sink after))))
-                     ;; unsub fn
-                     (fn []
-                       (d/unlisten! conn k))))))
+  (let [k (gensym)
+        a (atom (query q @conn))
+        sink #(reset! a %)]
+    (d/listen! conn
+               k
+               (fn [txr]
+                 (when-let [after (eids-changed? q txr)]
+                   (sink after))))
+    a))
 
 ;; reactive pull
 
@@ -46,20 +42,14 @@
 (defn rpull
   [q p conn]
   (let [k (gensym)
-        pulls
-        (s/from-binder (fn [sink]
-                         ;; put first
-                         (sink (pull-one-or-many (query q @conn) p @conn))
-                         ;; put subsequent
-                         (d/listen! conn
-                                    k
-                                    (fn [txr]
-                                      (let [after (query q (:db-after txr))]
-                                        (sink (pull-one-or-many after p (:db-after txr))))))
-                         ;; unsub fn
-                         (fn []
-                           (d/unlisten! conn k))))]
-    (s/dedupe pulls)))
+        a (atom (pull-one-or-many (query q @conn) p @conn))
+        sink #(reset! a %)]
+    (d/listen! conn
+               k
+               (fn [txr]
+                 (let [after (query q (:db-after txr))]
+                   (sink (pull-one-or-many after p (:db-after txr))))))
+    a))
 
 ;; reactive entity
 
@@ -79,17 +69,11 @@
    (rentity id '[*] conn))
   ([id p conn]
    (let [k (gensym)
-         pulls
-         (s/from-binder (fn [sink]
-                          ;; put first
-                          (sink (pull-entity id p @conn))
-                          ;; put subsequent
-                          (d/listen! conn
-                                     k
-                                     (fn [txr]
-                                       (when-let [e (entity-changed? id p txr)]
-                                         (sink e))))
-                          ;; unsub fn
-                          (fn []
-                            (d/unlisten! conn k))))]
-     (s/dedupe pulls))))
+         a (atom (pull-entity id p @conn))
+         sink #(reset! a %)]
+     (d/listen! conn
+                k
+                (fn [txr]
+                  (when-let [e (entity-changed? id p txr)]
+                    (sink e))))
+     a)))

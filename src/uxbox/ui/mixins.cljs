@@ -2,8 +2,7 @@
   (:require
    [rum]
    [datascript :as d]
-   [uxbox.queries :as sq]
-   [uxbox.streams :as s]))
+   [uxbox.queries :as qs]))
 
 ;; ================================================================================
 ;; Queries
@@ -43,13 +42,14 @@
     :will-mount
     (fn [state]
       (let [[conn] (:rum/args state)
-            local-state (s/pipe-to-atom (sq/rpull query pull conn))
+            local-state (qs/rpull query pull conn)
             component   (:rum/react-component state)]
         ;; sub
         (add-watch local-state
                    key
-                   (fn [_ _ _ _]
-                     (rum/request-render component)))
+                   (fn [_ _ old new]
+                     (when-not (= old new)
+                       (rum/request-render component))))
         (assoc state key local-state)))
    :will-unmount
    (fn [state]
