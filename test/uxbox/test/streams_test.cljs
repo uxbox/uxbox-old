@@ -455,13 +455,20 @@
       (s/end! b)
       (s/on-end b done))))
 
+(t/deftest filter-with-predicate
+  (t/async done
+    (let [s (s/from-coll [1 2 3 4 5])
+          fs (s/filter #{3 5} s)]
+      (drain! fs #(t/is (= %
+                          [3 5])))
+      (s/on-end fs done))))
 ;; ::todo decomplect
+;; - filter (pred, property)
 ;; - map
 ;; - mapError
 ;; - errors
 ;; - skipErrors
 ;; - mapEnd
-;; - filter (pred, property)
 ;; - skipDuplicates
 ;; - take
 ;; - takeUntil

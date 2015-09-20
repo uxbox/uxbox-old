@@ -21,23 +21,8 @@
                             concat
                             partition]))
 
-;; core
+;; coercions
 
-(defn flat-map
-  [obs f]
-  (.flatMap obs f))
-
-(defn flat-map-latest
-  [obs f]
-  (.flatMapLatest obs f))
-
-(defn flat-map-first
-  [obs f]
-  (.flatMapFirst obs f))
-
-;;;;; coercions
-
-;; observable -> property
 (defn to-property
   [obs]
   (.toProperty obs))
@@ -58,56 +43,6 @@
   ([obs ctr]
    (.firstToPromise obs ctr)))
 
-;;;;; transformations
-
-(defn reduce
-  [rf seed obs]
-  (.reduce obs seed rf))
-
-(defn scan
-  [rf seed obs]
-  (.scan obs seed rf))
-
-(defn take
-  [n obs]
-  (.take obs n))
-
-(defn map
-  [f obs]
-  (.map obs f))
-
-(defn filter
-  [pred obs]
-  (.filter obs pred))
-
-(defn skip-duplicates
-  ([obs]
-   (.skipDuplicates obs =))
-  ([obs cf]
-   (.skipDuplicates obs cf)))
-
-(defn not
-  [obs]
-  (.not obs))
-
-(defn start-with
-  [value obs]
-  (.startWith obs value))
-
-;; combination
-
-(defn combine
-  [cf o1 o2]
-  (.combine o1 o2 cf))
-
-(defn zip
-  [o1 o2]
-  (.zip o1 o2 vector))
-
-(defn zip-with
-  [zf & os]
-  (js/Bacon.zipWith zf (into-array os)))
-
 ;; subscription
 
 (defn on-value
@@ -126,17 +61,83 @@
   [obs sf]
   (.subscribe obs sf))
 
-;; Types
+;; property
 
-;;
-;; tocino.event-stream
+(defn property?
+  [p]
+  (instance? js/Bacon.Property p))
 
-;; any -> boolean
+(defn constant
+  [v]
+  (js/Bacon.constant v))
+
+(defn sample
+  [milis p]
+  (.sample p milis))
+
+(defn sampled-by
+  ([p obs]
+   (.sampledBy p obs))
+  ([p obs cf]
+   (.sampledBy p obs cf)))
+
+(defn changes
+  [p]
+  {:pre [(property? p)]}
+  (.changes p))
+
+(defn and
+  ([p1 p2]
+   {:pre [(property? p1)
+          (property? p2)]}
+   (.and p1 p2))
+  ([p1 p2 & ps]
+   (cljs.core/reduce and
+                     (and p1 p2)
+                     ps)))
+
+(defn or
+  ([p1 p2]
+   {:pre [(property? p1)
+          (property? p2)]}
+   (.or p1 p2))
+  ([p1 p2 & ps]
+   (cljs.core/reduce or
+                     (or p1 p2)
+                     ps)))
+
+(def property-context
+  (reify
+    p/Context
+    (-get-level [_] ctx/+level-default+)
+
+    p/Functor
+    (-fmap [_ f obs]
+      (.map obs f))
+
+    p/Applicative
+    (-pure [_ v]
+      (constant v))
+
+    (-fapply [_ pf pv]
+      (to-property (js/Bacon.zipWith #(%1 %2) pf pv)))
+
+    p/Monad
+    (-mreturn [_ v]
+      (constant v))
+
+    (-mbind [_ p f]
+      (to-property (.flatMap p f)))))
+
+(extend-type js/Bacon.Property
+  p/Contextual
+  (-get-context [_] property-context))
+
+;; event stream
+
 (defn event-stream?
   [s]
   (instance? js/Bacon.EventStream s))
-
-;; creation
 
 (defn once
   [v]
@@ -244,8 +245,6 @@
 (def more js/Bacon.more)
 (def no-more js/Bacon.noMore)
 
-;; ops
-
 (defn concat
   ([one other]
    (.concat one other))
@@ -285,8 +284,6 @@
   [stream s]
   (.skipUntil stream s))
 
-;; cats integration
-
 (def event-stream-context
   (reify
     p/Context
@@ -314,89 +311,8 @@
   p/Contextual
   (-get-context [_] event-stream-context))
 
-;;
-;; tocino.property
+;; bus
 
-;; any -> boolean
-(defn property?
-  [p]
-  (instance? js/Bacon.Property p))
-
-;; a -> property a
-(defn constant
-  [v]
-  (js/Bacon.constant v))
-
-;; miliseconds -> property -> event-stream
-(defn sample
-  [milis p]
-  (.sample p milis))
-
-;; property -> observable -> (maybe Fn) -> stream
-(defn sampled-by
-  ([p obs]
-   (.sampledBy p obs))
-  ([p obs cf]
-   (.sampledBy p obs cf)))
-
-;; property -> event-stream
-(defn changes
-  [p]
-  {:pre [(property? p)]}
-  (.changes p))
-
-(defn and
-  ([p1 p2]
-   {:pre [(property? p1)
-          (property? p2)]}
-   (.and p1 p2))
-  ([p1 p2 & ps]
-   (cljs.core/reduce and
-                     (and p1 p2)
-                     ps)))
-
-(defn or
-  ([p1 p2]
-   {:pre [(property? p1)
-          (property? p2)]}
-   (.or p1 p2))
-  ([p1 p2 & ps]
-   (cljs.core/reduce or
-                     (or p1 p2)
-                     ps)))
-
-;; cats integration
-
-(def property-context
-  (reify
-    p/Context
-    (-get-level [_] ctx/+level-default+)
-
-    p/Functor
-    (-fmap [_ f obs]
-      (.map obs f))
-
-    p/Applicative
-    (-pure [_ v]
-      (constant v))
-
-    (-fapply [_ pf pv]
-      (to-property (js/Bacon.zipWith #(%1 %2) pf pv)))
-
-    p/Monad
-    (-mreturn [_ v]
-      (constant v))
-
-    (-mbind [_ p f]
-      (to-property (.flatMap p f)))))
-
-(extend-type js/Bacon.Property
-  p/Contextual
-  (-get-context [_] property-context))
-
-;; tocino.bus
-
-;; any -> boolean
 (defn bus?
   [b]
   (instance? js/Bacon.Bus b))
@@ -438,13 +354,80 @@
   p/Contextual
   (-get-context [_] bus-context))
 
-;;
+;; observable
 
 (defn observable?
   [o]
   (or (property? o)
       (event-stream? o)
       (bus? o)))
+
+
+;; core
+
+(defn flat-map
+  [obs f]
+  (.flatMap obs f))
+
+(defn flat-map-latest
+  [obs f]
+  (.flatMapLatest obs f))
+
+(defn flat-map-first
+  [obs f]
+  (.flatMapFirst obs f))
+
+(defn reduce
+  [rf seed obs]
+  (.reduce obs seed rf))
+
+(defn scan
+  [rf seed obs]
+  (.scan obs seed rf))
+
+(defn take
+  [n obs]
+  (.take obs n))
+
+(defn map
+  [f obs]
+  (.map obs f))
+
+(declare property?)
+(defn filter
+  [pred obs]
+  (let [pred (if (property? pred)
+               pred
+               #(pred %))]
+    (.filter obs pred)))
+
+(defn skip-duplicates
+  ([obs]
+   (.skipDuplicates obs =))
+  ([obs cf]
+   (.skipDuplicates obs cf)))
+
+(defn not
+  [obs]
+  (.not obs))
+
+(defn start-with
+  [value obs]
+  (.startWith obs value))
+
+;; combination
+
+(defn combine
+  [cf o1 o2]
+  (.combine o1 o2 cf))
+
+(defn zip
+  [o1 o2]
+  (.zip o1 o2 vector))
+
+(defn zip-with
+  [zf & os]
+  (js/Bacon.zipWith zf (into-array os)))
 
 ;; interop
 
