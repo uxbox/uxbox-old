@@ -244,7 +244,7 @@
       icons/close]]
     [:div.tool-window-content
      [:ul.element-list
-      (for [shape shapes]
+      (for [shape (reverse shapes)]
         (let [{shape-id :shape/uuid
                selected? :shape/selected?
                locked? :shape/locked?
@@ -296,7 +296,7 @@
         {:alt "Feedback (Ctrl + Shift + M)"}
         icons/chat]]]]))
 
-(rum/defcs project-page < (rum/local false :editing?) rum/static
+(rum/defcs project-page < (rum/local false :editing?)
   [{:keys [editing?]} conn page current-page project deletable?]
   (let [{page-uuid :page/uuid
          page-title :page/title} page
@@ -338,7 +338,7 @@
           :on-click #(do (.stopPropagation %) (delete-page conn page))}
          icons/trash]]])))
 
-(rum/defc project-pages < rum/static
+(rum/defc project-pages
   [conn project current-page pages]
   (let [deletable? (> (count pages) 1)]
     (vec
@@ -347,7 +347,6 @@
 
 (rum/defcs new-page < (rum/local {:adding-new? false
                                   :new-page-title ""})
-                       rum/static
   [{local-state :rum/local} conn project]
   (let [{:keys [adding-new? new-page-title]} @local-state]
     (if adding-new?
@@ -371,7 +370,7 @@
        {:on-click #(swap! local-state assoc :adding-new? true)}
        "+ Add new page"])))
 
-(rum/defc project-bar < rum/static
+(rum/defc project-bar
   [conn project page pages project-bar-visible?]
   (let [project-name (:project/name project)]
     [:div#project-bar.project-bar
@@ -399,7 +398,7 @@
       (when (:layers open-setting-boxes)
         (layers conn open-toolboxes page shapes))]]))
 
-(rum/defc vertical-rule < rum/reactive rum/static
+(rum/defc vertical-rule < rum/reactive
   [zoom]
   (let [height viewport-height
         start-height document-start-y
@@ -429,7 +428,7 @@
      [:rect {:x 0 :y padding :height height :width padding :fill "#bab7b7"}]
      (map #(lines (* (+ %1 start-height) zoom) %1 padding) ticks)]]))
 
-(rum/defc horizontal-rule < rum/reactive rum/static
+(rum/defc horizontal-rule < rum/reactive
   [zoom]
   (let [left (rum/react ws/scroll-left)
         width viewport-width
@@ -467,7 +466,7 @@
                :fill "#bab7b7"}]
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
 
-(rum/defc viewport < rum/static
+(rum/defc viewport
   [conn page shapes zoom grid?]
   [:svg#viewport
    {:width viewport-height
@@ -488,7 +487,7 @@
             document-start-y
             zoom))]])
 
-(rum/defc working-area < rum/static
+(rum/defc working-area
   [conn
    open-setting-boxes
    page

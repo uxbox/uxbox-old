@@ -5,9 +5,9 @@
             [uxbox.ui.dashboard :as d]
             [uxbox.ui.workspace :as w]))
 
-(rum/defc app < rum/reactive
+(rum/defc app < rum/cursored-watch
   [conn location]
-  (let [[page params] (rum/react location)]
+  (let [[page params] @location]
     (case page
       ;; User
       :login (u/login)

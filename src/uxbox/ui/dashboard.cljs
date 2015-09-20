@@ -11,7 +11,7 @@
                               render-lightbox
                               set-lightbox!
                               close-lightbox!]]
-   [uxbox.ui.activity :refer [activity-timeline]]
+   [uxbox.ui.activity :refer [timeline]]
    [uxbox.ui.icons.dashboard :as icons]
    [uxbox.projects.queries :as q]
    [uxbox.projects.actions :as actions]
@@ -129,7 +129,7 @@
   [_ conn]
   (new-project-lightbox conn))
 
-(rum/defc header < rum/static
+(rum/defc header
   [conn]
   [:header#main-bar.main-bar
    [:div.main-logo
@@ -224,7 +224,7 @@
    [:section.dashboard-content
     (dashboard-bar sort-order @project-count)
     (dashboard-grid conn @projects sort-order)]
-   (activity-timeline conn)])
+   (timeline conn)])
 
 (rum/defc dashboard
   [conn]
