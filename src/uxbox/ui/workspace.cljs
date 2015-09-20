@@ -7,7 +7,7 @@
             [uxbox.ui.icons :as icons]
             [uxbox.ui.tools :as t]
             [uxbox.ui.users :refer [user]]
-            [uxbox.ui.canvas :refer [canvas grid debug-coordinates]]
+            [uxbox.ui.canvas :refer [canvas debug-coordinates]]
             [uxbox.ui.workspace.streams :as ws]
             [uxbox.geometry :as geo]
             [uxbox.shapes.protocols :as shapes]
@@ -466,6 +466,59 @@
                :fill "#bab7b7"}]
        (map #(lines (* (+ %1 start-width) zoom) %1 padding) ticks)]]))
 
+(rum/defc grid < rum/static
+  [enabled? width height start-width start-height zoom]
+  (let [padding (* 20 zoom)
+        ticks-mod (/ 100 zoom)
+        step-size (/ 10 zoom)
+
+        vertical-ticks (range (- padding start-height) (- height start-height padding) step-size)
+        horizontal-ticks (range (- padding start-width) (- width start-width padding) step-size)
+
+        vertical-lines (fn
+          [position value padding]
+          (if (< (mod value ticks-mod) step-size)
+             [:line {:key position
+                     :y1 padding
+                     :y2 width
+                     :x1 position
+                     :x2 position
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.75}]
+             [:line {:key position
+                     :y1 padding
+                     :y2 width
+                     :x1 position
+                     :x2 position
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.25}]))
+
+        horizontal-lines (fn
+          [position value padding]
+          (if (< (mod value ticks-mod) step-size)
+             [:line {:key position
+                     :y1 position
+                     :y2 position
+                     :x1 padding
+                     :x2 height
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.75}]
+             [:line {:key position
+                     :y1 position
+                     :y2 position
+                     :x1 padding
+                     :x2 height
+                     :stroke "blue"
+                     :stroke-width (/ 1 zoom)
+                     :opacity 0.25}]))]
+    [:g.grid
+     {:style #js {:display (if enabled? "block" "none")}}
+     (map #(vertical-lines (+ %1 start-width) %1 padding) vertical-ticks)
+     (map #(horizontal-lines (+ %1 start-height) %1 padding) horizontal-ticks)]))
+
 (rum/defc viewport
   [conn page shapes zoom grid?]
   [:svg#viewport
@@ -480,12 +533,12 @@
              :viewport-width viewport-width
              :document-start-x document-start-x
              :document-start-y document-start-y})
-    (when grid?
-      (grid viewport-width
-            viewport-height
-            document-start-x
-            document-start-y
-            zoom))]])
+    (grid grid?
+          viewport-width
+          viewport-height
+          document-start-x
+          document-start-y
+          zoom)]])
 
 (rum/defc working-area
   [conn
