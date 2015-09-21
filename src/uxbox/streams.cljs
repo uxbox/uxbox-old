@@ -191,6 +191,11 @@
   ([target ev tf]
    (js/Bacon.fromEvent target ev tf)))
 
+(defn from-atom [atm key]
+  (from-binder (fn [sink]
+                 (add-watch atm key (fn [_ _ _ new-value] (sink new-value)))
+                 #(remove-watch atm key))))
+
 (defn initial
   [v]
   (js/Bacon.Initial. v))
