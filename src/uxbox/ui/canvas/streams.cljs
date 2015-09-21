@@ -7,6 +7,20 @@
    [uxbox.shapes.protocols :as shapes]
    [uxbox.geometry :as geo]))
 
+;; Buses
+
+(def mouse-down-stream
+  (s/bus))
+
+(def mouse-up-stream
+  (s/bus))
+
+(def shapes-bus
+  (s/bus))
+
+
+;; Transformers
+
 (defn- client-coords->canvas-coords
   [[client-x client-y]]
   (if-let [canvas-element (.getElementById js/document "page-canvas")]
@@ -18,34 +32,7 @@
       [new-x new-y])
     [client-x client-y]))
 
-(defn clamp-coords
-  [obs]
-  (s/dedupe (s/map geo/clamp obs)))
-
-(def canvas-coordinates-stream
-  (s/map client-coords->canvas-coords mouse/client-position))
-
-(defonce canvas-coordinates
-  (s/to-property canvas-coordinates-stream))
-
-(def mouse-down-stream
-  (s/bus))
-
-(def mouse-up-stream
-  (s/bus))
-
-(def mouse-down?
-  (s/to-property (s/merge (s/map (constantly true) mouse-down-stream)
-                          (s/map (constantly false) mouse-up-stream))))
-
-(def mouse-up? (s/not mouse-down?))
-
-(def mouse-drag-stream
-  (s/flat-map-latest (s/true? mouse-down?)
-                     (fn [_]
-                       (s/take-until
-                        (clamp-coords canvas-coordinates-stream)
-                        mouse-up-stream))))
+;; Handlers
 
 (defn on-mouse-down
   [e]
@@ -56,6 +43,46 @@
   [e]
   (s/push! mouse-up-stream
            (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
+
+(defn set-current-shapes!
+  [shapes]
+  (s/push! shapes-bus shapes))
+
+(defn move-selections
+  [sels [dx dy]]
+  (into {} (map (fn [[k s]]
+                  [k (shapes/move-delta s dx dy)])
+                sels)))
+
+
+;; Streams
+
+(def mouse-down?
+  (s/to-property (s/merge (s/map (constantly true) mouse-down-stream)
+                          (s/map (constantly false) mouse-up-stream))))
+
+(defn clamp-coords
+  [obs]
+  (s/dedupe (s/map geo/clamp obs)))
+
+(def canvas-coordinates-stream
+  (s/map client-coords->canvas-coords mouse/client-position))
+
+(defonce canvas-coordinates
+  (s/to-property canvas-coordinates-stream))
+
+(def mouse-up? (s/not mouse-down?))
+
+(def mouse-drag-stream
+  (s/flat-map-latest (s/true? mouse-down?)
+                     (fn [_]
+                       (s/take-until
+                        (clamp-coords canvas-coordinates-stream)
+                        mouse-up-stream))))
+
+(def stroke-stream (s/flat-map-latest
+                    (s/true? mouse-down?)
+                    (clamp-coords canvas-coordinates)))
 
 (def start-drawing? (s/and ws/tool-selected?
                            mouse-down?))
@@ -68,10 +95,6 @@
     ws/selected-tool-stream
     canvas-coordinates-stream)
    (s/true? start-drawing?)))
-
-(def stroke-stream (s/flat-map-latest
-                    (s/true? mouse-down?)
-                    (clamp-coords canvas-coordinates)))
 
 (def drawing-stream (s/flat-map start-drawing-stream
                                 (fn [shape]
@@ -89,15 +112,8 @@
                                (s/map (constantly nil)
                                       mouse-up-stream)))
 
-(def shapes-bus
-  (s/bus))
-
 (def shapes-stream
   (s/dedupe shapes-bus))
-
-(defn set-current-shapes!
-  [shapes]
-  (s/push! shapes-bus shapes))
 
 (def start-selection
   (s/and mouse-down?
@@ -130,12 +146,6 @@
    (s/combine vector
               shapes-stream
               intersections)))
-
-(defn move-selections
-  [sels [dx dy]]
-  (into {} (map (fn [[k s]]
-                  [k (shapes/move-delta s dx dy)])
-                sels)))
 
 (def selected (s/flat-map
                selections
