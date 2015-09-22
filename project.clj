@@ -12,7 +12,7 @@
                  [rum "0.3.0"]
                  [cljsjs/react-with-addons "0.13.3-0"]
                  ;; Compositional Event Streams
-                 ;;[funcool/tocino "0.1.0"]
+                 [funcool/beicon "0.1.0-SNAPSHOT"]
                  ;; Datetime
                  [cljsjs/moment "2.10.6-0"]
                  ;; Routing

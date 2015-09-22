@@ -1,23 +1,14 @@
 (ns uxbox.ui.canvas.streams
   (:require
-   [uxbox.streams :as s]
-   [uxbox.ui.streams.mouse :as mouse]
+   [uxbox.streams :refer [main-bus on-event]]
+   [beicon.core :as b]
    [uxbox.ui.workspace.streams :as ws]
    [uxbox.ui.tools :as tools]
    [uxbox.shapes.protocols :as shapes]
-   [uxbox.geometry :as geo]))
-
-;; Buses
-
-(def mouse-down-stream
-  (s/bus))
-
-(def mouse-up-stream
-  (s/bus))
-
-(def shapes-bus
-  (s/bus))
-
+   [uxbox.shapes.queries :as sq]
+   [uxbox.geometry :as geo]
+   [goog.events :as events])
+  (:import [goog.events EventType]))
 
 ;; Transformers
 
@@ -32,127 +23,135 @@
       [new-x new-y])
     [client-x client-y]))
 
-;; Handlers
-
-(defn on-mouse-down
-  [e]
-  (let [coords (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])]
-    (s/push! mouse-down-stream coords)))
-
-(defn on-mouse-up
-  [e]
-  (s/push! mouse-up-stream
-           (client-coords->canvas-coords [(.-clientX e) (.-clientY e)])))
-
-(defn set-current-shapes!
-  [shapes]
-  (s/push! shapes-bus shapes))
-
-(defn move-selections
-  [sels [dx dy]]
-  (into {} (map (fn [[k s]]
-                  [k (shapes/move-delta s dx dy)])
-                sels)))
-
-
 ;; Streams
 
-(def mouse-down?
-  (s/to-property (s/merge (s/map (constantly true) mouse-down-stream)
-                          (s/map (constantly false) mouse-up-stream))))
+;;;; Main workspace stream
+(def canvas-stream
+  (b/filter #(= (.-ns %) :canvas) main-bus))
+
+;;;; Mouse privitives streams
+
+(def mouse-up-stream
+  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+         (b/filter #(= (.-type %) "mouseup") canvas-stream)))
+
+(def mouse-down-stream
+  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+         (b/filter #(= (.-type %) "mousedown") canvas-stream)))
+
+(def mouse-move-stream
+  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+         (b/filter #(= (.-type %) "mousemove") canvas-stream)))
+
+(def mouse-click-stream
+  (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+                    :shapes (.-data %)
+                    :ctrl (.-ctrlKey %)
+                    :alt (.-altKey %)
+                    :shift (.-shiftKey %))
+         (b/filter #(= (.-type %) "click") canvas-stream)))
+
+(def mouse-ctrl-click-stream
+  (b/filter #(and (:ctrl %) (not (:alt %)) (not (:shift %))) mouse-click-stream))
+
+(def mouse-alt-click-stream
+  (b/filter #(and (not (:ctrl %)) (:alt %) (not (:shift %))) mouse-click-stream))
+
+(def mouse-shift-click-stream
+  (b/filter #(and (not (:ctrl %)) (not (:alt %)) (:shift %)) mouse-click-stream))
+
+(def mouse-normal-click-stream
+  (b/filter #(and (not (:ctrl %)) (not (:alt %)) (not (:shift %))) mouse-click-stream))
+
+;;;; Mouse privitive properties
+
+(def mouse-pressed?-stream
+  (b/merge (b/map (constantly true) mouse-down-stream)
+           (b/map (constantly false) mouse-up-stream)))
+
+(def client-position-stream mouse-move-stream)
+
+(defn coords-delta
+  [[old new]]
+  (let [[oldx oldy] old
+        [newx newy] new]
+    [(* 2 (- newx oldx))
+     (* 2 (- newy oldy))]))
+
+(def ^{:doc "A stream of mouse coordinate deltas as `[dx dy]` vectors."}
+  client-position-delta
+  (b/map coords-delta (b/buffer 2 mouse-move-stream)))
+
+(def drawing-stream
+  (b/filter #(and @mouse-pressed? (not= @ws/selected-tool nil) (empty? @selected-shapes))
+            mouse-move-stream))
+
+(def selecting-stream
+  (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (empty? @selected-shapes))
+            mouse-move-stream))
+
+(def moving-shapes-stream
+  (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (not (empty? @selected-shapes)))
+            client-position-delta))
+
+
+;;;; Mouse streams
+(def select-one-shape-stream
+  (b/map #(take 1 %)
+         (b/map #(filter (fn [shape] (shapes/intersect (:shape/data shape) (first (:coords %)) (second (:coords %)))) (reverse (:shapes %)))
+                mouse-normal-click-stream)))
+
+(def add-one-shape-to-selected-stream
+  (b/map #(conj @selected-shapes %)
+         (b/map first
+                (b/map #(filter (fn [shape] (shapes/intersect (:shape/data shape) (first (:coords %)) (second (:coords %)))) (reverse (:shapes %)))
+                       mouse-ctrl-click-stream))))
+
+(def selected-shapes-stream
+  (b/merge select-one-shape-stream
+           add-one-shape-to-selected-stream))
+
+(def selected-shapes-data-stream
+  (b/map #(map :shape/data %) selected-shapes-stream))
+
+(def selected-shape-ids-stream
+  (b/map #(map :shape/uuid %) selected-shapes-stream))
 
 (defn clamp-coords
   [obs]
-  (s/dedupe (s/map geo/clamp obs)))
+  (b/dedupe (b/map geo/clamp obs)))
 
 (def canvas-coordinates-stream
-  (s/map client-coords->canvas-coords mouse/client-position))
+  (b/map client-coords->canvas-coords client-position-stream))
 
-(defonce canvas-coordinates
-  (s/to-property canvas-coordinates-stream))
+;; Mixins
 
-(def mouse-up? (s/not mouse-down?))
+(def ^{:doc "A mixin for capture mouse move events."}
+  mouse-move-mixin
+  {:will-mount (fn [state]
+                 (events/listen js/document
+                                EventType.MOUSEMOVE
+                                (on-event :canvas))
+                 state)
+   :will-unmount (fn [state]
+                 (events/unlisten js/document
+                                  EventType.MOUSEMOVE
+                                  (on-event :canvas))
+                   state)})
 
-(def mouse-drag-stream
-  (s/flat-map-latest (s/true? mouse-down?)
-                     (fn [_]
-                       (s/take-until
-                        (clamp-coords canvas-coordinates-stream)
-                        mouse-up-stream))))
 
-(def stroke-stream (s/flat-map-latest
-                    (s/true? mouse-down?)
-                    (clamp-coords canvas-coordinates)))
+;; Atoms
 
-(def start-drawing? (s/and ws/tool-selected?
-                           mouse-down?))
+;; (def draw! (b/to-atom draw-stream))
+;; (def move! (b/to-atom move-stream))
+;; (def drawing (b/to-atom draw-in-progress))
 
-(def start-drawing-stream
-  (s/sampled-by
-   (s/combine
-    (fn [tool coords]
-      (tools/start-drawing tool coords))
-    ws/selected-tool-stream
-    canvas-coordinates-stream)
-   (s/true? start-drawing?)))
-
-(def drawing-stream (s/flat-map start-drawing-stream
-                                (fn [shape]
-                                  (let [stroke (s/take-while (clamp-coords canvas-coordinates)
-                                                             mouse-down?)]
-                                    (s/scan (fn [s [x y]]
-                                              (shapes/draw s x y))
-                                            shape
-                                            stroke)))))
-
-(def draw-stream (s/sampled-by drawing-stream
-                               (s/true? mouse-up?)))
-
-(def draw-in-progress (s/merge drawing-stream
-                               (s/map (constantly nil)
-                                      mouse-up-stream)))
-
-(def shapes-stream
-  (s/dedupe shapes-bus))
-
-(def start-selection
-  (s/and mouse-down?
-         (s/not ws/tool-selected?)))
-
-(def intersections (s/sampled-by
-                    (s/combine
-                       (fn [[x y] shapes]
-                         (into {}
-                               (comp
-                                 (map (juxt :shape/uuid :shape/data))
-                                 (filter #(shapes/intersect (second %) x y)))
-                               shapes))
-                       (clamp-coords canvas-coordinates-stream)
-                       shapes-stream)
-                    (s/true? start-selection)))
-
-(def selections
-  (s/scan
-   (fn [selected [shapes intersections]]
-     (if (empty? intersections)
-         {} ;; deselect everything
-         (let [selected-ids (set (keys selected))
-               selected-shapes (->> shapes
-                                    (filter #(contains? selected-ids (:shape/uuid %)))
-                                    (map (fn [s]
-                                           [(:shape/uuid s) (:shape/data s)])))]
-           (merge intersections selected selected-shapes))))
-   {}
-   (s/combine vector
-              shapes-stream
-              intersections)))
-
-(def selected (s/flat-map
-               selections
-               (fn [sels]
-                 (let [drag (s/take-while mouse/delta mouse-down?)]
-                   (s/scan move-selections sels drag)))))
-
-(def move-stream (s/sampled-by
-                  selected
-                  (s/true? mouse-up?)))
+(defonce draw! (atom nil))
+(defonce move! (atom nil))
+(defonce drawing (atom nil))
+(defonce selected-shapes (b/to-atom selected-shapes-stream))
+(defonce selected-shapes-data (b/to-atom selected-shapes-data-stream))
+(defonce selected-ids (b/to-atom selected-shape-ids-stream))
+(defonce mouse-pressed? (b/to-atom mouse-pressed?-stream))
+(defonce canvas-coordinates (b/to-atom canvas-coordinates-stream))
+(defonce client-position (b/to-atom client-position-stream))
