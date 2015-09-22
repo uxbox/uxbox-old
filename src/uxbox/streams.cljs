@@ -24,8 +24,10 @@
 ;; coercions
 
 (defn to-property
-  [obs]
-  (.toProperty obs))
+  ([obs]
+   (.toProperty obs))
+  ([obs inital-value]
+   (.toProperty obs initial-value)))
 
 (defn to-event-stream
   [p]
