@@ -53,4 +53,4 @@
    :page page-schema
    :shape shape-schema
    :user user-schema
-   :yevent event-schema})
+   :event event-schema})
