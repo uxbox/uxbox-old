@@ -3,6 +3,10 @@
    [uxbox.log.core :as log]
    [datascript :as d]))
 
+(def events-query
+  '[:find [?e ...]
+    :where [?e :event/type ?t]])
+
 (defn all-events
   [db]
   (map :e (d/datoms db :avet :event/timestamp)))

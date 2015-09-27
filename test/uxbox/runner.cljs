@@ -1,6 +1,7 @@
 (ns uxbox.runner
   (:require [cljs.test :as test]
             [uxbox.test.data-test]
+            [uxbox.test.queries-test]
             [uxbox.test.projects.data-test]
             [uxbox.test.shapes.data-test]
             [uxbox.test.streams-test]))
@@ -13,6 +14,7 @@
                   'uxbox.test.data-test
                   'uxbox.test.projects.data-test
                   'uxbox.test.shapes.data-test
+                  'uxbox.test.queries-test
                   'uxbox.test.streams-test))
 
 (set! *main-cli-fn* main)

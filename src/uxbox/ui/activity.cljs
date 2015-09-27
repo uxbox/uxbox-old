@@ -85,7 +85,7 @@
      (create-project-activity ev))])
 
 (rum/defcs timeline < (mx/pull-query :events
-                                     q/all-events
+                                     q/events-query
                                      '[:event/type
                                        :event/payload
                                        :event/author

@@ -138,7 +138,8 @@
 
 (rum/defc project-count < rum/static
   [n]
-  [:span.dashboard-projects n " projects"])
+  [:span.dashboard-projects
+   (str n " projects")])
 
 (rum/defc project-sort-selector < rum/reactive
   [sort-order]
@@ -192,12 +193,12 @@
    {:on-click #(set-lightbox! :new-project)}
    [:span "+ New project"]])
 
-(defn sorted-projects
-  [conn projects sort-order]
-  (let [project-cards (map (partial project-card conn) (sort-by sort-order projects))]
+(defn sort-projects
+  [projects sort-order]
+  (let [sorted (sort-by sort-order projects)]
     (if (= sort-order :project/name)
-      project-cards
-      (reverse project-cards))))
+      sorted
+      (reverse sorted))))
 
 (rum/defc dashboard-grid < rum/reactive
   [conn projects sort-order]
@@ -206,23 +207,20 @@
    [:div.dashboard-grid-content
     (vec
      (concat [:div.dashboard-grid-content
-              (new-project conn)]
-             (sorted-projects conn
-                              projects
-                              (rum/react sort-order))))]])
+              (new-project)]
+             (map (partial project-card conn)
+                  (sort-projects projects (rum/react sort-order)))))]])
 
 (rum/defcs dashboard* < (rum/local :project/name :project-sort-order)
                         (mx/pull-query :projects
-                                       q/all-projects
+                                       q/projects-query
                                        '[*])
-                        (mx/query :project-count q/project-count)
   [{sort-order :project-sort-order
-    projects :projects
-    project-count :project-count} conn]
+    projects :projects} conn]
   [:main.dashboard-main
    (header conn)
    [:section.dashboard-content
-    (dashboard-bar sort-order @project-count)
+    (dashboard-bar sort-order (count @projects))
     (dashboard-grid conn @projects sort-order)]
    (timeline conn)])
 

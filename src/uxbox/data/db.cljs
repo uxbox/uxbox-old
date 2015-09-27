@@ -4,9 +4,10 @@
    [uxbox.data.schema :as sch]))
 
 (defn create
-  []
-  (let [conn (d/create-conn sch/schema)]
-    conn))
+  ([]
+   (create sch/schema))
+  ([schema]
+   (d/create-conn schema)))
 
 (defn restore!
   [conn storage]
