@@ -70,6 +70,8 @@
                                                (shapes/shape->svg (:shape/data shape))
                                                (shapes/shape->selected-svg (:shape/data shape))]
                                              (shapes/shape->svg (:shape/data shape))))
-                                         visible-shapes)
+                                         visible-shapes))
      (when-let [shape (rum/react cs/drawing)]
-       (shapes/shape->drawing-svg shape)))]))
+       (shapes/shape->drawing-svg shape))
+     (when-let [shape (rum/react cs/selecting)]
+       (shapes/shape->drawing-svg shape))]))

@@ -5,7 +5,10 @@
    [uxbox.ui.workspace.streams :as ws]
    [uxbox.ui.tools :as tools]
    [uxbox.shapes.protocols :as shapes]
+   [uxbox.shapes.circle :refer [new-circle]]
+   [uxbox.shapes.rectangle :refer [new-rectangle]]
    [uxbox.shapes.queries :as sq]
+   [uxbox.shapes.actions :as sa]
    [uxbox.geometry :as geo]
    [goog.events :as events])
   (:import [goog.events EventType]))
@@ -89,15 +92,48 @@
 
 (def ^{:doc "A stream of mouse coordinate deltas as `[dx dy]` vectors."}
   client-position-delta
-  (b/map coords-delta (b/buffer 2 (b/map :coords mouse-move-stream))))
+  (b/map coords-delta (b/buffer 2 client-position-stream)))
 
 (def drawing-stream
-  (b/filter #(and @mouse-pressed? (not= @ws/selected-tool nil) (empty? @selected-shapes))
+  (b/filter #(and @mouse-pressed? (not= @ws/selected-tool nil))
             mouse-move-stream))
+
+(def drawing-shape-stream
+  (b/map (fn [event]
+           (let [x1 (first @last-mouse-down-position)
+                 y1 (second @last-mouse-down-position)
+                 x2 (first (:coords event))
+                 y2 (second (:coords event))
+                 width (- (max x1 x2) (min x1 x2))
+                 height (- (max y1 y2) (min y1 y2))
+                 r (geo/distance x1 y1 x2 y2)]
+
+             (case @ws/selected-tool
+               [:circle] (new-circle x1 y1 r)
+               [:rect] (new-rectangle (min x1 x2) (min y1 y2) width height)
+               nil)))
+         drawing-stream))
+
+(def drawing-shape-finish-stream
+  (b/map first
+    (b/zip drawing-shape-stream
+           mouse-up-stream)))
 
 (def selecting-stream
   (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (empty? @selected-shapes))
             mouse-move-stream))
+
+(def selecting-shape-stream
+  (b/filter #(not (nil? %))
+            (b/map (fn [event]
+                     (let [x1 (first @last-mouse-down-position)
+                           y1 (second @last-mouse-down-position)
+                           x2 (first (:coords event))
+                           y2 (second (:coords event))
+                           width (- (max x1 x2) (min x1 x2))
+                           height (- (max y1 y2) (min y1 y2))]
+                        (new-rectangle (min x1 x2) (min y1 y2) width height)))
+                   drawing-stream)))
 
 (def moving-shapes-stream
   (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (not (empty? @selected-shapes)))
@@ -153,14 +189,20 @@
 
 ;; (def draw! (b/to-atom draw-stream))
 ;; (def move! (b/to-atom move-stream))
-;; (def drawing (b/to-atom draw-in-progress))
 
 (defonce draw! (atom nil))
 (defonce move! (atom nil))
-(defonce drawing (atom nil))
+(defonce last-mouse-down-position (b/to-atom (b/map :coords mouse-down-stream)))
+(defonce drawing (b/to-atom drawing-shape-stream))
+(defonce selecting (b/to-atom selecting-shape-stream))
 (defonce selected-shapes (b/to-atom selected-shapes-stream))
 (defonce selected-shapes-data (b/to-atom selected-shapes-data-stream))
 (defonce selected-ids (b/to-atom selected-shape-ids-stream))
 (defonce mouse-pressed? (b/to-atom mouse-pressed?-stream))
 (defonce canvas-coordinates (b/to-atom canvas-coordinates-stream))
 (defonce client-position (b/to-atom client-position-stream))
+
+;; Effects
+
+(b/on-value drawing-shape-finish-stream
+            #(sa/draw_shape conn page %))
