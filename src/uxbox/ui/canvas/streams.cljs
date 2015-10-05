@@ -6,6 +6,8 @@
    [uxbox.ui.tools :as tools]
    [uxbox.shapes.protocols :as shapes]
    [uxbox.shapes.circle :refer [new-circle]]
+   [uxbox.shapes.line :refer [new-line]]
+   [uxbox.shapes.icon :refer [new-icon]]
    [uxbox.shapes.rectangle :refer [new-rectangle]]
    [uxbox.shapes.queries :as sq]
    [uxbox.shapes.actions :as sa]
@@ -36,7 +38,9 @@
 
 (def mouse-up-stream
   (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-                    :shapes (.-data %)
+                    :shapes (:shapes (.-data %))
+                    :conn (:conn (.-data %))
+                    :page (:page (.-data %))
                     :ctrl (.-ctrlKey %)
                     :alt (.-altKey %)
                     :shift (.-shiftKey %))
@@ -44,7 +48,9 @@
 
 (def mouse-down-stream
   (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-                    :shapes (.-data %)
+                    :shapes (:shapes (.-data %))
+                    :conn (:conn (.-data %))
+                    :page (:page (.-data %))
                     :ctrl (.-ctrlKey %)
                     :alt (.-altKey %)
                     :shift (.-shiftKey %))
@@ -52,7 +58,9 @@
 
 (def mouse-move-stream
   (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-                    :shapes (.-data %)
+                    :shapes (:shapes (.-data %))
+                    :conn (:conn (.-data %))
+                    :page (:page (.-data %))
                     :ctrl (.-ctrlKey %)
                     :alt (.-altKey %)
                     :shift (.-shiftKey %))
@@ -108,16 +116,17 @@
                  height (- (max y1 y2) (min y1 y2))
                  r (geo/distance x1 y1 x2 y2)]
 
-             (case @ws/selected-tool
-               [:circle] (new-circle x1 y1 r)
-               [:rect] (new-rectangle (min x1 x2) (min y1 y2) width height)
+             (case (first @ws/selected-tool)
+               :circle (new-circle x1 y1 r)
+               :rect (new-rectangle (min x1 x2) (min y1 y2) width height)
+               :line (new-line x1 y1 x2 y2)
+               :icon (new-icon (second @ws/selected-tool) (min x1 x2) (min y1 y2) width height)
                nil)))
          drawing-stream))
 
 (def drawing-shape-finish-stream
-  (b/map first
-    (b/zip drawing-shape-stream
-           mouse-up-stream)))
+  (b/map #(assoc {} :shape @drawing :conn (:conn %) :page (:page %))
+         (b/filter #(not= @drawing nil) mouse-up-stream)))
 
 (def selecting-stream
   (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (empty? @selected-shapes))
@@ -133,7 +142,7 @@
                            width (- (max x1 x2) (min x1 x2))
                            height (- (max y1 y2) (min y1 y2))]
                         (new-rectangle (min x1 x2) (min y1 y2) width height)))
-                   drawing-stream)))
+                   selecting-stream)))
 
 (def moving-shapes-stream
   (b/filter #(and @mouse-pressed? (= @ws/selected-tool nil) (not (empty? @selected-shapes)))
@@ -205,4 +214,6 @@
 ;; Effects
 
 (b/on-value drawing-shape-finish-stream
-            #(sa/draw_shape conn page %))
+            #(sa/draw_shape (:conn %) (:page %) (:shape %)))
+
+(b/on-value drawing-stream pr)

@@ -4,6 +4,10 @@
   [x y]
   (str "translate(" x "," y ")"))
 
+(defn scale
+  [x y]
+  (str "scale(" x "," y ")"))
+
 (defn rotate
   [d]
   (str "rotate(" d ")"))
