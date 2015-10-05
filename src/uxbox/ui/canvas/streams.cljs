@@ -32,24 +32,33 @@
 ;;;; Mouse privitives streams
 
 (def mouse-up-stream
-  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-         (b/filter #(= (.-type %) "mouseup") canvas-stream)))
-
-(def mouse-down-stream
-  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-         (b/filter #(= (.-type %) "mousedown") canvas-stream)))
-
-(def mouse-move-stream
-  (b/map #(client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
-         (b/filter #(= (.-type %) "mousemove") canvas-stream)))
-
-(def mouse-click-stream
   (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
                     :shapes (.-data %)
                     :ctrl (.-ctrlKey %)
                     :alt (.-altKey %)
                     :shift (.-shiftKey %))
-         (b/filter #(= (.-type %) "click") canvas-stream)))
+         (b/filter #(= (.-type %) "mouseup") canvas-stream)))
+
+(def mouse-down-stream
+  (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+                    :shapes (.-data %)
+                    :ctrl (.-ctrlKey %)
+                    :alt (.-altKey %)
+                    :shift (.-shiftKey %))
+         (b/filter #(= (.-type %) "mousedown") canvas-stream)))
+
+(def mouse-move-stream
+  (b/map #(assoc {} :coords (client-coords->canvas-coords [(.-clientX %) (.-clientY %)])
+                    :shapes (.-data %)
+                    :ctrl (.-ctrlKey %)
+                    :alt (.-altKey %)
+                    :shift (.-shiftKey %))
+         (b/filter #(= (.-type %) "mousemove") canvas-stream)))
+
+(def mouse-click-stream
+  (->> (b/zip mouse-down-stream mouse-up-stream)
+       (b/filter #(= (:coords (first %)) (:coords (second %))))
+       (b/map first)))
 
 (def mouse-ctrl-click-stream
   (b/filter #(and (:ctrl %) (not (:alt %)) (not (:shift %))) mouse-click-stream))
@@ -69,7 +78,7 @@
   (b/merge (b/map (constantly true) mouse-down-stream)
            (b/map (constantly false) mouse-up-stream)))
 
-(def client-position-stream mouse-move-stream)
+(def client-position-stream (b/map :coords mouse-move-stream))
 
 (defn coords-delta
   [[old new]]
@@ -80,7 +89,7 @@
 
 (def ^{:doc "A stream of mouse coordinate deltas as `[dx dy]` vectors."}
   client-position-delta
-  (b/map coords-delta (b/buffer 2 mouse-move-stream)))
+  (b/map coords-delta (b/buffer 2 (b/map :coords mouse-move-stream))))
 
 (def drawing-stream
   (b/filter #(and @mouse-pressed? (not= @ws/selected-tool nil) (empty? @selected-shapes))

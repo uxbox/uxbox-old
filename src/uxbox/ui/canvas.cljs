@@ -60,10 +60,9 @@
       :y document-start-y
       :width page-width
       :height page-height
-      :on-mouse-down (on-event :canvas)
-      :on-mouse-up (on-event :canvas)
-      :on-click (on-event :canvas shapes)
-      :on-mouse-move (on-event :canvas)}
+      :on-mouse-down (on-event :canvas shapes)
+      :on-mouse-up (on-event :canvas shapes)
+      :on-mouse-move (on-event :canvas shapes)}
      (background)
      (apply vector :svg#page-layout (map (fn [shape]
                                            (if (some #(= (:shape/uuid shape) %) selection-uuids)
