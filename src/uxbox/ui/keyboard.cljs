@@ -1,6 +1,6 @@
 (ns uxbox.ui.keyboard
   (:require [goog.events :as events]
-            [uxbox.ui.workspace.streams :as ws])
+            [uxbox.streams :refer [on-event]])
   (:import [goog.events EventType KeyCodes]
            [goog.ui KeyboardShortcutHandler]))
 
@@ -31,10 +31,10 @@
     {:will-mount (fn [state]
                    (events/listen handler
                                   KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
-                                  ws/on-workspace-keypress)
+                                  (on-event :workspace))
                    state)
      :will-unmount (fn [state]
-                   (events/unlisten js/document
-                                    EventType.KEYDOWN
-                                    ws/on-workspace-keypress)
+                   (events/unlisten handler
+                                    KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
+                                    (on-event :workspace))
                      state)}))

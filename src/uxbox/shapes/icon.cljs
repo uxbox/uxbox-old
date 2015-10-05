@@ -5,22 +5,22 @@
             [uxbox.shapes.protocols :as proto]))
 
 (rum/defc iconc < rum/static
-  [{:keys [x y icon]}]
+  [{:keys [x y width height icon]}]
   [:g
-   {:transform (svg/translate x y)}
+   {:transform (str (svg/translate x y) " " (svg/scale (/ width 100) (/ height 100)))}
    (:svg icon)])
 
 (rum/defc drawing-iconc < rum/static
-  [{:keys [x y icon]}]
+  [{:keys [x y width height icon]}]
   [:g
-   {:transform (svg/translate x y)
+   {:transform (str (svg/translate x y) " " (svg/scale (/ width 100) (/ height 100)))
     :opacity 0.3}
    (:svg icon)])
 
 (rum/defc selected-iconc < rum/static
   [{:keys [x y width height icon]}]
   [:g
-   {:transform (svg/translate x y)}
+   {:transform (str (svg/translate x y) " " (svg/scale (/ width 100) (/ height 100)))}
    (:svg icon)])
 
 ;; todo: width and height
@@ -31,8 +31,11 @@
 
   proto/Shape
   (intersect
-    [_ px py]
-    false) ;; todo
+    [{:keys [x y width height]} px py]
+    (and (>= px x)
+         (<= px (+ x width))
+         (>= py y)
+         (<= py (+ y height))))
 
   (move-delta
     [{:keys [x y] :as shape} delta-x delta-y]
@@ -61,5 +64,5 @@
     (selected-iconc shape)))
 
 (defn new-icon
-  [icon x y]
-  (SvgIcon. icon x y 20 20))
+  [icon x y width height]
+  (SvgIcon. icon x y width height))

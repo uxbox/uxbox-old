@@ -2,6 +2,7 @@
   (:require rum
             [goog.events :as events]
             [cuerdas.core :as str]
+            [uxbox.streams :refer [on-event]]
             [uxbox.ui.navigation :as nav]
             [uxbox.ui.keyboard :as k]
             [uxbox.ui.icons :as icons]
@@ -92,10 +93,10 @@
        [:li.tooltip.tooltip-bottom
         {:alt "Ruler (Ctrl + R)"}
         icons/ruler]
-       [:li.tooltip.tooltip-bottom
+       [:li.tooltip.tooltip-bottom.toggle-grid
         {:alt "Grid (Ctrl + G)"
          :class (when (rum/react ws/grid?) "selected")
-         :on-click ws/toggle-grid!}
+         :on-click (on-event :workspace {:type :toggle-grid})}
         icons/grid]
        [:li.tooltip.tooltip-bottom
         {:alt "Align (Ctrl + A)"}
@@ -134,7 +135,7 @@
         :class (when (= (rum/react ws/selected-tool)
                         [:icon icon])
                  "selected")
-        :on-click #(ws/toggle-tool! [:icon icon])}
+        :on-click (on-event :workspace {:type :toggle-tool :tool [:icon icon]})}
        [:svg (:svg icon)]])]])
 
 (rum/defc components < rum/cursored rum/reactive
@@ -155,7 +156,7 @@
                         [(:key tool)])
                  "selected")
         :key (:key tool)
-        :on-click #(ws/toggle-tool! [(:key tool)])} (:icon tool)])]])
+        :on-click (on-event :workspace {:type :toggle-tool :tool [(:key tool)]})} (:icon tool)])]])
 
 
 #_(rum/defcs element-options < (rum/local :options) rum/cursored
@@ -229,7 +230,7 @@
                          [(:key tool)])
                   "selected")
          :key (:key tool)
-         :on-click #(ws/toggle-tool! [(:key tool)])}
+         :on-click (on-event :workspace {:type :toggle-tool :tool [(:key tool)]})}
         (:icon tool)])]])
 
 (rum/defc layers
@@ -551,7 +552,7 @@
   [:section.workspace-canvas
     {:class (when (empty? open-setting-boxes)
               "no-tool-bar")
-     :on-scroll ws/on-workspace-scroll}
+     :on-scroll (on-event :workspace)}
     #_(when (:selected page)
       (element-options conn
                        page-cursor

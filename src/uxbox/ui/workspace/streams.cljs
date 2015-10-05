@@ -1,34 +1,11 @@
 (ns uxbox.ui.workspace.streams
   (:require
-   [uxbox.streams :as s]
-   [uxbox.ui.streams.mouse :as mouse]))
-
-;; Buses
-
-(def workspace-scroll-bus
-  (s/bus))
-
-(def workspace-keyboard-bus
-  (s/bus))
-
-(def selected-tool-bus
-  (s/bus))
-
-(def active-grid-bus
-  (s/bus))
-
-(def zoom-bus
-  (s/bus))
+   [uxbox.streams :refer [main-bus]]
+   [beicon.core :as b]))
 
 ;; Transformers
 
-(defn- scroll-event
-  [e]
-  (let [t (.-target e)]
-    {:top (.-scrollTop t)
-     :left (.-scrollLeft t)}))
-
-(defn- keyboard-event [e]
+(defn- shortcut-event [e]
   (case (.-identifier e)
     ;; "DELETE"  [:delete-key-pressed]
     "ESC"     [:set-tool nil]
@@ -56,81 +33,89 @@
 
 ;; Streams
 
-(def workspace-top-scroll-stream
-  (s/dedupe (s/map :top workspace-scroll-bus)))
+;;;; Main workspace stream
+(def workspace-stream
+  (b/filter #(= (.-ns %) :workspace) main-bus))
 
-(def workspace-left-scroll-stream
-  (s/dedupe (s/map :left workspace-scroll-bus)))
+;;;; Clicks streams
+(def click-stream
+  (b/filter #(= (.-type %) "click") workspace-stream))
 
-(def workspace-keyboard-select-tool-stream
-  (s/map #(conj [] (second %))
-         (s/filter #(= (first %) :set-tool) workspace-keyboard-bus)))
+(def click-toggle-grid-stream
+  (b/map #(keyword :toggle-grid)
+         (b/filter #(= (:type (.-data %)) :toggle-grid) click-stream)))
+
+(def click-toggle-tool-stream
+  (b/map #(:tool (.-data %))
+         (b/filter #(= (:type (.-data %)) :toggle-tool) click-stream)))
+
+(def click-zoom-stream
+  (b/map #(:zoom-type (.-data %))
+         (b/filter #(= (:type (.-data %)) :zoom) click-stream)))
+
+;;;; Scroll streams
+(def scroll-stream
+  (b/map (fn [e]
+           (let [t (.-target e)]
+             {:top (.-scrollTop t)
+              :left (.-scrollLeft t)}))
+         (b/filter #(= (.-type %) "scroll") workspace-stream)))
+
+(def top-scroll-stream
+  (b/dedupe (b/map :top scroll-stream)))
+
+(def left-scroll-stream
+  (b/dedupe (b/map :left scroll-stream)))
+
+;;;; Shortcuts Streams
+(def shortcuts-stream
+  (b/map shortcut-event
+         (b/filter #(= (.-type %) "shortcut") workspace-stream)))
+
+(def shortcuts-toggle-tool-stream
+  (b/map #(conj [] (second %))
+         (b/filter #(= (first %) :set-tool) shortcuts-stream)))
+
+(def shortcuts-toggle-grid-stream
+  (b/filter #{:toggle-grid}
+            (b/map first shortcuts-stream)))
+
+(def shortcuts-zoom-stream
+  (b/filter #{:zoom-in :zoom-out :zoom-reset}
+            (b/map first shortcuts-stream)))
+
+;;;; Final Streams
 
 (def selected-tool-stream
-  (s/to-event-stream selected-tool-bus))
+  ;; TODO Generate it correctly as a combination of streams
+  (b/map #(if (= @selected-tool %) [:none] %)
+         (b/merge shortcuts-toggle-tool-stream
+                  click-toggle-tool-stream)))
 
-(def keyboard-toggle-grid-stream
-  (s/filter #{:toggle-grid}
-            (s/map first workspace-keyboard-bus)))
-
-(def active-grid-stream
-  (s/map #(not @grid?) active-grid-bus))
-
-(def keyboard-zoom-stream
-  (s/filter #{:zoom-in :zoom-out :zoom-reset}
-            (s/map first workspace-keyboard-bus)))
+(def grid?-stream
+  ;; TODO Generate it correctly as a combination of streams
+  (b/map #(not @grid?)
+         (b/merge shortcuts-toggle-grid-stream
+                  click-toggle-grid-stream)))
 
 (def zoom-stream
-  (s/map (fn [action]
+  (b/map (fn [action]
            (case action
              :zoom-in (max 0.01 (+ @zoom (* @zoom 0.1)))
              :zoom-out (max 0.01 (- @zoom (* @zoom 0.1)))
              :zoom-reset 1
              @zoom))
-          zoom-bus))
+          (b/merge shortcuts-zoom-stream
+                   click-zoom-stream)))
 
+(def tool-selected?-stream
+  (b/map #(not= % :none)
+         selected-tool-stream))
 ;; Atoms
 
-(defonce scroll-top (s/pipe-to-atom workspace-top-scroll-stream))
-(defonce scroll-left (s/pipe-to-atom workspace-left-scroll-stream))
-(defonce selected-tool (s/pipe-to-atom selected-tool-stream))
-(defonce grid? (s/pipe-to-atom active-grid-stream))
-(defonce zoom (s/pipe-to-atom (atom 1) zoom-stream))
-
-;; Handlers
-
-(defn on-workspace-scroll
-  [e]
-  (s/push! workspace-scroll-bus
-           (scroll-event e)))
-
-(defn on-workspace-keypress
-  [e]
-  (s/push! workspace-keyboard-bus
-           (keyboard-event e)))
-
-(defn toggle-tool!
-  [tool]
-  (if (= @selected-tool tool)
-    (s/push! selected-tool-bus :none)
-    (s/push! selected-tool-bus tool)))
-
-(defn deselect-tool!
-  []
-  (s/push! selected-tool-bus :none))
-
-(defn toggle-grid!
-  [e]
-  (s/push! active-grid-bus :toggle-grid))
-
-;; Properties
-
-(def tool-selected?
-  (s/to-property (s/map #(not= % :none)
-                        selected-tool-stream)))
-
-;; Connections
-
-(s/plug! selected-tool-bus workspace-keyboard-select-tool-stream)
-(s/plug! active-grid-bus keyboard-toggle-grid-stream)
-(s/plug! zoom-bus keyboard-zoom-stream)
+(defonce scroll-top (b/to-atom top-scroll-stream))
+(defonce scroll-left (b/to-atom left-scroll-stream))
+(defonce selected-tool (b/to-atom selected-tool-stream))
+(defonce zoom (b/to-atom (atom 1) zoom-stream))
+(defonce grid? (b/to-atom (atom false) grid?-stream))
+(defonce tool-selected? (b/to-atom (atom false) tool-selected?-stream))
