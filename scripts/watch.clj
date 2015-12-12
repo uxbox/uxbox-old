@@ -1,6 +1,6 @@
 (require '[cljs.build.api :as b])
 
-(b/watch (b/inputs "src/frontend")
+(b/watch (b/inputs "frontend")
   {:main 'uxbox.core
    :output-to "resources/public/js/main.js"
    :output-dir "resources/public/js"

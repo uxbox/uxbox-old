@@ -4,7 +4,7 @@
 
 (let [start (System/nanoTime)]
   (b/build
-   (b/inputs "src/frontend")
+   (b/inputs "frontend")
    {:main 'uxbox.core
     :output-to "resources/public/js/main.js"
     :output-dir "resources/public/js"
