@@ -7,7 +7,7 @@
    :all-builds
    [{:id "dev"
      :figwheel true
-     :source-paths ["src/frontend"]
+     :source-paths ["frontend"]
      :compiler {:main 'uxbox.core
                 :asset-path "js"
                 :optimizations :none
