@@ -15,4 +15,5 @@ pom.xml
 /hicv/
 node_modules
 /resources/public/css
+/resources/public/js
 /*-init.clj
