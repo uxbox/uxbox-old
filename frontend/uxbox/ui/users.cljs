@@ -1,10 +1,9 @@
 (ns uxbox.ui.users
-  (:require
-   rum
-   [uxbox.users.queries :as q]
-   [uxbox.ui.mixins :as mx]
-   [uxbox.ui.icons :as icons]
-   [uxbox.ui.navigation :as nav]))
+  (:require [rum.core :as rum]
+            ;; [uxbox.users.queries :as q]
+            ;; [uxbox.ui.mixins :as mx]
+            [uxbox.ui.icons :as icons]
+            [uxbox.ui.navigation :as nav]))
 
 (rum/defc user-menu < rum/static
   [open?]
@@ -27,7 +26,6 @@
        [:span "Save & Exit"]]])
 
 (rum/defcs user < (rum/local false :menu-open?)
-                  (mx/query :current-user q/pull-current-user)
   [{:keys [menu-open? current-user]} conn]
   (let [usr @current-user]
     [:div.user-zone {:on-mouse-enter #(reset! menu-open? true)

@@ -1,25 +1,43 @@
 (ns uxbox.ui
-  (:require rum
-            [uxbox.ui.shapes]
-            [uxbox.ui.users :as u]
-            [uxbox.ui.dashboard :as d]
-            [uxbox.ui.workspace :as w]))
+  (:require [rum.core :as rum]
+            [cats.labs.lens :as l]
+            [uxbox.state :as s]
+            [uxbox.util :as util]
+            [uxbox.ui.users :as u]))
 
-(rum/defc app < rum/cursored-watch
-  [conn location]
-  (let [[page params] @location]
-    (case page
-      ;; User
-      :login (u/login)
-      :register (u/register)
-      :recover-password (u/recover-password)
-      ;; Home
-      :dashboard (d/dashboard conn)
-      ;; Workspace
-      :project (w/workspace conn params)
-      :page    (w/workspace conn params))))
+(def ^:private ^:static state
+  (as-> (l/select-keys [:location]) $
+    (l/focus-atom $ s/state)))
 
-(defn render!
-  [$el location conn]
-  (let [component (app conn location)]
-    (rum/mount component $el)))
+(defn app-render
+  [own]
+  (let [{:keys [location location-params]} (rum/react state)]
+    (println @state)
+    (case location
+      :auth/login (u/login)
+      ;; :auth/register (u/register)
+      ;; :auth/recover (u/recover-password)
+      ;; :main/dashboard (d/dashboard)
+      ;; :main/project (w/workspace conn location-params)
+      ;; :main/page (w/workspace conn location-params))))
+      )))
+
+(def app
+  (util/component {:render app-render
+                   :mixins [rum/reactive]
+                   :name "app"}))
+
+;; (rum/defc app < rum/reactive
+;;   [conn location]
+;;   (let [{:keys [location location-params]} (rum/react state)]
+;;     (case location
+;;       :auth/login (u/login)
+;;       :auth/register (u/register)
+;;       :auth/recover (u/recover-password)
+;;       :main/dashboard (d/dashboard)
+;;       :main/project (w/workspace conn location-params)
+;;       :main/page    (w/workspace conn location-params))))
+
+(defn mount!
+  [el]
+  (rum/mount (app) el))

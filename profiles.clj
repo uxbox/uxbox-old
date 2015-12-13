@@ -39,20 +39,14 @@
   {:source-paths ["src/frontend"]
    :test-paths ["test/frontend"]
    :dependencies [[org.clojure/clojurescript "1.7.189"]
-                  ;; String
                   [funcool/cuerdas "0.7.0"]
-                  ;; Rendering
-                  [rum "0.3.0"]
-                  [cljsjs/react-with-addons "0.13.3-0"]
-                  ;; Compositional Event Streams
-                  ;;[funcool/tocino "0.1.0"]
-                  ;; Datetime
+                  [rum "0.6.0"]
+                  [funcool/promesa "0.6.0"]
+                  [funcool/beicon "0.3.0"]
+                  [funcool/cats "1.2.0"]
                   [cljsjs/moment "2.10.6-0"]
-                  ;; Routing
-                  [bidi "1.21.0" :exclusions [clj-time ring/ring-core]]
-                  ;; Storage and Querying
-                  [datascript "0.11.6"]
-                  ;; Persistence
+                  [figwheel-sidecar "0.5.0-2" :scope "test"]
+                  [bidi "1.21.0"]
                   [funcool/hodgepodge "0.1.4"]]}]}
 
    ;; :plugins [[lein-cljsbuild "1.1.0" :exclusions [org.clojure/clojure]]

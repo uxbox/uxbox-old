@@ -1,20 +1,12 @@
-(ns ^:figwheel-always uxbox.core
-    (:require
-     [uxbox.ui :as ui]
-     [uxbox.ui.navigation :as nav]
-     [uxbox.data.db :as db]
-     [hodgepodge.core :refer [local-storage]]))
+(ns uxbox.core
+  (:require [uxbox.ui :as ui]
+            [uxbox.ui.navigation]
+            [uxbox.state]
+            [uxbox.rstore]
+            [goog.dom :as dom]))
 
 (enable-console-print!)
 
-(def $el (.getElementById js/document "app"))
+(let [dom (dom/getElement "app")]
+  (ui/mount! dom))
 
-(defn start!
-  [location]
-  (let [conn (db/create)
-        storage local-storage]
-    (nav/start-history!)
-    (db/init! conn storage)
-    (ui/render! $el location conn)))
-
-(start! nav/location)
