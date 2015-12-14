@@ -506,6 +506,79 @@
                      workspace
                      shapes
                      zoom)
+        [:div.color-palette
+          [:div.color-palette-actions
+            [:select.input-select
+              [:option "palette1"]
+              [:option "palette2"]
+              [:option "palette3"]]
+            [:div.color-palette-buttons
+              [:div.btn-palette.edit.current icons/pencil]
+              [:div.btn-palette.create icons/close]]]
+          [:span.left-arrow icons/arrow-slide]
+          [:div.color-palette-content
+            [:div.color-cell
+              [:span.color]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell.current
+              [:span.color {:style {:background "#dddddd"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#c4c4c4"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#909090"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#4f4f4f"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#8ce2b6"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#b8de71"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#a784e0"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#e49ce2"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#d97950"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#e73232"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#ebcd2f"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#6869de"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell
+              [:span.color {:style {:background "#5ad5d9"}}]
+              [:span.color-text "#121212"]
+              [:span.color-text "rgb 21,21,21"]]
+            [:div.color-cell.add-color
+              [:span.color icons/close]
+              [:span.color-text "+ Add color"]]]
+          [:span.right-arrow icons/arrow-slide]
+          [:span.close-palette icons/close]]
+
        ;; Aside
        (when-not (empty? open-setting-boxes)
          (aside open-setting-boxes
