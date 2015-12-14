@@ -173,7 +173,15 @@
                   icons/lock]))]])
             [:span "Rotation"]
             [:div.row-flex
-              [:input.slidebar {:type "range"}]]]])]))
+              [:input.slidebar {:type "range"}]]
+            [:span "Recent colors"]
+            [:div.row-flex
+              [:span.color-th]
+              [:span.color-th {:style {:background "#c5cb7f"}}]
+              [:span.color-th {:style {:background "#6cb533"}}]
+              [:span.color-th {:style {:background "#67c6b5"}}]
+              [:span.color-th {:style {:background "#a178e3"}}]
+              [:span.color-th.palette-th icons/palette]]]])]))
 
 (rum/defc tools < rum/cursored
   [selected-tool available-tools]

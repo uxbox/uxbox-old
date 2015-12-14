@@ -133,3 +133,31 @@
   }
 
 }
+
+.color-th {
+  background-color: $color-gray-light;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 25px;
+  margin: 5px 4px 0 4px;
+  width: 25px;
+  &.palette-th {
+    align-items: center;
+    background-color: $color-gray-darker;
+    border: 2px solid $color-gray-light;
+    display: flex;
+    justify-content: center;
+    svg {
+      fill: $color-gray-light;
+      height: 18px;
+      width: 18px;
+    }
+    &:hover {
+      border-color: $color-primary;
+      svg {
+        fill: $color-primary;
+      }
+    }
+  }
+}
