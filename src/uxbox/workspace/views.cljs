@@ -170,7 +170,10 @@
                  (= :lock (:type input))
                  [:div.lock-size
                   {:key (str (:key menu) "-" (:name option) "-lock")}
-                  icons/lock]))]])]])]))
+                  icons/lock]))]])
+            [:span "Rotation"]
+            [:div.row-flex
+              [:input.slidebar {:type "range"}]]]])]))
 
 (rum/defc tools < rum/cursored
   [selected-tool available-tools]
