@@ -572,7 +572,12 @@
             [:div.color-cell
               [:span.color {:style {:background "#5ad5d9"}}]
               [:span.color-text "#121212"]
-              [:span.color-text "rgb 21,21,21"]]
+              [:span.color-text "rgb 21,21,21"]
+              [:div.color-tooltip
+                [:div.row-flex
+                  [:input.input-text {:type "text" :placeholder "#Hex"}]
+                  [:input.input-text {:type "text" :placeholder "RGB"}]
+                  ]]]
             [:div.color-cell.add-color
               [:span.color icons/close]
               [:span.color-text "+ Add color"]]]
