@@ -171,9 +171,11 @@
                  [:div.lock-size
                   {:key (str (:key menu) "-" (:name option) "-lock")}
                   icons/lock]))]])
+            ;; SLIDEBAR FOR ROTATION AND OPACITY
             [:span "Rotation"]
             [:div.row-flex
               [:input.slidebar {:type "range"}]]
+            ;; RECENT COLORS
             [:span "Recent colors"]
             [:div.row-flex
               [:span.color-th]
@@ -181,7 +183,75 @@
               [:span.color-th {:style {:background "#6cb533"}}]
               [:span.color-th {:style {:background "#67c6b5"}}]
               [:span.color-th {:style {:background "#a178e3"}}]
-              [:span.color-th.palette-th icons/palette]]]])]))
+              [:span.color-th.palette-th icons/palette]]
+            ;; BORDER RADIUS
+            [:span "Border radius"]
+            [:div.row-flex
+              [:div.border-element.top-left
+                icons/radius
+                [:input.input-text {:type "text" :placeholder "px"}]]
+              [:div.border-element.top-right
+                icons/radius
+                [:input.input-text {:type "text" :placeholder "px"}]]
+              [:span.lock-size icons/lock]
+              [:div.border-element.bottom-left
+                icons/radius
+                [:input.input-text {:type "text" :placeholder "px"}]]
+              [:div.border-element.bottom-right
+                icons/radius
+                [:input.input-text {:type "text" :placeholder "px"}]]]
+            ;; IMAGE BACKGROUND
+            [:span "Source"]
+            [:div.row-flex
+              [:input.input-text {:type "file"}]]
+            [:span "Position"]
+            [:div.row-flex
+              [:select.input-select
+                [:option "Center"]
+                [:option "Left"]
+                [:option "Right"]
+                [:option "Top"]
+                [:option "Bottom"]
+                [:option "Cover"]]]
+            [:span "Blended mode"]
+            [:div.row-flex
+              [:select.input-select
+                [:option "Normal"]
+                [:option "Screen"]
+                [:option "Overlay"]
+                [:option "Darken"]
+                [:option "Lighten"]
+                [:option "Color-dodge"]
+                [:option "Color-burn"]
+                [:option "Hard-light"]
+                [:option "Soft-light"]
+                [:option "Difference"]
+                [:option "Exclusion"]
+                [:option "Hue"]
+                [:option "Saturation"]
+                [:option "Color"]
+                [:option "Luminosity"]]]
+            ;;TEXT
+            [:span "Font family"]
+            [:div.row-flex
+              [:select.input-select
+                [:option "Arial"]
+                [:option "Open Sans"]
+                [:option "Roboto"]]]
+            [:span "Size and weight"]
+            [:div.row-flex
+              [:input.input-text {:type "text" :placeholder "16px"}]
+              [:select.input-select
+                [:option "Normal"]
+                [:option "Italic"]
+                [:option "Light"]
+                [:option "Bold"]]]
+            [:span "Text align"]
+            [:div.row-flex
+              [:span.align-icons icons/align-left]
+              [:span.align-icons icons/align-right]
+              [:span.align-icons icons/align-center]
+              [:span.align-icons icons/align-justify]]]])]))
 
 (rum/defc tools < rum/cursored
   [selected-tool available-tools]
